@@ -5,22 +5,23 @@ Plugin *plugin;
 
 void init(rack::Plugin *p) {
 	plugin = p;
-	plugin->slug = "Gratrix";
-	plugin->name = "Gratrix";
-	plugin->homepageUrl = "http://gratrix.net/vcvrack";
-	createModel<VCO_F1_Widget> (plugin, "VCO-F1", "VCO-F1");
-	createModel<VCO_F2_Widget> (plugin, "VCO-F2", "VCO-F2");
-	createModel<VCF_F1_Widget> (plugin, "VCF-F1", "VCF-F1");
-	createModel<VCAWidget>     (plugin, "VCA-F1", "VCA-F1");
-	createModel<ADSRWidget>    (plugin, "Env-F1", "Env-F1");
-	createModel<Chord12Widget> (plugin, "Chord12", "Chord 12");
-	createModel<Fade_G1_Widget>(plugin, "Fade-G1", "Fade-G1");
-	createModel<Fade_G2_Widget>(plugin, "Fade-G2", "Fade-G2");
-	createModel<MuxWidget>     (plugin, "Mux", "Mux");
-	createModel<SplitWidget>   (plugin, "Split", "Split");
-	createModel<OctaveWidget>  (plugin, "Octave", "Octave");
-	createModel<Blank3Widget>  (plugin, "Blank3", "Blank 3");
-	createModel<Blank6Widget>  (plugin, "Blank6", "Blank 6");
-	createModel<Blank9Widget>  (plugin, "Blank9", "Blank 9");
-	createModel<Blank12Widget> (plugin, "Blank12", "Blank 12");
+	p->slug = "Gratrix";
+#ifdef VERSION
+	p->version = TOSTRING(VERSION);
+#endif
+	p->addModel(createModel<VCO_F1_Widget> ("Gratrix", "Gratrix", "VCO-F1",  "VCO-F1"));
+	p->addModel(createModel<VCO_F2_Widget> ("Gratrix", "Gratrix", "VCO-F2",  "VCO-F2"));
+	p->addModel(createModel<VCF_F1_Widget> ("Gratrix", "Gratrix", "VCF-F1",  "VCF-F1"));
+	p->addModel(createModel<VCAWidget>     ("Gratrix", "Gratrix", "VCA-F1",  "VCA-F1"));
+	p->addModel(createModel<ADSRWidget>    ("Gratrix", "Gratrix", "Env-F1",  "Env-F1"));
+	p->addModel(createModel<Chord12Widget> ("Gratrix", "Gratrix", "Chord12", "Chord 12"));
+	p->addModel(createModel<Fade_G1_Widget>("Gratrix", "Gratrix", "Fade-G1", "Fade-G1"));
+	p->addModel(createModel<Fade_G2_Widget>("Gratrix", "Gratrix", "Fade-G2", "Fade-G2"));
+//	p->addModel(createModel<MuxWidget>     ("Gratrix", "Gratrix", "Mux",     "Mux"));
+//	p->addModel(createModel<SplitWidget>   ("Gratrix", "Gratrix", "Split",   "Split"));
+	p->addModel(createModel<OctaveWidget>  ("Gratrix", "Gratrix", "Octave",  "Octave"));
+	p->addModel(createModel<Blank3Widget>  ("Gratrix", "Gratrix", "Blank3",  "Blank 3"));
+	p->addModel(createModel<Blank6Widget>  ("Gratrix", "Gratrix", "Blank6",  "Blank 6"));
+	p->addModel(createModel<Blank9Widget>  ("Gratrix", "Gratrix", "Blank9",  "Blank 9"));
+	p->addModel(createModel<Blank12Widget> ("Gratrix", "Gratrix", "Blank12", "Blank 12"));
 }
