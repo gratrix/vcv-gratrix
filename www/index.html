@@ -1,0 +1,199 @@
+<html lang="en-GB">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+<head>
+<title>Gratrix.net - VCV Rack Modules</title>
+<style type="text/css">
+body {
+	font-family: Cambria;  font-size: 15px;
+}
+p {
+	max-width: 960px;
+/*	text-align: justify; */
+	line-height: 133%;
+}
+ul {
+	padding-left: 15px;
+/*	text-align: justify; */
+	line-height: 150%;
+}
+li {
+	padding:5px 0px 5px 0px;
+}
+img {
+	margin: 0px;
+	padding: 0px;
+	border: 0px;
+}
+
+table {
+	margin: 0px;
+	padding: 0xp;
+    border-collapse: collapse;
+}
+td {
+	margin: 0px;
+	padding: 0px;
+}
+.content {
+    max-width: 990px;
+    margin: auto;
+/*  border: 1px solid red;  */
+
+}
+.wrapper {
+  display: grid;
+  grid-template-columns: 500px 480px;
+  grid-gap: 10px;
+  color: #444;
+}
+
+.box {
+  background-color: #eee;
+  color: #000;
+  border-radius: 5px;
+  padding: 20px;
+}
+</style>
+</head>
+<body style="background-color: #FCFCFC;">
+<div class="content">
+
+<h1>VCV Rack Modules</h1>
+<i>by Sam Gratrix</i> &nbsp; - &nbsp; <i>Page under construction and modules in development!</i>
+
+<table>
+<tr>
+<td width="90">&nbsp;</td><td width="90">&nbsp;</td><td width="90">&nbsp;</td><td width="90">&nbsp;</td>
+<td width="90">&nbsp;</td><td width="90">&nbsp;</td><td width="90">&nbsp;</td>
+<td width="90">&nbsp;</td><td width="90">&nbsp;</td><td width="90">&nbsp;</td><td width="90">&nbsp;</td>
+</tr><tr>
+<td width="360" colspan="4"><img src="res/VCO-F1.png" ></td>
+<td width="180" colspan="2"><img src="res/VCO-F2.png" ></td>
+<td width="270" colspan="3"><img src="res/VCF-F1.png" ></td>
+<td width="180" colspan="2"><img src="res/VCA-F1.png" ></td>
+</tr><tr>
+<td width="180" colspan="2"><img src="res/Env-F1.png" ></td>
+<td width="180" colspan="2"><img src="res/Fade-G1.png"></td>
+<td width="270" colspan="3"><img src="res/Fade-G2.png"></td>
+<td width="180" colspan="2"><img src="res/Octave.png" ></td>
+<td width="180" colspan="2"><img src="res/Chord12.png"></td>
+</tr><tr>
+<td width="90">&nbsp;</td><td width="90">&nbsp;</td><td width="90">&nbsp;</td><td width="90">&nbsp;</td>
+<td width="90">&nbsp;</td><td width="90">&nbsp;</td><td width="90">&nbsp;</td>
+<td width="90">&nbsp;</td><td width="90">&nbsp;</td><td width="90">&nbsp;</td><td width="90">&nbsp;</td>
+</tr>
+</table>
+
+
+<h2>Introduction</h2>
+
+<p>Comming soon.</p>
+
+<h2>Modules</h2>
+
+<h4>Oscillators and Filters</h4>
+<div class="wrapper">
+<div class="box a">
+<img height="190px" src="res/VCO-F1.png">
+<img height="190px" src="res/VCO-F2.png">
+<img height="190px" src="res/VCF-F1.png">
+</div>
+<div class="box b">
+<ul>
+<li><tt>VCO-F1</tt> is a six voice straight clone of <i>Fundamental VCO-1</i>.</li>
+<li><tt>VCO-F2</tt> is a six voice straight clone of <i>Fundamental VCO-2</i>.</li>
+<li><tt>VCF-F1</tt> is a six voice straight clone of <i>Fundamental VCF</i>.</li>
+</div>
+</div>
+
+<h4>Amplifiers and Envelopes</h4>
+
+<div class="wrapper">
+<div class="box a">
+<img height="190px" src="res/VCA-F1.png">
+<img height="190px" src="res/Env-F1.png">
+</div>
+<div class="box b">
+<ul>
+<li><tt>VCA-F1</tt> is a six voice straight clone of the <i>Fundamental VCA</i> with a basic mixer to combine
+the voices to single outputs.
+<br><i>TODO: Complete UI for mixer section.</i></li>
+<li><tt>ENV-F1</tt> is a six voice straight clone of the <i>Fundamental ADSR</i> with an additional inverted
+output.</li>
+</div>
+</div>
+
+<h4>Faders</h4>
+<div class="wrapper">
+<div class="box a">
+<img height="190px" src="res/Fade-G1.png">
+<img height="190px" src="res/Fade-G2.png">
+</div>
+<div class="box b">
+<ul>
+<li><tt>FADE-G1</tt> is a two input six voice one-dimensional fader.</li>
+<li><tt>FADE-G2</tt> is a four input six voice two-dimensional fader.</li>
+</li>
+</div>
+</div>
+
+<h4>Generators</h4>
+<div class="wrapper">
+<div class="box a">
+<img height="190px" src="res/Octave.png" >
+<img height="190px" src="res/Chord12.png">
+</div>
+<div class="box b">
+<ul>
+<li><tt>OCTAVE</tt> quantises the input to 12-ET and provides an octaves-worth of ouput with the input value
+used as the fundamental. Additionally, several whole-octave transpositions of the input are also provided at output.
+<br><i>TODO: Complete UI.</i></li>
+<li><tt>...</tt> is a ...</li>
+</div>
+</div>
+
+<!--
+<h4>Utilities</h4>
+<div class="wrapper">
+<div class="box a">
+<img height="190px" src="res/Split.png"  >
+<img height="190px" src="res/Mux.png"    >
+</div>
+<div class="box b">
+<ul>
+<li><tt>...</tt> is a ...</li>
+<li><tt>...</tt> is a ...</li>
+</div>
+</div>
+-->
+
+<h4>Blanks</h4>
+<div class="wrapper">
+<div class="box a">
+<img height="190px" src="res/Blank03.png">
+<img height="190px" src="res/Blank06.png">
+<img height="190px" src="res/Blank09.png">
+<img height="190px" src="res/Blank12.png">
+</div>
+<div class="box b">
+<ul>
+<li>Simple do nothing  3-hole high quality blank.</li>
+<li>Simple do nothing  6-hole high quality blank.</li>
+<li>Simple do nothing  9-hole high quality blank.</li>
+<li>Simple do nothing 12-hole high quality blank.</li>
+</div>
+</div>
+
+
+<h2>Download</h2>
+
+<p>Comming soon.</p>
+
+
+</div>
+
+<hr>
+<p>&copy; Sam Gratrix, <a href="http://gratrix.net">Gratrix.net</a>.</p>
+</body>
+</html>
