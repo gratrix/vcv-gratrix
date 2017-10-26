@@ -1,5 +1,6 @@
 #include <fstream>
 #include <string>
+#include <array>
 #include "rack.hpp"
 
 
