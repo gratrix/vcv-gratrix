@@ -85,8 +85,8 @@ struct Octave : Module
 };
 
 
-constexpr int x(std::size_t i, double radius) { return static_cast<int>(6*15 + 0.5 + radius * dx(i, E)); }
-constexpr int y(std::size_t i, double radius) { return static_cast<int>(-20+206  + 0.5 + radius * dy(i, E)); }
+int x(std::size_t i, double radius) { return static_cast<int>(6*15 + 0.5 + radius * dx(i, E)); }
+int y(std::size_t i, double radius) { return static_cast<int>(-20+206  + 0.5 + radius * dy(i, E)); }
 
 
 OctaveWidget::OctaveWidget()

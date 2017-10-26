@@ -30,49 +30,49 @@ struct MicroModule
 #define GTX__LED_RADIUS 9.0
 
 
-constexpr double dx(double i, std::size_t n) { return  std::sin(GTX__2PI * static_cast<double>(i) / static_cast<double>(n)); }
-constexpr double dy(double i, std::size_t n) { return -std::cos(GTX__2PI * static_cast<double>(i) / static_cast<double>(n)); }
-constexpr double dx(double i               ) { return dx(i, GTX__N); }
-constexpr double dy(double i               ) { return dy(i, GTX__N); }
+inline double dx(double i, std::size_t n) { return  std::sin(GTX__2PI * static_cast<double>(i) / static_cast<double>(n)); }
+inline double dy(double i, std::size_t n) { return -std::cos(GTX__2PI * static_cast<double>(i) / static_cast<double>(n)); }
+inline double dx(double i               ) { return dx(i, GTX__N); }
+inline double dy(double i               ) { return dy(i, GTX__N); }
 
-constexpr int    gx(double i) { return static_cast<int>(std::floor(0.5 + ((i+0.5) *  90))); }
-constexpr int    gy(double i) { return static_cast<int>(std::floor(8.5 + ((i+1.0) * 102))); }
-constexpr int    fx(double i) { return gx(i); }
-constexpr int    fy(double i) { return gy(i - 0.1); }
+inline int    gx(double i) { return static_cast<int>(std::floor(0.5 + ((i+0.5) *  90))); }
+inline int    gy(double i) { return static_cast<int>(std::floor(8.5 + ((i+1.0) * 102))); }
+inline int    fx(double i) { return gx(i); }
+inline int    fy(double i) { return gy(i - 0.1); }
 
-constexpr int    lx(double i) { return gx(i) -  5; }
-constexpr int    ly(double i) { return gy(i) -  5; }
+inline int    lx(double i) { return gx(i) -  5; }
+inline int    ly(double i) { return gy(i) -  5; }
 
-constexpr int    rad_n_b() { return 54/2; }
-constexpr int    rad_n_m() { return 36/2; }
-constexpr int    rad_n_s() { return 27/2; }
-constexpr int    rad_led() { return  5; }
-constexpr int    rad_but() { return 10; }
-constexpr int    rad_scr() { return  8; }
-constexpr int    rad_prt() { return 13; }
+inline int    rad_n_b() { return 54/2; }
+inline int    rad_n_m() { return 36/2; }
+inline int    rad_n_s() { return 27/2; }
+inline int    rad_led() { return  5; }
+inline int    rad_but() { return 10; }
+inline int    rad_scr() { return  8; }
+inline int    rad_prt() { return 13; }
 
-inline    Vec    tog(double x, double y) { return Vec(x - 7, y - 10); }
-inline    Vec    n_b(double x, double y) { return Vec(x - rad_n_b(), y - rad_n_b()); }
-inline    Vec    n_m(double x, double y) { return Vec(x - rad_n_m(), y - rad_n_m()); }
-inline    Vec    n_s(double x, double y) { return Vec(x - rad_n_s(), y - rad_n_s()); }
-inline    Vec    led(double x, double y) { return Vec(x - rad_led(), y - rad_led()); }
-inline    Vec    but(double x, double y) { return Vec(x - rad_but(), y - rad_but()); }
-inline    Vec    scr(double x, double y) { return Vec(x - rad_scr(), y - rad_scr()); }
-inline    Vec    prt(double x, double y) { return Vec(x - rad_prt(), y - rad_prt()); }
+inline Vec    tog(double x, double y) { return Vec(x - 7, y - 10); }
+inline Vec    n_b(double x, double y) { return Vec(x - rad_n_b(), y - rad_n_b()); }
+inline Vec    n_m(double x, double y) { return Vec(x - rad_n_m(), y - rad_n_m()); }
+inline Vec    n_s(double x, double y) { return Vec(x - rad_n_s(), y - rad_n_s()); }
+inline Vec    led(double x, double y) { return Vec(x - rad_led(), y - rad_led()); }
+inline Vec    but(double x, double y) { return Vec(x - rad_but(), y - rad_but()); }
+inline Vec    scr(double x, double y) { return Vec(x - rad_scr(), y - rad_scr()); }
+inline Vec    prt(double x, double y) { return Vec(x - rad_prt(), y - rad_prt()); }
 
-inline    Vec    tog(const Vec &a)       { return tog(a.x, a.y); }
-inline    Vec    n_b(const Vec &a)       { return n_b(a.x, a.y); }
-inline    Vec    n_m(const Vec &a)       { return n_m(a.x, a.y); }
-inline    Vec    n_s(const Vec &a)       { return n_s(a.x, a.y); }
-inline    Vec    led(const Vec &a)       { return led(a.x, a.y); }
-inline    Vec    but(const Vec &a)       { return but(a.x, a.y); }
-inline    Vec    scr(const Vec &a)       { return scr(a.x, a.y); }
-inline    Vec    prt(const Vec &a)       { return prt(a.x, a.y); }
+inline Vec    tog(const Vec &a)       { return tog(a.x, a.y); }
+inline Vec    n_b(const Vec &a)       { return n_b(a.x, a.y); }
+inline Vec    n_m(const Vec &a)       { return n_m(a.x, a.y); }
+inline Vec    n_s(const Vec &a)       { return n_s(a.x, a.y); }
+inline Vec    led(const Vec &a)       { return led(a.x, a.y); }
+inline Vec    but(const Vec &a)       { return but(a.x, a.y); }
+inline Vec    scr(const Vec &a)       { return scr(a.x, a.y); }
+inline Vec    prt(const Vec &a)       { return prt(a.x, a.y); }
 
-constexpr int    px(          std::size_t i) { return static_cast<int>(0.5 + GTX__IO_RADIUS  * dx(i)); }
-constexpr int    py(          std::size_t i) { return static_cast<int>(0.5 + GTX__IO_RADIUS  * dy(i)); }
-constexpr int    px(double j, std::size_t i) { return gx(j) + px(i); }
-constexpr int    py(double j, std::size_t i) { return gy(j) + py(i); }
+inline int    px(          std::size_t i) { return static_cast<int>(0.5 + GTX__IO_RADIUS  * dx(i)); }
+inline int    py(          std::size_t i) { return static_cast<int>(0.5 + GTX__IO_RADIUS  * dy(i)); }
+inline int    px(double j, std::size_t i) { return gx(j) + px(i); }
+inline int    py(double j, std::size_t i) { return gy(j) + py(i); }
 
 
 class PanelGen
