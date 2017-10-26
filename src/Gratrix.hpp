@@ -27,7 +27,6 @@ struct MicroModule
 #define GTX__N          6
 #define GTX__2PI        6.283185307179586476925
 #define GTX__IO_RADIUS  26.0
-#define GTX__LED_RADIUS 9.0
 
 
 inline double dx(double i, std::size_t n) { return  std::sin(GTX__2PI * static_cast<double>(i) / static_cast<double>(n)); }
@@ -39,9 +38,6 @@ inline int    gx(double i) { return static_cast<int>(std::floor(0.5 + ((i+0.5) *
 inline int    gy(double i) { return static_cast<int>(std::floor(8.5 + ((i+1.0) * 102))); }
 inline int    fx(double i) { return gx(i); }
 inline int    fy(double i) { return gy(i - 0.1); }
-
-inline int    lx(double i) { return gx(i) -  5; }
-inline int    ly(double i) { return gy(i) -  5; }
 
 inline int    rad_n_b() { return 54/2; }
 inline int    rad_n_m() { return 36/2; }

@@ -154,21 +154,21 @@ OctaveWidget::OctaveWidget()
 	addOutput(createOutput<PJ301MPort>(prt(gx( 0.85), gy(2)), module, 3 + Octave::OUTPUT_OCT));
 	addOutput(createOutput<PJ301MPort>(prt(gx( 1.20), gy(2)), module, 4 + Octave::OUTPUT_OCT));
 
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(Vec(lx(0.5) - 30, ly(0) - 30 + 5), &module->lights_key[ 0]));  // C
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(Vec(lx(0.5) - 25, ly(0) - 30 - 5), &module->lights_key[ 1]));  // C#
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(Vec(lx(0.5) - 20, ly(0) - 30 + 5), &module->lights_key[ 2]));  // D
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(Vec(lx(0.5) - 15, ly(0) - 30 - 5), &module->lights_key[ 3]));  // Eb
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(Vec(lx(0.5) - 10, ly(0) - 30 + 5), &module->lights_key[ 4]));  // E
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(Vec(lx(0.5)     , ly(0) - 30 + 5), &module->lights_key[ 5]));  // F
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(Vec(lx(0.5) +  5, ly(0) - 30 - 5), &module->lights_key[ 6]));  // Fs
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(Vec(lx(0.5) + 10, ly(0) - 30 + 5), &module->lights_key[ 7]));  // G
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(Vec(lx(0.5) + 15, ly(0) - 30 - 5), &module->lights_key[ 8]));  // Ab
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(Vec(lx(0.5) + 20, ly(0) - 30 + 5), &module->lights_key[ 9]));  // A
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(Vec(lx(0.5) + 25, ly(0) - 30 - 5), &module->lights_key[10]));  // Bb
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(Vec(lx(0.5) + 30, ly(0) - 30 + 5), &module->lights_key[11]));  // B
+	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) - 30, fy(0-0.28) + 5), &module->lights_key[ 0]));  // C
+	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) - 25, fy(0-0.28) - 5), &module->lights_key[ 1]));  // C#
+	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) - 20, fy(0-0.28) + 5), &module->lights_key[ 2]));  // D
+	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) - 15, fy(0-0.28) - 5), &module->lights_key[ 3]));  // Eb
+	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) - 10, fy(0-0.28) + 5), &module->lights_key[ 4]));  // E
+	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5)     , fy(0-0.28) + 5), &module->lights_key[ 5]));  // F
+	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) +  5, fy(0-0.28) - 5), &module->lights_key[ 6]));  // Fs
+	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) + 10, fy(0-0.28) + 5), &module->lights_key[ 7]));  // G
+	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) + 15, fy(0-0.28) - 5), &module->lights_key[ 8]));  // Ab
+	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) + 20, fy(0-0.28) + 5), &module->lights_key[ 9]));  // A
+	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) + 25, fy(0-0.28) - 5), &module->lights_key[10]));  // Bb
+	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) + 30, fy(0-0.28) + 5), &module->lights_key[11]));  // B
 
 	for (std::size_t i=0; i<LO_SIZE; ++i)
 	{
-		addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(Vec(lx(0.5) + (i - LO_SIZE/2) * 10, ly(0) -8), &module->lights_oct[i]));
+		addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) + (i - LO_SIZE/2) * 10, fy(0-0.28) + 20), &module->lights_oct[i]));
 	}
 }
