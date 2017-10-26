@@ -205,6 +205,7 @@ Chord12Widget::Chord12Widget() {
 	setModule(module);
 	box.size = Vec(12*15, 380);
 
+	#if GTX__SAVE_SVG
 	{
 		PanelGen pg(assetPlugin(plugin, "res/Chord12.svg"), box.size, "CHORD");
 
@@ -222,16 +223,18 @@ Chord12Widget::Chord12Widget() {
 		pg.line(Vec(6+6*15, 180), Vec(xd(19), yd(19)), "fill:none;stroke:#7092BE;stroke-width:4");
 		pg.line(Vec(6+6*15, 180), Vec(xd(22), yd(22)), "fill:none;stroke:#7092BE;stroke-width:4");
 	}
+	#endif
 
 	{
-	/*	SVGPanel *panel = new SVGPanel();
+		#if GTX__LOAD_SVG
+		SVGPanel *panel = new SVGPanel();
 		panel->box.size = box.size;
 		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Chord12.svg")));
-		addChild(panel);
-	*/
+		#else
 		Panel *panel = new LightPanel();
 		panel->box.size = box.size;
 		panel->backgroundImage = Image::load(assetPlugin(plugin, "res/Chord12.png"));
+		#endif
 		addChild(panel);
 	}
 

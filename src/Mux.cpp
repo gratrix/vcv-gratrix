@@ -57,19 +57,22 @@ MuxWidget::MuxWidget() {
 	setModule(module);
 	box.size = Vec(9*15, 380);
 
+	#if GTX__SAVE_SVG
 	{
 		PanelGen pg(assetPlugin(plugin, "res/Mux.svg"), box.size, "MUX");
 	}
+	#endif
 
 	{
-/*		SVGPanel *panel = new SVGPanel();
+		#if GTX__LOAD_SVG
+		SVGPanel *panel = new SVGPanel();
 		panel->box.size = box.size;
 		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Mux.svg")));
-		addChild(panel);
-*/
+		#else
 		Panel *panel = new LightPanel();
 		panel->box.size = box.size;
 		panel->backgroundImage = Image::load(assetPlugin(plugin, "res/Mux.png"));
+		#endif
 		addChild(panel);
 	}
 

@@ -109,6 +109,7 @@ VCAWidget::VCAWidget()
 	setModule(module);
 	box.size = Vec(12*15, 380);
 
+	#if GTX__SAVE_SVG
 	{
 		PanelGen pg(assetPlugin(plugin, "res/VCA-F1.svg"), box.size, "VCA-F1");
 
@@ -117,16 +118,18 @@ VCAWidget::VCAWidget()
 		pg.bus_in (0, 1, "EXP"); pg.bus_in (1, 1, "LIN");
 		pg.bus_in (0, 2, "IN");  pg.bus_out(1, 2, "OUT");
 	}
+	#endif
 
 	{
-/*		SVGPanel *panel = new SVGPanel();
+		#if GTX__LOAD_SVG
+		SVGPanel *panel = new SVGPanel();
 		panel->box.size = box.size;
 		panel->setBackground(SVG::load(assetPlugin(plugin, "res/VCA-F1.svg")));
-		addChild(panel);
-*/
+		#else
 		Panel *panel = new LightPanel();
 		panel->box.size = box.size;
 		panel->backgroundImage = Image::load(assetPlugin(plugin, "res/VCA-F1.png"));
+		#endif
 		addChild(panel);
 	}
 

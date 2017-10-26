@@ -108,6 +108,7 @@ Fade_G2_Widget::Fade_G2_Widget()
 	setModule(module);
 	box.size = Vec(18*15, 380);
 
+	#if GTX__SAVE_SVG
 	{
 		PanelGen pg(assetPlugin(plugin, "res/Fade-G2.svg"), box.size, "FADE-G2");
 
@@ -119,16 +120,18 @@ Fade_G2_Widget::Fade_G2_Widget()
 		pg.bus_in(0, 2, "IN 2A");
 		pg.bus_in(1, 2, "IN 2B"); pg.bus_out(2, 2, "INV OUT");
 	}
+	#endif
 
 	{
-	/*	SVGPanel *panel = new SVGPanel();
+		#if GTX__LOAD_SVG
+		SVGPanel *panel = new SVGPanel();
 		panel->box.size = box.size;
 		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Fade-G2.svg")));
-		addChild(panel);
-	*/
+		#else
 		Panel *panel = new LightPanel();
 		panel->box.size = box.size;
 		panel->backgroundImage = Image::load(assetPlugin(plugin, "res/Fade-G2.png"));
+		#endif
 		addChild(panel);
 	}
 

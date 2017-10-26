@@ -266,6 +266,7 @@ VCO_F1_Widget::VCO_F1_Widget() {
 	setModule(module);
 	box.size = Vec(24*15, 380);
 
+	#if GTX__SAVE_SVG
 	{
 		PanelGen pg(assetPlugin(plugin, "res/VCO-F1.svg"), box.size, "VCO-F1");
 
@@ -280,16 +281,18 @@ VCO_F1_Widget::VCO_F1_Widget() {
 		pg.bus_in(0, 1, "FM");    pg.bus_in(1, 1, "PWM");  pg.bus_out(2, 1, "SINE"); pg.bus_out(3, 1, "SAW");
 		pg.bus_in(0, 2, "V/OCT"); pg.bus_in(1, 2, "SYNC"); pg.bus_out(2, 2, "TRI");  pg.bus_out(3, 2, "SQR");
 	}
+	#endif
 
 	{
-/*		SVGPanel *panel = new SVGPanel();
+		#if GTX__LOAD_SVG
+		SVGPanel *panel = new SVGPanel();
 		panel->box.size = box.size;
 		panel->setBackground(SVG::load(assetPlugin(plugin, "res/VCO-F1.svg")));
-		addChild(panel);
-*/
+		#else
 		Panel *panel = new LightPanel();
 		panel->box.size = box.size;
 		panel->backgroundImage = Image::load(assetPlugin(plugin, "res/VCO-F1.png"));
+		#endif
 		addChild(panel);
 	}
 
@@ -423,6 +426,7 @@ VCO_F2_Widget::VCO_F2_Widget() {
 	setModule(module);
 	box.size = Vec(12*15, 380);
 
+	#if GTX__SAVE_SVG
 	{
 		PanelGen pg(assetPlugin(plugin, "res/VCO-F2.svg"), box.size, "VCO-F2");
 
@@ -434,16 +438,18 @@ VCO_F2_Widget::VCO_F2_Widget() {
 		pg.bus_in(0, 1, "FM");   pg.bus_in (1, 1, "SYNC");
 		pg.bus_in(0, 2, "WAVE"); pg.bus_out(1, 2, "OUT");
 	}
+	#endif
 
 	{
-/*		SVGPanel *panel = new SVGPanel();
+		#if GTX__LOAD_SVG
+		SVGPanel *panel = new SVGPanel();
 		panel->box.size = box.size;
 		panel->setBackground(SVG::load(assetPlugin(plugin, "res/VCO-F2.svg")));
-		addChild(panel);
-*/
+		#else
 		Panel *panel = new LightPanel();
 		panel->box.size = box.size;
 		panel->backgroundImage = Image::load(assetPlugin(plugin, "res/VCO-F2.png"));
+		#endif
 		addChild(panel);
 	}
 

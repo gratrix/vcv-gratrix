@@ -98,6 +98,7 @@ OctaveWidget::OctaveWidget()
 //	double r1 = 30;
 	double r2 = 55;
 
+	#if GTX__SAVE_SVG
 	{
 		PanelGen pg(assetPlugin(plugin, "res/Octave.svg"), box.size, "OCTAVE");
 
@@ -124,16 +125,18 @@ OctaveWidget::OctaveWidget()
 		pg.prt_out( 0.85, 2,          "", "+1");
 		pg.prt_out( 1.20, 2,          "", "+2");
 	}
+	#endif
 
 	{
-/*		SVGPanel *panel = new SVGPanel();
+		#if GTX__LOAD_SVG
+		SVGPanel *panel = new SVGPanel();
 		panel->box.size = box.size;
 		panel->setBackground(SVG::load("plugins/Gratrix/res/Octave.svg"));
-		addChild(panel);
-*/
+		#else
 		Panel *panel = new LightPanel();
-		panel->backgroundImage = Image::load("plugins/Gratrix/res/Octave.png");
 		panel->box.size = box.size;
+		panel->backgroundImage = Image::load("plugins/Gratrix/res/Octave.png");
+		#endif
 		addChild(panel);
 	}
 

@@ -143,6 +143,7 @@ ADSRWidget::ADSRWidget() {
 	setModule(module);
 	box.size = Vec(12*15, 380);
 
+	#if GTX__SAVE_SVG
 	{
 		PanelGen pg(assetPlugin(plugin, "res/Env-F1.svg"), box.size, "ENV-F1");
 
@@ -152,16 +153,18 @@ ADSRWidget::ADSRWidget() {
 		pg.bus_in(0, 1, "GATE");  pg.bus_out(1, 1, "OUT");
 		pg.bus_in(0, 2, "TRIG");  pg.bus_out(1, 2, "INV OUT");
 	}
+	#endif
 
 	{
-/*		SVGPanel *panel = new SVGPanel();
+		#if GTX__LOAD_SVG
+		SVGPanel *panel = new SVGPanel();
 		panel->box.size = box.size;
 		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Env-F1.svg")));
-		addChild(panel);
-*/
+		#else
 		Panel *panel = new LightPanel();
 		panel->box.size = box.size;
 		panel->backgroundImage = Image::load(assetPlugin(plugin, "res/Env-F1.png"));
+		#endif
 		addChild(panel);
 	}
 

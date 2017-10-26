@@ -197,6 +197,7 @@ VCF_F1_Widget::VCF_F1_Widget() {
 	setModule(module);
 	box.size = Vec(18*15, 380);
 
+	#if GTX__SAVE_SVG
 	{
 		PanelGen pg(assetPlugin(plugin, "res/VCF-F1.svg"), box.size, "VCF-F1");
 
@@ -208,16 +209,18 @@ VCF_F1_Widget::VCF_F1_Widget() {
 		pg.bus_in(0, 1, "FREQ"); pg.bus_in(1, 1, "RES");   pg.bus_out(2, 1, "HPF");
 		pg.bus_in(0, 2, "IN");   pg.bus_in(1, 2, "DRIVE"); pg.bus_out(2, 2, "LPF");
 	}
+	#endif
 
 	{
-/*		SVGPanel *panel = new SVGPanel();
+		#if GTX__LOAD_SVG
+		SVGPanel *panel = new SVGPanel();
 		panel->box.size = box.size;
 		panel->setBackground(SVG::load(assetPlugin(plugin, "res/VCF-F1.svg")));
-		addChild(panel);
-*/
+		#else
 		Panel *panel = new LightPanel();
 		panel->box.size = box.size;
 		panel->backgroundImage = Image::load(assetPlugin(plugin, "res/VCF-F1.png"));
+		#endif
 		addChild(panel);
 	}
 

@@ -4,6 +4,13 @@
 #include "rack.hpp"
 
 
+#define GTX__N          6
+#define GTX__2PI        6.283185307179586476925
+#define GTX__IO_RADIUS  26.0
+#define GTX__SAVE_SVG   0
+#define GTX__LOAD_SVG   0
+
+
 using namespace rack;
 
 
@@ -22,11 +29,6 @@ struct MicroModule
 		outputs.resize(numOutputs);
 	}
 };
-
-
-#define GTX__N          6
-#define GTX__2PI        6.283185307179586476925
-#define GTX__IO_RADIUS  26.0
 
 
 inline double dx(double i, std::size_t n) { return  std::sin(GTX__2PI * static_cast<double>(i) / static_cast<double>(n)); }
@@ -70,6 +72,11 @@ inline int    py(          std::size_t i) { return static_cast<int>(0.5 + GTX__I
 inline int    px(double j, std::size_t i) { return gx(j) + px(i); }
 inline int    py(double j, std::size_t i) { return gy(j) + py(i); }
 
+
+#if GTX__SAVE_SVG
+
+//============================================================================================================
+//! \brief Generates SVG file for use as module background.
 
 class PanelGen
 {
@@ -2323,10 +2330,11 @@ os << "  </font>" << std::endl;
 	}
 };
 
+#endif
 
-////////////////////
-// module widgets
-////////////////////
+
+//============================================================================================================
+//! \name Module Widgets
 
 struct VCO_F1_Widget : ModuleWidget {
 	VCO_F1_Widget();
