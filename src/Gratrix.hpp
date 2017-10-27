@@ -19,14 +19,17 @@ extern Plugin *plugin;
 
 struct MicroModule
 {
-	std::vector<Param> params;
-	std::vector<Input> inputs;
+	std::vector<Param>  params;
+	std::vector<Input>  inputs;
 	std::vector<Output> outputs;
+	std::vector<Light>  lights;
 
-	MicroModule(int numParams, int numInputs, int numOutputs) {
+	MicroModule(int numParams, int numInputs, int numOutputs, int numLights = 0)
+	{
 		params.resize(numParams);
 		inputs.resize(numInputs);
 		outputs.resize(numOutputs);
+		lights.resize(numLights);
 	}
 };
 
