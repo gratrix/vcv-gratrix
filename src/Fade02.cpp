@@ -16,19 +16,34 @@ struct Fade02 : MicroModule {
 		IN1B_INPUT,
 		IN2A_INPUT,
 		IN2B_INPUT,
-		NUM_INPUTS
+		NUM_INPUTS,
+		OFF_INPUTS = IN1A_INPUT
 	};
 	enum OutputIds {
 		OUT1A_OUTPUT,
-//		OUT1B_OUTPUT,
-//		OUT2A_OUTPUT,
 		OUT2B_OUTPUT,
-		NUM_OUTPUTS
+		NUM_OUTPUTS,
+		OFF_OUTPUTS = OUT1A_OUTPUT
+	};
+	enum LightIds {
+		IN1AP_LIGHT,
+		IN1AQ_LIGHT,
+		IN1BP_LIGHT,
+		IN1BQ_LIGHT,
+		IN2AP_LIGHT,
+		IN2AQ_LIGHT,
+		IN2BP_LIGHT,
+		IN2BQ_LIGHT,
+		OUT1AP_LIGHT,
+		OUT1AQ_LIGHT,
+		OUT2BP_LIGHT,
+		OUT2BQ_LIGHT,
+		NUM_LIGHTS
 	};
 
 	Fade02()
 	:
-		MicroModule(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS)
+		MicroModule(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS)
 	{}
 
 	void step(float blend12, float blendAB)
@@ -42,8 +57,6 @@ struct Fade02 : MicroModule {
 		float temp_2B = inputs[IN2A_INPUT].value *         blendAB  + inputs[IN2B_INPUT].value * (1.0f - blendAB);
 
 		outputs[OUT1A_OUTPUT].value = temp_1A * (1.0f - blend12) + temp_2A *         blend12;
-//		outputs[OUT2A_OUTPUT].value = temp_1A *         blend12  + temp_2A * (1.0f - blend12);
-//		outputs[OUT1B_OUTPUT].value = temp_1B * (1.0f - blend12) + temp_2B *         blend12;
 		outputs[OUT2B_OUTPUT].value = temp_1B *         blend12  + temp_2B * (1.0f - blend12);
 	}
 };
@@ -54,26 +67,33 @@ struct Fade02 : MicroModule {
 struct Fade02Bank : Module
 {
 	std::array<Fade02, GTX__N> inst;
-	float lights[3][2][2] = {{{-1.0f, -1.0f}, {1.0f, -1.0f}}, {{-1.0f, 1.0f}, {1.0f, 1.0f}}, {{0.0f, 0.0f}, {0.0f, 0.0f}}};
 
 	Fade02Bank()
 	:
-		Module(Fade02::NUM_PARAMS, Fade02::IN1A_INPUT + (GTX__N+1) * (Fade02::NUM_INPUTS - Fade02::IN1A_INPUT), GTX__N * Fade02::NUM_OUTPUTS)
-	{}
-
-	static std::size_t imap(std::size_t port, std::size_t bank)
+		Module(Fade02::NUM_PARAMS,
+		(GTX__N+1) * (Fade02::NUM_INPUTS  - Fade02::OFF_INPUTS ) + Fade02::OFF_INPUTS,
+		(GTX__N  ) * (Fade02::NUM_OUTPUTS - Fade02::OFF_OUTPUTS) + Fade02::OFF_OUTPUTS,
+		Fade02::NUM_LIGHTS)
 	{
-		if (port < Fade02::IN1A_INPUT)
-		{
-			return port;
-		}
-
-		return port + bank * (Fade02::NUM_INPUTS - Fade02::IN1A_INPUT);
+		lights[Fade02::IN1AP_LIGHT].value = -1.0f;
+		lights[Fade02::IN1AQ_LIGHT].value = -1.0f;
+		lights[Fade02::IN1BP_LIGHT].value =  1.0f;
+		lights[Fade02::IN1BQ_LIGHT].value = -1.0f;
+		lights[Fade02::IN2AP_LIGHT].value = -1.0f;
+		lights[Fade02::IN2AQ_LIGHT].value =  1.0f;
+		lights[Fade02::IN2BP_LIGHT].value =  1.0f;
+		lights[Fade02::IN2BQ_LIGHT].value =  1.0f;
 	}
 
-	static std::size_t omap(std::size_t port, std::size_t bank)
+	static constexpr std::size_t imap(std::size_t port, std::size_t bank)
 	{
-		return port + bank * Fade02::NUM_OUTPUTS;
+		return (port < Fade02::OFF_INPUTS)  ? port : port + bank * (Fade02::NUM_INPUTS  - Fade02::OFF_INPUTS);
+	}
+
+	static constexpr std::size_t omap(std::size_t port, std::size_t bank)
+	{
+	//	return (port < Fade02::OFF_OUTPUTS) ? port : port + bank * (Fade02::NUM_OUTPUTS - Fade02::OFF_OUTPUTS);
+		return                                       port + bank *  Fade02::NUM_OUTPUTS;
 	}
 
 	void step() override
@@ -92,10 +112,10 @@ struct Fade02Bank : Module
 			for (std::size_t p=0; p<Fade02::NUM_OUTPUTS; ++p) outputs[omap(p, i)].value = inst[i].outputs[p].value;
 		}
 
-		lights[2][0][0] = 2.0f * blendAB - 1.0f;
-		lights[2][0][1] = 2.0f * blend12 - 1.0f;
-		lights[2][1][0] = -lights[2][0][0];
-		lights[2][1][1] = -lights[2][0][1];
+		lights[Fade02::OUT1AP_LIGHT].value = 2.0f * blendAB - 1.0f;
+		lights[Fade02::OUT1AQ_LIGHT].value = 2.0f * blend12 - 1.0f;
+		lights[Fade02::OUT2BP_LIGHT].value = -lights[Fade02::OUT1AP_LIGHT].value;
+		lights[Fade02::OUT2BQ_LIGHT].value = -lights[Fade02::OUT1AQ_LIGHT].value;
 	}
 };
 
@@ -104,6 +124,8 @@ struct Fade02Bank : Module
 
 Fade_G2_Widget::Fade_G2_Widget()
 {
+	GTX__WIDGET();
+
 	Fade02Bank *module = new Fade02Bank();
 	setModule(module);
 	box.size = Vec(18*15, 380);
@@ -153,8 +175,6 @@ Fade_G2_Widget::Fade_G2_Widget()
 		addInput (createInput<PJ301MPort> (prt(px(1, i), py(1, i)), module, Fade02Bank::imap(Fade02::IN2A_INPUT,   i)));
 		addInput (createInput<PJ301MPort> (prt(px(1, i), py(2, i)), module, Fade02Bank::imap(Fade02::IN2B_INPUT,   i)));
 		addOutput(createOutput<PJ301MPort>(prt(px(2, i), py(1, i)), module, Fade02Bank::omap(Fade02::OUT1A_OUTPUT, i)));
-	//	addOutput(createOutput<PJ301MPort>(prt(px(2, i), py(2, i)), module, Fade02Bank::omap(Fade02::OUT1B_OUTPUT, i)));
-	//	addOutput(createOutput<PJ301MPort>(prt(px(3, i), py(1, i)), module, Fade02Bank::omap(Fade02::OUT2A_OUTPUT, i)));
 		addOutput(createOutput<PJ301MPort>(prt(px(2, i), py(2, i)), module, Fade02Bank::omap(Fade02::OUT2B_OUTPUT, i)));
 	}
 
@@ -163,12 +183,12 @@ Fade_G2_Widget::Fade_G2_Widget()
 	addInput (createInput<PJ301MPort> (prt(gx(1), gy(1)), module, Fade02Bank::imap(Fade02::IN2A_INPUT, GTX__N)));
 	addInput (createInput<PJ301MPort> (prt(gx(1), gy(2)), module, Fade02Bank::imap(Fade02::IN2B_INPUT, GTX__N)));
 
-	for (std::size_t x=0; x<3; ++x)
+	for (std::size_t i=0, x=0; x<3; ++x)
 	{
 		for (std::size_t y=0; y<2; ++y)
 		{
-			addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(x)+rad_led()/2+28, gy(y+1)-46-rad_led()), &module->lights[x][y][0]));
-			addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(x)+rad_led()/2+28, gy(y+1)-46+rad_led()), &module->lights[x][y][1]));
+			addChild(createLight<SmallLight<GreenRedLight>>(led(gx(x)+rad_led()/2+28, gy(y+1)-46-rad_led()), module, i++));
+			addChild(createLight<SmallLight<GreenRedLight>>(led(gx(x)+rad_led()/2+28, gy(y+1)-46+rad_led()), module, i++));
 		}
 	}
 }

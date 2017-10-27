@@ -1,14 +1,22 @@
+#ifndef GTX__GRATRIX_HPP
+#define GTX__GRATRIX_HPP
+
+
+#include <iostream>
 #include <fstream>
 #include <string>
 #include <array>
 #include "rack.hpp"
 
 
+#define GreenRedLight RedLight
+
 #define GTX__N          6
 #define GTX__2PI        6.283185307179586476925
 #define GTX__IO_RADIUS  26.0
 #define GTX__SAVE_SVG   0
 #define GTX__LOAD_SVG   0
+#define GTX__WIDGET()   // do { std::cout << "Gratrix Module : " << __FUNCTION__ << "();" << std::endl; } while(0);
 
 
 using namespace rack;
@@ -2223,3 +2231,6 @@ struct Blank9Widget : ModuleWidget {
 struct Blank12Widget : ModuleWidget {
 	Blank12Widget();
 };
+
+
+#endif

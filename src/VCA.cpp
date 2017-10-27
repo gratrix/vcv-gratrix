@@ -105,6 +105,8 @@ struct VCABank : Module
 
 VCAWidget::VCAWidget()
 {
+	GTX__WIDGET();
+
 	VCABank *module = new VCABank();
 	setModule(module);
 	box.size = Vec(12*15, 380);

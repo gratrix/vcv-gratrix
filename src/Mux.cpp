@@ -52,7 +52,10 @@ struct Mux : Module {
 };
 
 
-MuxWidget::MuxWidget() {
+MuxWidget::MuxWidget()
+{
+	GTX__WIDGET();
+
 	Mux *module = new Mux();
 	setModule(module);
 	box.size = Vec(9*15, 380);

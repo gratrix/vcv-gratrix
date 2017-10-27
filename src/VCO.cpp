@@ -261,7 +261,10 @@ struct VCOBank : Module
 
 // ===========================================================================================================
 
-VCO_F1_Widget::VCO_F1_Widget() {
+VCO_F1_Widget::VCO_F1_Widget()
+{
+	GTX__WIDGET();
+
 	VCOBank *module = new VCOBank();
 	setModule(module);
 	box.size = Vec(24*15, 380);

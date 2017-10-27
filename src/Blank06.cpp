@@ -9,6 +9,8 @@ struct Blank6 : Module
 
 Blank6Widget::Blank6Widget()
 {
+	GTX__WIDGET();
+
 	Blank6 *module = new Blank6();
 	setModule(module);
 	box.size = Vec(6*15, 380);

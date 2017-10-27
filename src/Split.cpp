@@ -51,6 +51,8 @@ void Split::step()
 
 SplitWidget::SplitWidget()
 {
+	GTX__WIDGET();
+
 	Split *module = new Split();
 	setModule(module);
 	box.size = Vec(12*15, 380);

@@ -192,7 +192,10 @@ struct VCFBank : Module
 
 // ===========================================================================================================
 
-VCF_F1_Widget::VCF_F1_Widget() {
+VCF_F1_Widget::VCF_F1_Widget()
+{
+	GTX__WIDGET();
+
 	VCFBank *module = new VCFBank();
 	setModule(module);
 	box.size = Vec(18*15, 380);

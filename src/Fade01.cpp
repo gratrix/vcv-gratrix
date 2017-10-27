@@ -12,17 +12,26 @@ struct Fade01 : MicroModule {
 		BLEND12_INPUT,
 		IN1_INPUT,
 		IN2_INPUT,
-		NUM_INPUTS
+		NUM_INPUTS,
+		OFF_INPUTS = IN1_INPUT
 	};
 	enum OutputIds {
 		OUT1_OUTPUT,
 		OUT2_OUTPUT,
-		NUM_OUTPUTS
+		NUM_OUTPUTS,
+		OFF_OUTPUTS = OUT1_OUTPUT
+	};
+	enum LightIds {
+		IN1_LIGHT,
+		IN2_LIGHT,
+		OUT1_LIGHT,
+		OUT2_LIGHT,
+		NUM_LIGHTS
 	};
 
 	Fade01()
 	:
-		MicroModule(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS)
+		MicroModule(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS)
 	{}
 
 	void step(float blend12)
@@ -41,26 +50,27 @@ struct Fade01 : MicroModule {
 struct Fade01Bank : Module
 {
 	std::array<Fade01, GTX__N> inst;
-	float lights[2][2] = {{-1.0f, 1.0f}, {0.0f, 0.0f}};
 
 	Fade01Bank()
 	:
-		Module(Fade01::NUM_PARAMS, Fade01::IN1_INPUT + (GTX__N+1) * (Fade01::NUM_INPUTS - Fade01::IN1_INPUT), GTX__N * Fade01::NUM_OUTPUTS)
-	{}
-
-	static std::size_t imap(std::size_t port, std::size_t bank)
+		Module(Fade01::NUM_PARAMS,
+		(GTX__N+1) * (Fade01::NUM_INPUTS  - Fade01::OFF_INPUTS ) + Fade01::OFF_INPUTS,
+		(GTX__N  ) * (Fade01::NUM_OUTPUTS - Fade01::OFF_OUTPUTS) + Fade01::OFF_OUTPUTS,
+		Fade01::NUM_LIGHTS)
 	{
-		if (port < Fade01::IN1_INPUT)
-		{
-			return port;
-		}
-
-		return port + bank * (Fade01::NUM_INPUTS - Fade01::IN1_INPUT);
+		lights[Fade01::IN1_LIGHT].value = -1.0f;
+		lights[Fade01::IN2_LIGHT].value =  1.0f;
 	}
 
-	static std::size_t omap(std::size_t port, std::size_t bank)
+	static constexpr std::size_t imap(std::size_t port, std::size_t bank)
 	{
-		return port + bank * Fade01::NUM_OUTPUTS;
+		return (port < Fade01::OFF_INPUTS)  ? port : port + bank * (Fade01::NUM_INPUTS  - Fade01::OFF_INPUTS);
+	}
+
+	static constexpr std::size_t omap(std::size_t port, std::size_t bank)
+	{
+	//	return (port < Fade01::OFF_OUTPUTS) ? port : port + bank * (Fade01::NUM_OUTPUTS - Fade01::OFF_OUTPUTS);
+		return                                       port + bank *  Fade01::NUM_OUTPUTS;
 	}
 
 	void step() override
@@ -78,8 +88,8 @@ struct Fade01Bank : Module
 			for (std::size_t p=0; p<Fade01::NUM_OUTPUTS; ++p) outputs[omap(p, i)].value = inst[i].outputs[p].value;
 		}
 
-		lights[1][0] = 2.0f * blend12 - 1.0f;
-		lights[1][1] = -lights[1][0];
+		lights[Fade01::OUT1_LIGHT].value = 2.0f * blend12 - 1.0f;
+		lights[Fade01::OUT2_LIGHT].value = -lights[Fade01::OUT1_LIGHT].value;
 	}
 };
 
@@ -88,6 +98,8 @@ struct Fade01Bank : Module
 
 Fade_G1_Widget::Fade_G1_Widget()
 {
+	GTX__WIDGET();
+
 	Fade01Bank *module = new Fade01Bank();
 	setModule(module);
 	box.size = Vec(12*15, 380);
@@ -136,11 +148,11 @@ Fade_G1_Widget::Fade_G1_Widget()
 	addInput (createInput<PJ301MPort> (prt(gx(0), gy(1)), module, Fade01Bank::imap(Fade01::IN1_INPUT, GTX__N)));
 	addInput (createInput<PJ301MPort> (prt(gx(0), gy(2)), module, Fade01Bank::imap(Fade01::IN2_INPUT, GTX__N)));
 
-	for (std::size_t x=0; x<2; ++x)
+	for (std::size_t i=0, x=0; x<2; ++x)
 	{
 		for (std::size_t y=0; y<2; ++y)
 		{
-			addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(x)+28, gy(y+1)-46), &module->lights[x][y]));
+			addChild(createLight<SmallLight<GreenRedLight>>(led(gx(x)+28, gy(y+1)-46), module, i++));
 		}
 	}
 }

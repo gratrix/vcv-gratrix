@@ -16,29 +16,30 @@ struct Octave : Module
 {
 	enum ParamIds
 	{
-		PARAMS_NUM
+		NUM_PARAMS
 	};
 
 	enum InputIds
 	{
-		INPUT_IN   = 0,
-		INPUTS_NUM = INPUT_IN + 1
+		IN_INPUT   = 0,
+		NUM_INPUTS = IN_INPUT + 1
 	};
 
 	enum OutputIds
 	{
-		OUTPUT_NOTE = 0,
-		OUTPUT_OCT  = OUTPUT_NOTE + N,
-		OUTPUTS_NUM = OUTPUT_OCT  + M
+		NOTE_OUTPUT = 0,
+		OCT_OUTPUT  = NOTE_OUTPUT + N,
+		NUM_OUTPUTS = OCT_OUTPUT  + M
 	};
-
-
-	float lights_key[E]       = {};
-	float lights_oct[LO_SIZE] = {};
+	enum LightIds {
+		KEY_LIGHT  = 0,
+		OCT_LIGHT  = KEY_LIGHT + E,
+		NUM_LIGHTS = OCT_LIGHT + LO_SIZE
+	};
 
 	Octave()
 	:
-		Module(PARAMS_NUM, INPUTS_NUM, OUTPUTS_NUM)
+		Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS)
 	{}
 
 	void step() override
@@ -46,7 +47,7 @@ struct Octave : Module
 		static constexpr float e = static_cast<float>(E);
 		static constexpr float s = 1.0f / e;
 
-		float in    = inputs[INPUT_IN].value;
+		float in    = inputs[IN_INPUT].value;
 		float fnote = std::floor(in * e + 0.5f);
 		float qin   = fnote * s;
 
@@ -62,35 +63,36 @@ struct Octave : Module
 
 		for (std::size_t i=0; i<N; ++i)
 		{
-			outputs[i + OUTPUT_NOTE].value = in + i * s;
+			outputs[i + NOTE_OUTPUT].value = in + i * s;
 		}
 
 		for (std::size_t i=0; i<M; ++i)
 		{
-			outputs[i + OUTPUT_OCT].value = (in - T) + i;
+			outputs[i + OCT_OUTPUT].value = (in - T) + i;
 		}
 
 		// Lights
 
-		for (std::size_t i=0; i<E;       ++i) lights_key[i] = 0.0f;
-		for (std::size_t i=0; i<LO_SIZE; ++i) lights_oct[i] = 0.0f;
+		for (auto &light : lights) light.value = 0.0f;
 
-		lights_key[key] = led;
+		lights[KEY_LIGHT + key].value = led;
 
 		if (LO_BEGIN <= oct && oct <= LO_END)
 		{
-			lights_oct[oct - LO_BEGIN] = led;
+			lights[OCT_LIGHT + oct - LO_BEGIN].value = led;
 		}
 	}
 };
 
 
-int x(std::size_t i, double radius) { return static_cast<int>(6*15 + 0.5 + radius * dx(i, E)); }
+int x(std::size_t i, double radius) { return static_cast<int>(6*15     + 0.5 + radius * dx(i, E)); }
 int y(std::size_t i, double radius) { return static_cast<int>(-20+206  + 0.5 + radius * dy(i, E)); }
 
 
 OctaveWidget::OctaveWidget()
 {
+	GTX__WIDGET();
+
 	Octave *module = new Octave();
 	setModule(module);
 	box.size = Vec(12*15, 380);
@@ -145,33 +147,33 @@ OctaveWidget::OctaveWidget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
-	addInput(createInput <PJ301MPort>(prt(x(0, 0), y(0, 0)), module, Octave::INPUT_IN));
+	addInput(createInput <PJ301MPort>(prt(x(0, 0), y(0, 0)), module, Octave::IN_INPUT));
 	for (std::size_t i=0; i<N; ++i)
 	{
-		addOutput(createOutput<PJ301MPort>(prt(x(i, r2), y(i, r2)), module, i + Octave::OUTPUT_NOTE));
+		addOutput(createOutput<PJ301MPort>(prt(x(i, r2), y(i, r2)), module, i + Octave::NOTE_OUTPUT));
 	}
 
-	addOutput(createOutput<PJ301MPort>(prt(gx(-0.20), gy(2)), module, 0 + Octave::OUTPUT_OCT));
-	addOutput(createOutput<PJ301MPort>(prt(gx( 0.15), gy(2)), module, 1 + Octave::OUTPUT_OCT));
-	addOutput(createOutput<PJ301MPort>(prt(gx( 0.50), gy(2)), module, 2 + Octave::OUTPUT_OCT));
-	addOutput(createOutput<PJ301MPort>(prt(gx( 0.85), gy(2)), module, 3 + Octave::OUTPUT_OCT));
-	addOutput(createOutput<PJ301MPort>(prt(gx( 1.20), gy(2)), module, 4 + Octave::OUTPUT_OCT));
+	addOutput(createOutput<PJ301MPort>(prt(gx(-0.20), gy(2)), module, 0 + Octave::OCT_OUTPUT));
+	addOutput(createOutput<PJ301MPort>(prt(gx( 0.15), gy(2)), module, 1 + Octave::OCT_OUTPUT));
+	addOutput(createOutput<PJ301MPort>(prt(gx( 0.50), gy(2)), module, 2 + Octave::OCT_OUTPUT));
+	addOutput(createOutput<PJ301MPort>(prt(gx( 0.85), gy(2)), module, 3 + Octave::OCT_OUTPUT));
+	addOutput(createOutput<PJ301MPort>(prt(gx( 1.20), gy(2)), module, 4 + Octave::OCT_OUTPUT));
 
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) - 30, fy(0-0.28) + 5), &module->lights_key[ 0]));  // C
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) - 25, fy(0-0.28) - 5), &module->lights_key[ 1]));  // C#
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) - 20, fy(0-0.28) + 5), &module->lights_key[ 2]));  // D
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) - 15, fy(0-0.28) - 5), &module->lights_key[ 3]));  // Eb
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) - 10, fy(0-0.28) + 5), &module->lights_key[ 4]));  // E
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5)     , fy(0-0.28) + 5), &module->lights_key[ 5]));  // F
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) +  5, fy(0-0.28) - 5), &module->lights_key[ 6]));  // Fs
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) + 10, fy(0-0.28) + 5), &module->lights_key[ 7]));  // G
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) + 15, fy(0-0.28) - 5), &module->lights_key[ 8]));  // Ab
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) + 20, fy(0-0.28) + 5), &module->lights_key[ 9]));  // A
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) + 25, fy(0-0.28) - 5), &module->lights_key[10]));  // Bb
-	addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) + 30, fy(0-0.28) + 5), &module->lights_key[11]));  // B
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.5) - 30, fy(0-0.28) + 5), module, Octave::KEY_LIGHT +  0));  // C
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.5) - 25, fy(0-0.28) - 5), module, Octave::KEY_LIGHT +  1));  // C#
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.5) - 20, fy(0-0.28) + 5), module, Octave::KEY_LIGHT +  2));  // D
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.5) - 15, fy(0-0.28) - 5), module, Octave::KEY_LIGHT +  3));  // Eb
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.5) - 10, fy(0-0.28) + 5), module, Octave::KEY_LIGHT +  4));  // E
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.5)     , fy(0-0.28) + 5), module, Octave::KEY_LIGHT +  5));  // F
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.5) +  5, fy(0-0.28) - 5), module, Octave::KEY_LIGHT +  6));  // Fs
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.5) + 10, fy(0-0.28) + 5), module, Octave::KEY_LIGHT +  7));  // G
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.5) + 15, fy(0-0.28) - 5), module, Octave::KEY_LIGHT +  8));  // Ab
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.5) + 20, fy(0-0.28) + 5), module, Octave::KEY_LIGHT +  9));  // A
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.5) + 25, fy(0-0.28) - 5), module, Octave::KEY_LIGHT + 10));  // Bb
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.5) + 30, fy(0-0.28) + 5), module, Octave::KEY_LIGHT + 11));  // B
 
 	for (std::size_t i=0; i<LO_SIZE; ++i)
 	{
-		addChild(createValueLight<SmallLight<GreenRedPolarityLight>>(led(gx(0.5) + (i - LO_SIZE/2) * 10, fy(0-0.28) + 20), &module->lights_oct[i]));
+		addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.5) + (i - LO_SIZE/2) * 10, fy(0-0.28) + 20), module, Octave::OCT_LIGHT + i));
 	}
 }

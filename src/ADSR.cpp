@@ -138,7 +138,10 @@ struct ADSRBank : Module
 
 // ===========================================================================================================
 
-ADSRWidget::ADSRWidget() {
+ADSRWidget::ADSRWidget()
+{
+	GTX__WIDGET();
+
 	ADSRBank *module = new ADSRBank();
 	setModule(module);
 	box.size = Vec(12*15, 380);
