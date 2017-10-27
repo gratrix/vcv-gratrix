@@ -15,7 +15,7 @@
 #define GTX__2PI        6.283185307179586476925
 #define GTX__IO_RADIUS  26.0
 #define GTX__SAVE_SVG   0
-#define GTX__LOAD_SVG   0
+#define GTX__LOAD_SVG   1
 #define GTX__WIDGET()   // do { std::cout << "Gratrix Module : " << __FUNCTION__ << "();" << std::endl; } while(0);
 
 

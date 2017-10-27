@@ -202,7 +202,7 @@ VCF_F1_Widget::VCF_F1_Widget()
 
 	#if GTX__SAVE_SVG
 	{
-		PanelGen pg(assetPlugin(plugin, "res/VCF-F1.svg"), box.size, "VCF-F1");
+		PanelGen pg(assetPlugin(plugin, "build/res/VCF-F1.svg"), box.size, "VCF-F1");
 
 		pg.nob_big(0, 0, "FREQ");
 

@@ -148,7 +148,7 @@ ADSRWidget::ADSRWidget()
 
 	#if GTX__SAVE_SVG
 	{
-		PanelGen pg(assetPlugin(plugin, "res/Env-F1.svg"), box.size, "ENV-F1");
+		PanelGen pg(assetPlugin(plugin, "build/res/Env-F1.svg"), box.size, "ENV-F1");
 
 		pg.nob_med(0, -0.28, "ATTACK");  pg.nob_med(1, -0.28, "DECAY");
 		pg.nob_med(0, +0.28, "SUSTAIN"); pg.nob_med(1, +0.28, "RELEASE");

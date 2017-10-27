@@ -102,7 +102,7 @@ OctaveWidget::OctaveWidget()
 
 	#if GTX__SAVE_SVG
 	{
-		PanelGen pg(assetPlugin(plugin, "res/Octave.svg"), box.size, "OCTAVE");
+		PanelGen pg(assetPlugin(plugin, "build/res/Octave.svg"), box.size, "OCTAVE");
 
 		pg.circle(Vec(x(0, 0), y(0, 0)), r2+16, "fill:#7092BE;stroke:none");
 		pg.circle(Vec(x(0, 0), y(0, 0)), r2-16, "fill:#CEE1FD;stroke:none");

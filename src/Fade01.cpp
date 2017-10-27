@@ -106,7 +106,7 @@ Fade_G1_Widget::Fade_G1_Widget()
 
 	#if GTX__SAVE_SVG
 	{
-		PanelGen pg(assetPlugin(plugin, "res/Fade-G1.svg"), box.size, "FADE-G1");
+		PanelGen pg(assetPlugin(plugin, "build/res/Fade-G1.svg"), box.size, "FADE-G1");
 
 		pg.prt_in2(0, 0, "CV 1--2");   pg.nob_big(1, 0, "1--2");
 

@@ -62,7 +62,7 @@ MuxWidget::MuxWidget()
 
 	#if GTX__SAVE_SVG
 	{
-		PanelGen pg(assetPlugin(plugin, "res/Mux.svg"), box.size, "MUX");
+		PanelGen pg(assetPlugin(plugin, "build/res/Mux.svg"), box.size, "MUX");
 	}
 	#endif
 

@@ -271,7 +271,7 @@ VCO_F1_Widget::VCO_F1_Widget()
 
 	#if GTX__SAVE_SVG
 	{
-		PanelGen pg(assetPlugin(plugin, "res/VCO-F1.svg"), box.size, "VCO-F1");
+		PanelGen pg(assetPlugin(plugin, "build/res/VCO-F1.svg"), box.size, "VCO-F1");
 
 		pg.tog(-0.2, -0.1, "ANA", "DIGI");
 		pg.tog(+0.2, -0.1, "HRD", "SFT");
@@ -431,7 +431,7 @@ VCO_F2_Widget::VCO_F2_Widget() {
 
 	#if GTX__SAVE_SVG
 	{
-		PanelGen pg(assetPlugin(plugin, "res/VCO-F2.svg"), box.size, "VCO-F2");
+		PanelGen pg(assetPlugin(plugin, "build/res/VCO-F2.svg"), box.size, "VCO-F2");
 
 		pg.nob_big(0, 0, "FREQ");
 

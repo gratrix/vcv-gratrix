@@ -17,7 +17,7 @@ Blank6Widget::Blank6Widget()
 
 	#if GTX__SAVE_SVG
 	{
-		PanelGen pg(assetPlugin(plugin, "res/Blank06.svg"), box.size);
+		PanelGen pg(assetPlugin(plugin, "build/res/Blank06.svg"), box.size);
 	}
 	#endif
 

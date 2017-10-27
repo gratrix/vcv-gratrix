@@ -113,7 +113,7 @@ VCAWidget::VCAWidget()
 
 	#if GTX__SAVE_SVG
 	{
-		PanelGen pg(assetPlugin(plugin, "res/VCA-F1.svg"), box.size, "VCA-F1");
+		PanelGen pg(assetPlugin(plugin, "build/res/VCA-F1.svg"), box.size, "VCA-F1");
 
 		pg.nob_big(0, 0, "LEVEL");
 

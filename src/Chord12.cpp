@@ -213,7 +213,7 @@ Chord12Widget::Chord12Widget()
 
 	#if GTX__SAVE_SVG
 	{
-		PanelGen pg(assetPlugin(plugin, "res/Chord12.svg"), box.size, "CHORD");
+		PanelGen pg(assetPlugin(plugin, "build/res/Chord12.svg"), box.size, "CHORD");
 
 		pg.nob_med(0.5, -0.28, "PROGRAM SELECT");
 		pg.prt_in (0, 2-0.14,  "V/OCT");

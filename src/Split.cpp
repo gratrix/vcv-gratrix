@@ -59,7 +59,7 @@ SplitWidget::SplitWidget()
 
 	#if GTX__SAVE_SVG
 	{
-		PanelGen pg(assetPlugin(plugin, "res/Split.svg"), box.size, "SPLIT");
+		PanelGen pg(assetPlugin(plugin, "build/res/Split.svg"), box.size, "SPLIT");
 
 		pg.bus_out(0, 0, "OUT 1"); pg.bus_out(1, 0, "OUT 2");
 		pg.bus_in (0, 1, "IN");    pg.bus_out(1, 1, "OUT 3");
