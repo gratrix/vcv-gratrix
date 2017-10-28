@@ -6,6 +6,7 @@
 #include <fstream>
 #include <string>
 #include <array>
+#include <cmath>
 #include "rack.hpp"
 
 
