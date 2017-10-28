@@ -173,6 +173,20 @@ public:
 		}
 	}
 
+	void but2(double x, double y, const std::string title = "")
+	{
+		int xx = fx(x);
+		int yy = fy(y);
+
+	//	circle(Vec(xx, yy), rad_prt() + 4, "fill:#7092BE;stroke:#7092BE;stroke-width:1");
+	//	circle(Vec(xx, yy), rad_prt() - 3, "fill:#888888;stroke:#440022;stroke-width:1");
+
+		if (!title.empty())
+		{
+			text(Vec(xx + rad_prt() + 4, yy + 2), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:start; fill:black;");
+		}
+	}
+
 	void prt_in(double x, double y, const std::string title = "", const std::string subtitle = "")
 	{
 		int xx = gx(x);
