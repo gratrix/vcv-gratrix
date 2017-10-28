@@ -1,3 +1,4 @@
+FLAGS += -I../../src/core
 
 SOURCES = $(wildcard src/*.cpp)
 

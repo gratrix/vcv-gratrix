@@ -2172,6 +2172,12 @@ os << "</font>" << std::endl;
 //============================================================================================================
 //! \name Module Widgets
 
+
+struct GtxMidiWidget : ModuleWidget {
+	GtxMidiWidget();
+	void step();
+};
+
 struct VCO_F1_Widget : ModuleWidget {
 	VCO_F1_Widget();
 };
