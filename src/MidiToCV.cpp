@@ -255,7 +255,7 @@ struct ModeItem : MenuItem {
 
 struct ModeChoice : ChoiceButton {
 	QuadMIDIToCVInterface *module;
-	const std::vector<std::string> modeNames = {"ROTATE", "RESET", "REASSIGN"};
+	const std::vector<std::string> modeNames = {"ROTATE MODE", "RESET MODE", "REASSIGN MODE"};
 
 
 	void onAction() {
@@ -278,139 +278,88 @@ struct ModeChoice : ChoiceButton {
 };
 
 
-GtxMidiWidget::GtxMidiWidget() {
+GtxMidiWidget::GtxMidiWidget()
+{
+	GTX__WIDGET();
+
 	QuadMIDIToCVInterface *module = new QuadMIDIToCVInterface();
 	setModule(module);
-	box.size = Vec(15 * 22, 380);
+	box.size = Vec(12*15, 380);
+
+	#if GTX__SAVE_SVG
+	{
+		PanelGen pg(assetPlugin(plugin, "build/res/MIDI-C1.svg"), box.size, "MIDI-C1");
+
+		pg.but2(0.5, 0.4, "RESET");
+
+		pg.bus_out(0, 1, "VEL"); pg.bus_out(1, 1, "GATE");
+		pg.bus_out(0, 2, "AFT"); pg.bus_out(1, 2, "V/OCT");
+	}
+	#endif
 
 	{
+		#if GTX__LOAD_SVG
+		SVGPanel *panel = new SVGPanel();
+		panel->box.size = box.size;
+		panel->setBackground(SVG::load(assetPlugin(plugin, "res/MIDI-C1.svg")));
+		#else
 		Panel *panel = new LightPanel();
 		panel->box.size = box.size;
+		panel->backgroundImage = Image::load(assetPlugin(plugin, "res/MIDI-C1.png"));
+		#endif
 		addChild(panel);
 	}
-
-	float margin = 5;
-	float labelHeight = 15;
-	float yPos = margin;
 
 	addChild(createScrew<ScrewSilver>(Vec(15, 0)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x - 30, 0)));
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x - 30, 365)));
 
-	{
-		Label *label = new Label();
-		label->box.pos = Vec(box.size.x - margin - 12 * 15, margin);
-		label->text = "Quad MIDI to CV";
-		addChild(label);
-		yPos = labelHeight * 2;
-	}
-
-	addParam(createParam<LEDButton>(Vec(12 * 15, labelHeight), module, QuadMIDIToCVInterface::RESET_PARAM, 0.0, 1.0,
-									0.0));
-	addChild(createLight<SmallLight<RedLight>>(Vec(12 * 15 + 5, labelHeight + 5), module, QuadMIDIToCVInterface::RESET_LIGHT));
-	{
-		Label *label = new Label();
-		label->box.pos = Vec(margin, yPos);
-		label->text = "MIDI Interface";
-		addChild(label);
-		yPos += labelHeight + margin;
-
-		MidiChoice *midiChoice = new MidiChoice();
-		midiChoice->midiModule = dynamic_cast<MidiIO *>(module);
-		midiChoice->box.pos = Vec(margin, yPos);
-		midiChoice->box.size.x = box.size.x - 10;
-		addChild(midiChoice);
-		yPos += midiChoice->box.size.y + margin;
-	}
+	addParam(createParam<LEDButton>(           but(fx(0.5), fy(0.4)), module, QuadMIDIToCVInterface::RESET_PARAM, 0.0, 1.0, 0.0));
+	addChild(createLight<SmallLight<RedLight>>(led(fx(0.5), fy(0.4)), module, QuadMIDIToCVInterface::RESET_LIGHT));
 
 	{
-		Label *label = new Label();
-		label->box.pos = Vec(margin, yPos);
-		label->text = "Channel";
-		addChild(label);
-		yPos += labelHeight + margin;
+		float margin =  8;
+		float yPos   = 42;
 
-		ChannelChoice *channelChoice = new ChannelChoice();
-		channelChoice->midiModule = dynamic_cast<MidiIO *>(module);
-		channelChoice->box.pos = Vec(margin, yPos);
-		channelChoice->box.size.x = box.size.x - 10;
-		addChild(channelChoice);
-		yPos += channelChoice->box.size.y + margin;
-	}
+		{
+			MidiChoice *midiChoice = new MidiChoice();
+			midiChoice->midiModule = dynamic_cast<MidiIO *>(module);
+			midiChoice->box.pos = Vec(margin, yPos);
+			midiChoice->box.size.x = box.size.x - margin * 2;
+			addChild(midiChoice);
+			yPos += midiChoice->box.size.y + margin;
+		}
 
-	{
-		Label *label = new Label();
-		label->box.pos = Vec(margin, yPos);
-		label->text = "Mode";
-		addChild(label);
-		yPos += labelHeight + margin;
+		{
+			ChannelChoice *channelChoice = new ChannelChoice();
+			channelChoice->midiModule = dynamic_cast<MidiIO *>(module);
+			channelChoice->box.pos = Vec(margin, yPos);
+			channelChoice->box.size.x = box.size.x - margin * 2;
+			addChild(channelChoice);
+			yPos += channelChoice->box.size.y + margin;
+		}
 
-		ModeChoice *modeChoice = new ModeChoice();
-		modeChoice->module = module;
-		modeChoice->box.pos = Vec(margin, yPos);
-		modeChoice->box.size.x = box.size.x - 10;
-		addChild(modeChoice);
-		yPos += modeChoice->box.size.y + margin + 15;
-	}
-
-	{
-		Label *label = new Label();
-		label->box.pos = Vec(84, yPos);
-		label->text = "1";
-		addChild(label);
-	}
-	{
-		Label *label = new Label();
-		label->box.pos = Vec(125, yPos);
-		label->text = "2";
-		addChild(label);
-	}
-	{
-		Label *label = new Label();
-		label->box.pos = Vec(164, yPos);
-		label->text = "3";
-		addChild(label);
-	}
-	{
-		Label *label = new Label();
-		label->box.pos = Vec(203, yPos);
-		label->text = "4";
-		addChild(label);
-	}
-	{
-		Label *label = new Label();
-		label->box.pos = Vec(241, yPos);
-		label->text = "5";
-		addChild(label);
-	}
-	{
-		Label *label = new Label();
-		label->box.pos = Vec(279, yPos);
-		label->text = "6";
-		addChild(label);
-	}
-	std::string labels[4] = {"1V/oct", "Gate", "Velocity", "Aftertouch"};
-
-	yPos += labelHeight + margin * 2;
-	for (int i = 0; i < 4; i++) {
-		Label *label = new Label();
-		label->box.pos = Vec(margin, yPos);
-		label->text = labels[i];
-		addChild(label);
-		addOutput(createOutput<PJ3410Port>(Vec(2 * (40), yPos - 5), module, i * 6));
-		addOutput(createOutput<PJ3410Port>(Vec(3 * (40), yPos - 5), module, i * 6 + 1));
-		addOutput(createOutput<PJ3410Port>(Vec(4 * (40), yPos - 5), module, i * 6 + 2));
-		addOutput(createOutput<PJ3410Port>(Vec(5 * (40), yPos - 5), module, i * 6 + 3));
-		addOutput(createOutput<PJ3410Port>(Vec(6 * (40), yPos - 5), module, i * 6 + 4));
-		addOutput(createOutput<PJ3410Port>(Vec(7 * (40), yPos - 5), module, i * 6 + 5));
-		yPos += 40;
+		{
+			ModeChoice *modeChoice = new ModeChoice();
+			modeChoice->module = module;
+			modeChoice->box.pos = Vec(margin, yPos);
+			modeChoice->box.size.x = box.size.x - margin * 2;
+			addChild(modeChoice);
+		}
 	}
 
-
+	for (std::size_t i=0; i<GTX__N; ++i)
+		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(2, i)), module, QuadMIDIToCVInterface::   PITCH_OUTPUT + i));
+	for (std::size_t i=0; i<GTX__N; ++i)
+		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(1, i)), module, QuadMIDIToCVInterface::    GATE_OUTPUT + i));
+	for (std::size_t i=0; i<GTX__N; ++i)
+		addOutput(createOutput<PJ301MPort>(prt(px(0, i), py(1, i)), module, QuadMIDIToCVInterface::VELOCITY_OUTPUT + i));
+	for (std::size_t i=0; i<GTX__N; ++i)
+		addOutput(createOutput<PJ301MPort>(prt(px(0, i), py(2, i)), module, QuadMIDIToCVInterface::      AT_OUTPUT + i));
 }
 
-void GtxMidiWidget::step() {
-
+void GtxMidiWidget::step()
+{
 	ModuleWidget::step();
 }
