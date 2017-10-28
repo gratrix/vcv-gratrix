@@ -1,5 +1,6 @@
 #!/bin/sh
 
+"/c/Program Files/Inkscape/Inkscape.exe" build/res/MIDI-C1.svg --export-plain-svg=res/MIDI-C1.svg --export-text-to-path
 "/c/Program Files/Inkscape/Inkscape.exe" build/res/VCO-F1.svg  --export-plain-svg=res/VCO-F1.svg  --export-text-to-path
 "/c/Program Files/Inkscape/Inkscape.exe" build/res/VCO-F2.svg  --export-plain-svg=res/VCO-F2.svg  --export-text-to-path
 "/c/Program Files/Inkscape/Inkscape.exe" build/res/VCF-F1.svg  --export-plain-svg=res/VCF-F1.svg  --export-text-to-path

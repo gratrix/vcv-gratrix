@@ -1,7 +1,6 @@
 #!/bin/sh
 
---export-text-to-path
-
+"/c/Program Files/Inkscape/Inkscape.exe" build/res/MIDI-C1.svg --export-png=res/MIDI-C1.png
 "/c/Program Files/Inkscape/Inkscape.exe" build/res/VCO-F1.svg  --export-png=res/VCO-F1.png
 "/c/Program Files/Inkscape/Inkscape.exe" build/res/VCO-F2.svg  --export-png=res/VCO-F2.png
 "/c/Program Files/Inkscape/Inkscape.exe" build/res/VCF-F1.svg  --export-png=res/VCF-F1.png
