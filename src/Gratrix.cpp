@@ -9,7 +9,7 @@ void init(rack::Plugin *p) {
 #ifdef VERSION
 	p->version = TOSTRING(VERSION);
 #endif
-	p->addModel(createModel<GtxMidiWidget> ("Gratrix", "Gratrix", "MIDI",    "MIDI"));
+	p->addModel(createModel<GtxMidiWidget> ("Gratrix", "Gratrix", "MIDI-C1", "MIDI-C1"));
 	p->addModel(createModel<VCO_F1_Widget> ("Gratrix", "Gratrix", "VCO-F1",  "VCO-F1"));
 	p->addModel(createModel<VCO_F2_Widget> ("Gratrix", "Gratrix", "VCO-F2",  "VCO-F2"));
 	p->addModel(createModel<VCF_F1_Widget> ("Gratrix", "Gratrix", "VCF-F1",  "VCF-F1"));
