@@ -20,8 +20,8 @@ struct Octave : Module
 		NUM_PARAMS
 	};
 	enum InputIds {
-		IN_INPUT   = 0,
-		NUM_INPUTS = IN_INPUT + 1
+		VOCT_INPUT   = 0,
+		NUM_INPUTS = VOCT_INPUT + 1
 	};
 	enum OutputIds {
 		NOTE_OUTPUT = 0,
@@ -39,44 +39,59 @@ struct Octave : Module
 		Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS)
 	{}
 
-	void step() override
+	struct Decode
 	{
 		static constexpr float e = static_cast<float>(E);
 		static constexpr float s = 1.0f / e;
 
-		float in    = inputs[IN_INPUT].value;
-		float fnote = std::floor(in * e + 0.5f);
-		float qin   = fnote * s;
+		float in    = 0;
+		float out   = 0;
+		int   note  = 0;
+		int   key   = 0;
+		int   oct   = 0;
+		float led   = 0.0f;
 
-		int   note = static_cast<int>(fnote);
-		int   safe = note + (E * 1000);  // push away from negative numbers
-		int   key  = safe % E;
-		int   oct  = safe / E;
-		float led  = (oct & 1) ? -1.0f : 1.0f;
-		      oct -= 1000;
+		void step(float input)
+		{
+			int safe, fnote;
 
-		// quant
-		in = qin;
+			in    = input;
+			fnote = std::floor(in * e + 0.5f);
+			out   = fnote * s;
+			note  = static_cast<int>(fnote);
+			safe  = note + (E * 1000);  // push away from negative numbers
+			key   = safe % E;
+			oct   = safe / E;
+			led   = (oct & 1) ? -1.0f : 1.0f;
+			oct  -= 1000;
+		}
+	};
+
+
+	Decode input;
+	void step() override
+	{
+		input.step(inputs[VOCT_INPUT].value);
 
 		for (std::size_t i=0; i<N; ++i)
 		{
-			outputs[i + NOTE_OUTPUT].value = in + i * s;
+			outputs[i + NOTE_OUTPUT].value = input.out + i * input.s;
 		}
 
 		for (std::size_t i=0; i<M; ++i)
 		{
-			outputs[i + OCT_OUTPUT].value = (in - T) + i;
+			outputs[i + OCT_OUTPUT].value = (input.out - T) + i;
 		}
 
 		// Lights
 
 		for (auto &light : lights) light.value = 0.0f;
 
-		lights[KEY_LIGHT + key].value = led;
+		lights[KEY_LIGHT + input.key].value = input.led;
 
-		if (LO_BEGIN <= oct && oct <= LO_END)
+		if (LO_BEGIN <= input.oct && input.oct <= LO_END)
 		{
-			lights[OCT_LIGHT + oct - LO_BEGIN].value = led;
+			lights[OCT_LIGHT + input.oct - LO_BEGIN].value = input.led;
 		}
 	}
 };
@@ -144,7 +159,7 @@ OctaveWidget::OctaveWidget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
-	addInput(createInput<PJ301MPort>(prt(x(0, 0), y(0, 0)), module, Octave::IN_INPUT));
+	addInput(createInput<PJ301MPort>(prt(x(0, 0), y(0, 0)), module, Octave::VOCT_INPUT));
 	for (std::size_t i=0; i<N; ++i)
 	{
 		addOutput(createOutput<PJ301MPort>(prt(x(i, r2), y(i, r2)), module, i + Octave::NOTE_OUTPUT));
