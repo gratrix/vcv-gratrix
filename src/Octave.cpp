@@ -12,21 +12,18 @@ enum Spec
 };
 
 
+// ===========================================================================================================
+
 struct Octave : Module
 {
-	enum ParamIds
-	{
+	enum ParamIds {
 		NUM_PARAMS
 	};
-
-	enum InputIds
-	{
+	enum InputIds {
 		IN_INPUT   = 0,
 		NUM_INPUTS = IN_INPUT + 1
 	};
-
-	enum OutputIds
-	{
+	enum OutputIds {
 		NOTE_OUTPUT = 0,
 		OCT_OUTPUT  = NOTE_OUTPUT + N,
 		NUM_OUTPUTS = OCT_OUTPUT  + M
@@ -147,7 +144,7 @@ OctaveWidget::OctaveWidget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
-	addInput(createInput <PJ301MPort>(prt(x(0, 0), y(0, 0)), module, Octave::IN_INPUT));
+	addInput(createInput<PJ301MPort>(prt(x(0, 0), y(0, 0)), module, Octave::IN_INPUT));
 	for (std::size_t i=0; i<N; ++i)
 	{
 		addOutput(createOutput<PJ301MPort>(prt(x(i, r2), y(i, r2)), module, i + Octave::NOTE_OUTPUT));
