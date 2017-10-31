@@ -130,11 +130,11 @@ OctaveWidget::OctaveWidget()
 		#if GTX__LOAD_SVG
 		SVGPanel *panel = new SVGPanel();
 		panel->box.size = box.size;
-		panel->setBackground(SVG::load("plugins/Gratrix/res/Octave.svg"));
+		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Octave.svg")));
 		#else
 		Panel *panel = new LightPanel();
 		panel->box.size = box.size;
-		panel->backgroundImage = Image::load("plugins/Gratrix/res/Octave.png");
+		panel->backgroundImage = Image::load(assetPlugin(plugin, "res/Octave.png"));
 		#endif
 		addChild(panel);
 	}
