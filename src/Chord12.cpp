@@ -38,18 +38,19 @@ struct Chord12 : Module
 
 	struct Decode
 	{
+		static constexpr float e = static_cast<float>(E);
+		static constexpr float s = 1.0f / e;
+
 		float in    = 0;
 		float out   = 0;
 		int   note  = 0;
 		int   key   = 0;
 		int   oct   = 0;
+		float led   = 0.0f;
 
 		void step(float input)
 		{
 			int safe, fnote;
-
-			static constexpr float e = static_cast<float>(E);
-			static constexpr float s = 1.0f / e;
 
 			in    = input;
 			fnote = std::floor(in * e + 0.5f);
@@ -57,7 +58,9 @@ struct Chord12 : Module
 			note  = static_cast<int>(fnote);
 			safe  = note + (E * 1000);  // push away from negative numbers
 			key   = safe % E;
-			oct   = (safe / E) - 1000;
+			oct   = safe / E;
+			led   = (oct & 1) ? -1.0f : 1.0f;
+			oct  -= 1000;
 		}
 	};
 

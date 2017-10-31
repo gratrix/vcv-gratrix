@@ -34,11 +34,6 @@ struct Octave : Module
 		NUM_LIGHTS = OCT_LIGHT + LO_SIZE
 	};
 
-	Octave()
-	:
-		Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS)
-	{}
-
 	struct Decode
 	{
 		static constexpr float e = static_cast<float>(E);
@@ -69,6 +64,11 @@ struct Octave : Module
 
 
 	Decode input;
+
+	Octave()
+	:
+		Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS)
+	{}
 	void step() override
 	{
 		input.step(inputs[VOCT_INPUT].value);
