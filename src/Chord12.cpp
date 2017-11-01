@@ -19,7 +19,7 @@ struct Chord12 : Module
 		NUM_PARAMS  = NOTE_PARAM + T
 	};
 	enum InputIds {
-		PROC_INPUT,    // 1
+		PROG_INPUT,    // 1
 		VOCT_INPUT,    // 1
 		NUM_INPUTS,
 		OFF_INPUTS = VOCT_INPUT
@@ -31,8 +31,8 @@ struct Chord12 : Module
 	};
 	enum LightIds {
 		PROG_LIGHT = 0,
-		NOTE_LIGHT = PROG_LIGHT + E,
-		FUND_LIGHT = NOTE_LIGHT + T,
+		NOTE_LIGHT = PROG_LIGHT + 2*E,
+		FUND_LIGHT = NOTE_LIGHT + 2*T,
 		NUM_LIGHTS = FUND_LIGHT + E
 	};
 
@@ -65,8 +65,8 @@ struct Chord12 : Module
 	};
 
 
-	Decode config;
-	Decode select;
+	Decode prg_prm;
+	Decode prg_cv;
 	Decode input;
 
 	SchmittTrigger note_trigger[T];
@@ -127,38 +127,44 @@ struct Chord12 : Module
 
 	void step() override
 	{
-		config.step(clampf(params[PROC_INPUT].value, 0.0001, 0.9999) - 0.5f/E);
-		select.step(clampf(inputs[PROC_INPUT].normalize(10.0) / 10.0, 0.0, 1.0));
-		input .step(inputs[VOCT_INPUT].value);
+		prg_prm.step(clampf(params[PROG_PARAM].value, 0.0001, 0.9999) - 0.5f/E);
+		prg_cv .step(inputs[PROG_INPUT].value);
+		input  .step(inputs[VOCT_INPUT].value);
+
+		// Clear all lights
+
+		for (auto &light : lights)
+		{
+			light.value = 0.0f;
+		}
+
+		// Input lights
 
 		{
-			for (std::size_t i=0; i<E; ++i)
-			{
-				lights[PROG_LIGHT + i].value = 0.0f;
-				lights[FUND_LIGHT + i].value = 0.0f;
-			}
 
-			lights[PROG_LIGHT + select.key].value = +1.0f;
-			lights[PROG_LIGHT + config.key].value = -1.0f;
-			lights[FUND_LIGHT + input .key].value = +1.0f;
+			lights[PROG_LIGHT + prg_cv .key*2+1].value = +1.0f;
+			lights[PROG_LIGHT + prg_prm.key*2  ].value = +1.0f;
+			lights[FUND_LIGHT + input  .key    ].value = +1.0f;
 		}
+
+		// Chord bit
 
 		{
 			for (std::size_t j = 0; j < T; ++j)
 			{
 				if (note_trigger[j].process(params[j + NOTE_PARAM].value))
 				{
-					note_enable[config.key][j] = !note_enable[config.key][j];
+					note_enable[prg_prm.key][j] = !note_enable[prg_prm.key][j];
 				}
 			}
 
 			for (std::size_t j = 0, b = 0; j < T; ++j)
 			{
-				if (note_enable[config.key][j])
+				if (note_enable[prg_prm.key][j])
 				{
 					if (b++ >= N)
 					{
-						note_enable[config.key][j] = false;
+						note_enable[prg_prm.key][j] = false;
 					}
 				}
 			}
@@ -168,20 +174,16 @@ struct Chord12 : Module
 
 				for (std::size_t j = 0; j < T; ++j)
 				{
-					if (note_enable[select.key][j])
+					if (note_enable[prg_cv.key][j])
 					{
-						lights[NOTE_LIGHT + j].value = +1.0;
+						lights[NOTE_LIGHT + j*2+1].value = 1.0;
 
 						gen[b++] = input.out + static_cast<float>(j) / 12.0f;
 					}
-					else
-					{
-						lights[NOTE_LIGHT + j].value = 0.0;
-					}
 
-					if (note_enable[config.key][j])
+					if (note_enable[prg_prm.key][j])
 					{
-						lights[NOTE_LIGHT + j].value = -1.0;
+						lights[NOTE_LIGHT + j*2].value = 1.0;
 					}
 				}
 
@@ -254,43 +256,43 @@ Chord12Widget::Chord12Widget()
 
 	addParam(createParam<RoundBlackKnob>(n_m(fx(1+0.18), fy(-0.28)), module, Chord12::PROG_PARAM, 0.0, 1.0, 0.0));
 
-	addInput(createInput<PJ301MPort>(prt(fx(0-0.23), fy(-0.28)),  module, Chord12::PROC_INPUT));
+	addInput(createInput<PJ301MPort>(prt(fx(0-0.23), fy(-0.28)),  module, Chord12::PROG_INPUT));
 	addInput(createInput<PJ301MPort>(prt(gx(0)     , gy(2+0.14)), module, Chord12::VOCT_INPUT));
 
 	for (std::size_t i=0; i<N; ++i)
 	{
 		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(2, i)), module, Chord12::omap(Chord12::VOCT_OUTPUT, i)));
 	}
-
+#undef GreenRedLight
 	for (std::size_t i=0; i<T; ++i)
 	{
 		addParam(createParam<LEDButton>(but(x(i), y(i)), module, i + Chord12::NOTE_PARAM, 0.0, 1.0, 0.0));
-		addChild(createLight<SmallLight<GreenRedLight>>(led(x(i), y(i)), module, Chord12::NOTE_LIGHT + i));
+		addChild(createLight<SmallLight<GreenRedLight>>(led(x(i), y(i)), module, Chord12::NOTE_LIGHT + i*2));
 	}
 
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) - 30, fy(0-0.28) + 5), module, Chord12::PROG_LIGHT +  0));  // C
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) - 25, fy(0-0.28) - 5), module, Chord12::PROG_LIGHT +  1));  // C#
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) - 20, fy(0-0.28) + 5), module, Chord12::PROG_LIGHT +  2));  // D
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) - 15, fy(0-0.28) - 5), module, Chord12::PROG_LIGHT +  3));  // Eb
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) - 10, fy(0-0.28) + 5), module, Chord12::PROG_LIGHT +  4));  // E
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45)     , fy(0-0.28) + 5), module, Chord12::PROG_LIGHT +  5));  // F
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) +  5, fy(0-0.28) - 5), module, Chord12::PROG_LIGHT +  6));  // Fs
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) + 10, fy(0-0.28) + 5), module, Chord12::PROG_LIGHT +  7));  // G
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) + 15, fy(0-0.28) - 5), module, Chord12::PROG_LIGHT +  8));  // Ab
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) + 20, fy(0-0.28) + 5), module, Chord12::PROG_LIGHT +  9));  // A
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) + 25, fy(0-0.28) - 5), module, Chord12::PROG_LIGHT + 10));  // Bb
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) + 30, fy(0-0.28) + 5), module, Chord12::PROG_LIGHT + 11));  // B
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) - 30, fy(0-0.28) + 5), module, Chord12::PROG_LIGHT +  0*2));  // C
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) - 25, fy(0-0.28) - 5), module, Chord12::PROG_LIGHT +  1*2));  // C#
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) - 20, fy(0-0.28) + 5), module, Chord12::PROG_LIGHT +  2*2));  // D
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) - 15, fy(0-0.28) - 5), module, Chord12::PROG_LIGHT +  3*2));  // Eb
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) - 10, fy(0-0.28) + 5), module, Chord12::PROG_LIGHT +  4*2));  // E
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45)     , fy(0-0.28) + 5), module, Chord12::PROG_LIGHT +  5*2));  // F
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) +  5, fy(0-0.28) - 5), module, Chord12::PROG_LIGHT +  6*2));  // Fs
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) + 10, fy(0-0.28) + 5), module, Chord12::PROG_LIGHT +  7*2));  // G
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) + 15, fy(0-0.28) - 5), module, Chord12::PROG_LIGHT +  8*2));  // Ab
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) + 20, fy(0-0.28) + 5), module, Chord12::PROG_LIGHT +  9*2));  // A
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) + 25, fy(0-0.28) - 5), module, Chord12::PROG_LIGHT + 10*2));  // Bb
+	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) + 30, fy(0-0.28) + 5), module, Chord12::PROG_LIGHT + 11*2));  // B
 
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.00) - 30, gy(2-0.14) + 5), module, Chord12::FUND_LIGHT +  0));  // C
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.00) - 25, gy(2-0.14) - 5), module, Chord12::FUND_LIGHT +  1));  // C#
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.00) - 20, gy(2-0.14) + 5), module, Chord12::FUND_LIGHT +  2));  // D
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.00) - 15, gy(2-0.14) - 5), module, Chord12::FUND_LIGHT +  3));  // Eb
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.00) - 10, gy(2-0.14) + 5), module, Chord12::FUND_LIGHT +  4));  // E
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.00)     , gy(2-0.14) + 5), module, Chord12::FUND_LIGHT +  5));  // F
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.00) +  5, gy(2-0.14) - 5), module, Chord12::FUND_LIGHT +  6));  // Fs
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.00) + 10, gy(2-0.14) + 5), module, Chord12::FUND_LIGHT +  7));  // G
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.00) + 15, gy(2-0.14) - 5), module, Chord12::FUND_LIGHT +  8));  // Ab
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.00) + 20, gy(2-0.14) + 5), module, Chord12::FUND_LIGHT +  9));  // A
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.00) + 25, gy(2-0.14) - 5), module, Chord12::FUND_LIGHT + 10));  // Bb
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.00) + 30, gy(2-0.14) + 5), module, Chord12::FUND_LIGHT + 11));  // B
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00) - 30, gy(2-0.14) + 5), module, Chord12::FUND_LIGHT +  0));  // C
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00) - 25, gy(2-0.14) - 5), module, Chord12::FUND_LIGHT +  1));  // C#
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00) - 20, gy(2-0.14) + 5), module, Chord12::FUND_LIGHT +  2));  // D
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00) - 15, gy(2-0.14) - 5), module, Chord12::FUND_LIGHT +  3));  // Eb
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00) - 10, gy(2-0.14) + 5), module, Chord12::FUND_LIGHT +  4));  // E
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00)     , gy(2-0.14) + 5), module, Chord12::FUND_LIGHT +  5));  // F
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00) +  5, gy(2-0.14) - 5), module, Chord12::FUND_LIGHT +  6));  // Fs
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00) + 10, gy(2-0.14) + 5), module, Chord12::FUND_LIGHT +  7));  // G
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00) + 15, gy(2-0.14) - 5), module, Chord12::FUND_LIGHT +  8));  // Ab
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00) + 20, gy(2-0.14) + 5), module, Chord12::FUND_LIGHT +  9));  // A
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00) + 25, gy(2-0.14) - 5), module, Chord12::FUND_LIGHT + 10));  // Bb
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00) + 30, gy(2-0.14) + 5), module, Chord12::FUND_LIGHT + 11));  // B
 }
