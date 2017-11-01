@@ -57,7 +57,7 @@ struct Octave : Module
 			safe  = note + (E * 1000);  // push away from negative numbers
 			key   = safe % E;
 			oct   = safe / E;
-			led   = (oct & 1) ? -1.0f : 1.0f;
+			led   = 1.0f; // (oct & 1) ? -1.0f : 1.0f;
 			oct  -= 1000;
 		}
 	};
@@ -69,6 +69,7 @@ struct Octave : Module
 	:
 		Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS)
 	{}
+
 	void step() override
 	{
 		input.step(inputs[VOCT_INPUT].value);
