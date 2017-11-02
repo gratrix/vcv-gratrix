@@ -2,13 +2,10 @@
 
 enum Spec
 {
-	LO_BEGIN = -5,    // C-1
-	LO_END   =  5,    // C+9
+	LO_BEGIN = -3,    // C1
+	LO_END   =  2,    // C6
 	LO_SIZE  = LO_END - LO_BEGIN + 1,
-	E        = 12,    // ET
-	N        = 12,    // Number of note outputs
-	T        = 2,
-	M        = 2*T+1  // Number of octave outputs
+	E        = 12     // ET
 };
 
 
@@ -28,8 +25,7 @@ struct Keys : Module
 	};
 	enum LightIds {
 		KEY_LIGHT  = 0,
-		OCT_LIGHT  = KEY_LIGHT + E,
-		NUM_LIGHTS = OCT_LIGHT + LO_SIZE
+		NUM_LIGHTS = KEY_LIGHT + LO_SIZE * E
 	};
 
 	struct Decode
@@ -54,9 +50,7 @@ struct Keys : Module
 			note  = static_cast<int>(fnote);
 			safe  = note + (E * 1000);  // push away from negative numbers
 			key   = safe % E;
-			oct   = safe / E;
-			led   = 1.0f; // (oct & 1) ? -1.0f : 1.0f;
-			oct  -= 1000;
+			oct   = (safe / E) - 1000;
 		}
 	};
 
@@ -74,9 +68,19 @@ struct Keys : Module
 
 		// Lights
 
-		for (auto &light : lights) light.value = 0.0f;
+		float leds[NUM_LIGHTS] = {};
 
-		lights[KEY_LIGHT + input.key].value = input.led;
+		if (input.oct >= LO_BEGIN && input.oct <= LO_END)
+		{
+			leds[KEY_LIGHT + (input.oct - LO_BEGIN) * E + input.key] = 1.0f;
+		}
+
+		// Write output in one go, seems to prevent flicker
+
+		for (std::size_t i=0; i<NUM_LIGHTS; ++i)
+		{
+			lights[i].value = leds[i];
+		}
 	}
 };
 
@@ -115,16 +119,19 @@ KeysWidget::KeysWidget()
 
 	addInput(createInput<PJ301MPort>(prt(gx(0), gy(1)), module, Keys::VOCT_INPUT));
 
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) - 30, fy(0-0.28) + 5), module, Keys::KEY_LIGHT +  0));  // C
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) - 25, fy(0-0.28) - 5), module, Keys::KEY_LIGHT +  1));  // C#
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) - 20, fy(0-0.28) + 5), module, Keys::KEY_LIGHT +  2));  // D
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) - 15, fy(0-0.28) - 5), module, Keys::KEY_LIGHT +  3));  // Eb
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) - 10, fy(0-0.28) + 5), module, Keys::KEY_LIGHT +  4));  // E
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5)     , fy(0-0.28) + 5), module, Keys::KEY_LIGHT +  5));  // F
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) +  5, fy(0-0.28) - 5), module, Keys::KEY_LIGHT +  6));  // Fs
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + 10, fy(0-0.28) + 5), module, Keys::KEY_LIGHT +  7));  // G
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + 15, fy(0-0.28) - 5), module, Keys::KEY_LIGHT +  8));  // Ab
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + 20, fy(0-0.28) + 5), module, Keys::KEY_LIGHT +  9));  // A
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + 25, fy(0-0.28) - 5), module, Keys::KEY_LIGHT + 10));  // Bb
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + 30, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + 11));  // B
+	for (std::size_t i=0; i<LO_SIZE; ++i)
+	{
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i) - 30, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * E +  0));  // C
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i) - 25, fy(0-0.28) - 5), module, Keys::KEY_LIGHT + i * E +  1));  // C#
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i) - 20, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * E +  2));  // D
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i) - 15, fy(0-0.28) - 5), module, Keys::KEY_LIGHT + i * E +  3));  // Eb
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i) - 10, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * E +  4));  // E
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i)     , fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * E +  5));  // F
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i) +  5, fy(0-0.28) - 5), module, Keys::KEY_LIGHT + i * E +  6));  // Fs
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i) + 10, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * E +  7));  // G
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i) + 15, fy(0-0.28) - 5), module, Keys::KEY_LIGHT + i * E +  8));  // Ab
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i) + 20, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * E +  9));  // A
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i) + 25, fy(0-0.28) - 5), module, Keys::KEY_LIGHT + i * E + 10));  // Bb
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i) + 30, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * E + 11));  // B
+	}
 }
