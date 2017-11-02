@@ -9,7 +9,8 @@ enum Spec
 };
 
 
-// ===========================================================================================================
+//============================================================================================================
+//! \brief Chord 12 moddule.
 
 struct Chord12 : Module
 {
@@ -64,7 +65,6 @@ struct Chord12 : Module
 		}
 	};
 
-
 	Decode prg_prm;
 	Decode prg_cv;
 	Decode input;
@@ -73,16 +73,21 @@ struct Chord12 : Module
 	bool  note_enable[E][T] = {};
 	float gen[N] = {0,1,2,3,4,5};
 
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief Constructor.
+
 	Chord12()
 	:
 		Module(NUM_PARAMS, NUM_INPUTS, N * NUM_OUTPUTS, NUM_LIGHTS)
 	{}
 
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief Save data.
+
 	json_t *toJson() override
 	{
 		json_t *rootJ = json_object();
 
-		// Note enable
 		if (json_t *neJA = json_array())
 		{
 			for (std::size_t i = 0; i < E; ++i)
@@ -102,6 +107,9 @@ struct Chord12 : Module
 		return rootJ;
 	}
 
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief Load data.
+
 	void fromJson(json_t *rootJ) override
 	{
 		// Note enable
@@ -120,17 +128,19 @@ struct Chord12 : Module
 		}
 	}
 
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief Output map.
+
 	static constexpr std::size_t omap(std::size_t port, std::size_t bank)
 	{
 		return port + bank * NUM_OUTPUTS;
 	}
 
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief Step function.
+
 	void step() override
 	{
-		prg_prm.step(clampf(params[PROG_PARAM].value, 0.0001, 0.9999) - 0.5f/E);
-		prg_cv .step(inputs[PROG_INPUT].value);
-		input  .step(inputs[VOCT_INPUT].value);
-
 		// Clear all lights
 
 		for (auto &light : lights)
@@ -138,18 +148,37 @@ struct Chord12 : Module
 			light.value = 0.0f;
 		}
 
+		// Decode inputs and params
+
+		bool prg_sel = false;
+
+		if (params[PROG_PARAM].value <= 1.0)
+		{
+			prg_prm.step(clampf(params[PROG_PARAM].value, 0.0001, 0.9999) - 0.5f/E);
+			prg_sel = true;
+		}
+
+		prg_cv .step(inputs[PROG_INPUT].value);
+		input  .step(inputs[VOCT_INPUT].value);
+
 		// Input lights
 
+		if (prg_sel)
 		{
-
-			lights[PROG_LIGHT + prg_cv .key*2+1].value = +1.0f;
-			lights[PROG_LIGHT + prg_prm.key*2  ].value = +1.0f;
-			lights[FUND_LIGHT + input  .key    ].value = +1.0f;
+			lights[PROG_LIGHT + prg_prm.key*2].value = +1.0f;  // Green
 		}
+		else if (prg_cv.key != prg_prm.key)
+		{
+			lights[PROG_LIGHT + prg_cv.key*2+1].value = +1.0f;  // Red
+		}
+
+		lights[FUND_LIGHT + input.key].value = +1.0f;  // Red
 
 		// Chord bit
 
 		{
+			// Detect buttons and deduce what's enabled
+
 			for (std::size_t j = 0; j < T; ++j)
 			{
 				if (note_trigger[j].process(params[j + NOTE_PARAM].value))
@@ -169,6 +198,31 @@ struct Chord12 : Module
 				}
 			}
 
+			// Based on what's enabled turn on lights
+
+			if (prg_sel)
+			{
+				for (std::size_t j = 0; j < T; ++j)
+				{
+					if (note_enable[prg_prm.key][j])
+					{
+						lights[NOTE_LIGHT + j*2].value = 1.0; // Green
+					}
+				}
+			}
+			else
+			{
+				for (std::size_t j = 0; j < T; ++j)
+				{
+					if (note_enable[prg_cv.key][j])
+					{
+						lights[NOTE_LIGHT + j*2+1].value = 1.0; // Red
+					}
+				}
+			}
+
+			// Based on what's enabled generate output
+
 			{
 				std::size_t b = 0;
 
@@ -176,14 +230,7 @@ struct Chord12 : Module
 				{
 					if (note_enable[prg_cv.key][j])
 					{
-						lights[NOTE_LIGHT + j*2+1].value = 1.0;
-
 						gen[b++] = input.out + static_cast<float>(j) / 12.0f;
-					}
-
-					if (note_enable[prg_prm.key][j])
-					{
-						lights[NOTE_LIGHT + j*2].value = 1.0;
 					}
 				}
 
@@ -207,6 +254,9 @@ int    y (int    i, double radius = 37.0, double spill = 1.65) { return static_c
 double xd(double i, double radius = 37.0, double spill = 1.65) { return                 (6+6*15       + (radius + spill * i) * dx(i, E)); }
 double yd(double i, double radius = 37.0, double spill = 1.65) { return                 (180          + (radius + spill * i) * dy(i, E)); }
 
+
+//============================================================================================================
+//! \brief Chord 12 widget.
 
 Chord12Widget::Chord12Widget()
 {
@@ -254,7 +304,7 @@ Chord12Widget::Chord12Widget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
-	addParam(createParam<RoundBlackKnob>(n_m(fx(1+0.18), fy(-0.28)), module, Chord12::PROG_PARAM, 0.0, 1.0, 0.0));
+	addParam(createParam<RoundBlackKnob>(n_m(fx(1+0.18), fy(-0.28)), module, Chord12::PROG_PARAM, 0.0, 1.2, 0.0));
 
 	addInput(createInput<PJ301MPort>(prt(fx(0-0.23), fy(-0.28)),  module, Chord12::PROG_INPUT));
 	addInput(createInput<PJ301MPort>(prt(gx(0)     , gy(2+0.14)), module, Chord12::VOCT_INPUT));
