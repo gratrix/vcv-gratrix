@@ -2237,6 +2237,10 @@ struct OctaveWidget : ModuleWidget {
 	OctaveWidget();
 };
 
+struct KeysWidget : ModuleWidget {
+	KeysWidget();
+};
+
 struct Blank3Widget : ModuleWidget {
 	Blank3Widget();
 };
