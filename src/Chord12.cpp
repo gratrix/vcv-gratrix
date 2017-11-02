@@ -143,10 +143,7 @@ struct Chord12 : Module
 	{
 		// Clear all lights
 
-		for (auto &light : lights)
-		{
-			light.value = 0.0f;
-		}
+		float leds[NUM_LIGHTS] = {};
 
 		// Decode inputs and params
 
@@ -161,18 +158,18 @@ struct Chord12 : Module
 		prg_cv .step(inputs[PROG_INPUT].value);
 		input  .step(inputs[VOCT_INPUT].value);
 
-		// Input lights
+		// Input leds
 
 		if (prg_sel)
 		{
-			lights[PROG_LIGHT + prg_prm.key*2].value = +1.0f;  // Green
+			leds[PROG_LIGHT + prg_prm.key*2] = +1.0f;  // Green
 		}
 		else if (prg_cv.key != prg_prm.key)
 		{
-			lights[PROG_LIGHT + prg_cv.key*2+1].value = +1.0f;  // Red
+			leds[PROG_LIGHT + prg_cv.key*2+1] = +1.0f;  // Red
 		}
 
-		lights[FUND_LIGHT + input.key].value = +1.0f;  // Red
+		leds[FUND_LIGHT + input.key] = +1.0f;  // Red
 
 		// Chord bit
 
@@ -198,7 +195,7 @@ struct Chord12 : Module
 				}
 			}
 
-			// Based on what's enabled turn on lights
+			// Based on what's enabled turn on leds
 
 			if (prg_sel)
 			{
@@ -206,7 +203,7 @@ struct Chord12 : Module
 				{
 					if (note_enable[prg_prm.key][j])
 					{
-						lights[NOTE_LIGHT + j*2].value = 1.0; // Green
+						leds[NOTE_LIGHT + j*2] = 1.0; // Green
 					}
 				}
 			}
@@ -216,7 +213,7 @@ struct Chord12 : Module
 				{
 					if (note_enable[prg_cv.key][j])
 					{
-						lights[NOTE_LIGHT + j*2+1].value = 1.0; // Red
+						leds[NOTE_LIGHT + j*2+1] = 1.0; // Red
 					}
 				}
 			}
@@ -241,9 +238,16 @@ struct Chord12 : Module
 			}
 		}
 
-		for (std::size_t b=0; b<N; ++b)
+		// Write output in one go, seems to prevent flicker
+
+		for (std::size_t i=0; i<NUM_LIGHTS; ++i)
 		{
-			outputs[omap(b, VOCT_OUTPUT)].value = gen[b];
+			lights[i].value = leds[i];
+		}
+
+		for (std::size_t i=0; i<N; ++i)
+		{
+			outputs[omap(i, VOCT_OUTPUT)].value = gen[i];
 		}
 	}
 };
