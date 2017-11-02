@@ -147,32 +147,33 @@ struct Chord12 : Module
 
 		// Decode inputs and params
 
-		bool prg_sel = false;
+		bool act_prm = false;
 
 		if (params[PROG_PARAM].value <= 1.0)
 		{
 			prg_prm.step(clampf(params[PROG_PARAM].value, 0.0001, 0.9999) - 0.5f/E);
-			prg_sel = true;
+			act_prm = true;
 		}
 
-		prg_cv .step(inputs[PROG_INPUT].value);
-		input  .step(inputs[VOCT_INPUT].value);
+		prg_cv.step(inputs[PROG_INPUT].value);
+		input .step(inputs[VOCT_INPUT].value);
 
 		// Input leds
 
-		if (prg_sel)
+		if (act_prm)
 		{
-			leds[PROG_LIGHT + prg_prm.key*2] = +1.0f;  // Green
+			leds[PROG_LIGHT + prg_prm.key*2] = 1.0f;  // Green
 		}
-		else if (prg_cv.key != prg_prm.key)
+		else
 		{
-			leds[PROG_LIGHT + prg_cv.key*2+1] = +1.0f;  // Red
+			leds[PROG_LIGHT + prg_cv.key*2+1] = 1.0f;  // Red
 		}
 
 		leds[FUND_LIGHT + input.key] = +1.0f;  // Red
 
 		// Chord bit
 
+		if (act_prm)
 		{
 			// Detect buttons and deduce what's enabled
 
@@ -194,47 +195,47 @@ struct Chord12 : Module
 					}
 				}
 			}
+		}
 
-			// Based on what's enabled turn on leds
+		// Based on what's enabled turn on leds
 
-			if (prg_sel)
+		if (act_prm)
+		{
+			for (std::size_t j = 0; j < T; ++j)
 			{
-				for (std::size_t j = 0; j < T; ++j)
+				if (note_enable[prg_prm.key][j])
 				{
-					if (note_enable[prg_prm.key][j])
-					{
-						leds[NOTE_LIGHT + j*2] = 1.0; // Green
-					}
+					leds[NOTE_LIGHT + j*2] = 1.0; // Green
 				}
 			}
-			else
+		}
+		else
+		{
+			for (std::size_t j = 0; j < T; ++j)
 			{
-				for (std::size_t j = 0; j < T; ++j)
+				if (note_enable[prg_cv.key][j])
 				{
-					if (note_enable[prg_cv.key][j])
-					{
-						leds[NOTE_LIGHT + j*2+1] = 1.0; // Red
-					}
+					leds[NOTE_LIGHT + j*2+1] = 1.0; // Red
+				}
+			}
+		}
+
+		// Based on what's enabled generate output
+
+		{
+			std::size_t b = 0;
+
+			for (std::size_t j = 0; j < T; ++j)
+			{
+				if (note_enable[prg_cv.key][j])
+				{
+					gen[b++] = input.out + static_cast<float>(j) / 12.0f;
 				}
 			}
 
-			// Based on what's enabled generate output
-
+			while (b < N)
 			{
-				std::size_t b = 0;
-
-				for (std::size_t j = 0; j < T; ++j)
-				{
-					if (note_enable[prg_cv.key][j])
-					{
-						gen[b++] = input.out + static_cast<float>(j) / 12.0f;
-					}
-				}
-
-				while (b < N)
-				{
-					gen[b++] = -10.0;
-				}
+				gen[b++] = -10.0;
 			}
 		}
 
