@@ -1,13 +1,5 @@
 #include "Gratrix.hpp"
 
-enum Spec
-{
-	LO_BEGIN = -3,    // C1
-	LO_END   =  2,    // C6
-	LO_SIZE  = LO_END - LO_BEGIN + 1,
-	E        = 12     // ET
-};
-
 
 // ===========================================================================================================
 
@@ -17,62 +9,62 @@ struct Keys : Module
 		NUM_PARAMS
 	};
 	enum InputIds {
-		VOCT_INPUT = 0,
-		NUM_INPUTS = VOCT_INPUT + 1
+		VOCT_1R_INPUT,  // N
+		GATE_1R_INPUT,  // N
+		VOCT_1G_INPUT,  // N
+		GATE_1G_INPUT,  // N
+		VOCT_1B_INPUT,  // N
+		GATE_1B_INPUT,  // N
+		VOCT_2R_INPUT,  // N
+		GATE_2R_INPUT,  // N
+		VOCT_2G_INPUT,  // N
+		GATE_2G_INPUT,  // N
+		VOCT_2B_INPUT,  // N
+		GATE_2B_INPUT,  // N
+		NUM_INPUTS,
+		OFF_INPUTS = VOCT_1R_INPUT
 	};
 	enum OutputIds {
 		NUM_OUTPUTS
 	};
 	enum LightIds {
 		KEY_LIGHT  = 0,
-		NUM_LIGHTS = KEY_LIGHT + LO_SIZE * E
+		NUM_LIGHTS = KEY_LIGHT + 6 * 12
 	};
 
-	struct Decode
+	static constexpr std::size_t imap(std::size_t port, std::size_t bank)
 	{
-		static constexpr float e = static_cast<float>(E);
-		static constexpr float s = 1.0f / e;
+	//	return (port < OFF_INPUTS) ? port : port + bank * (NUM_INPUTS - OFF_INPUTS);
+		return                              port + bank *  NUM_INPUTS;
+	}
 
-		float in    = 0;
-		float out   = 0;
-		int   note  = 0;
-		int   key   = 0;
-		int   oct   = 0;
-		float led   = 0.0f;
+	static void decode(float *lights, float input, float gate = 1.0)
+	{
+		int note = static_cast<int>(std::floor(input * 12.0f + 0.5f)) + 3*12;
 
-		void step(float input)
+		if (gate >= 0.5f && note >= 0 && note < 6*12)
 		{
-			int safe, fnote;
-
-			in    = input;
-			fnote = std::floor(in * e + 0.5f);
-			out   = fnote * s;
-			note  = static_cast<int>(fnote);
-			safe  = note + (E * 1000);  // push away from negative numbers
-			key   = safe % E;
-			oct   = (safe / E) - 1000;
+			lights[note] = 1.0f;
 		}
-	};
-
-
-	Decode input;
+	}
 
 	Keys()
 	:
-		Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS)
+		Module(NUM_PARAMS, GTX__N * (NUM_INPUTS - OFF_INPUTS) + OFF_INPUTS, NUM_OUTPUTS, NUM_LIGHTS)
 	{}
 
 	void step() override
 	{
-		input.step(inputs[VOCT_INPUT].value);
-
-		// Lights
-
 		float leds[NUM_LIGHTS] = {};
 
-		if (input.oct >= LO_BEGIN && input.oct <= LO_END)
+		for (std::size_t i=0; i<GTX__N; ++i)
 		{
-			leds[KEY_LIGHT + (input.oct - LO_BEGIN) * E + input.key] = 1.0f;
+			decode(&leds[KEY_LIGHT], inputs[imap(VOCT_1R_INPUT, i)].value, inputs[imap(GATE_1R_INPUT, i)].value);
+			decode(&leds[KEY_LIGHT], inputs[imap(VOCT_1G_INPUT, i)].value, inputs[imap(GATE_1G_INPUT, i)].value);
+			decode(&leds[KEY_LIGHT], inputs[imap(VOCT_1B_INPUT, i)].value, inputs[imap(GATE_1B_INPUT, i)].value);
+			decode(&leds[KEY_LIGHT], inputs[imap(VOCT_2R_INPUT, i)].value, inputs[imap(GATE_2R_INPUT, i)].value);
+			decode(&leds[KEY_LIGHT], inputs[imap(VOCT_2G_INPUT, i)].value, inputs[imap(GATE_2G_INPUT, i)].value);
+			decode(&leds[KEY_LIGHT], inputs[imap(VOCT_2B_INPUT, i)].value, inputs[imap(GATE_2B_INPUT, i)].value);
 		}
 
 		// Write output in one go, seems to prevent flicker
@@ -96,6 +88,13 @@ KeysWidget::KeysWidget()
 	#if GTX__SAVE_SVG
 	{
 		PanelGen pg(assetPlugin(plugin, "build/res/Keys.svg"), box.size, "KEYS");
+
+		pg.bus_in(0, 1, "GATE 1R"); pg.bus_in(0, 2, "V/OCT 1R");
+		pg.bus_in(1, 1, "GATE 1G"); pg.bus_in(1, 2, "V/OCT 1G");
+		pg.bus_in(2, 1, "GATE 1B"); pg.bus_in(2, 2, "V/OCT 1B");
+		pg.bus_in(3, 1, "GATE 2R"); pg.bus_in(3, 2, "V/OCT 2R");
+		pg.bus_in(4, 1, "GATE 2G"); pg.bus_in(4, 2, "V/OCT 2G");
+		pg.bus_in(5, 1, "GATE 2B"); pg.bus_in(5, 2, "V/OCT 2B");
 	}
 	#endif
 
@@ -117,21 +116,35 @@ KeysWidget::KeysWidget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
-	addInput(createInput<PJ301MPort>(prt(gx(0), gy(1)), module, Keys::VOCT_INPUT));
-
-	for (std::size_t i=0; i<LO_SIZE; ++i)
+	for (std::size_t i=0; i<GTX__N; ++i)
 	{
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i) - 30, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * E +  0));  // C
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i) - 25, fy(0-0.28) - 5), module, Keys::KEY_LIGHT + i * E +  1));  // C#
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i) - 20, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * E +  2));  // D
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i) - 15, fy(0-0.28) - 5), module, Keys::KEY_LIGHT + i * E +  3));  // Eb
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i) - 10, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * E +  4));  // E
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i)     , fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * E +  5));  // F
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i) +  5, fy(0-0.28) - 5), module, Keys::KEY_LIGHT + i * E +  6));  // Fs
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i) + 10, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * E +  7));  // G
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i) + 15, fy(0-0.28) - 5), module, Keys::KEY_LIGHT + i * E +  8));  // Ab
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i) + 20, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * E +  9));  // A
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i) + 25, fy(0-0.28) - 5), module, Keys::KEY_LIGHT + i * E + 10));  // Bb
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i) + 30, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * E + 11));  // B
+		addInput(createInput<PJ301MPort> (prt(px(0, i), py(2, i)), module, Keys::imap(Keys::VOCT_1R_INPUT, i)));
+		addInput(createInput<PJ301MPort> (prt(px(0, i), py(1, i)), module, Keys::imap(Keys::GATE_1R_INPUT, i)));
+		addInput(createInput<PJ301MPort> (prt(px(1, i), py(2, i)), module, Keys::imap(Keys::VOCT_1G_INPUT, i)));
+		addInput(createInput<PJ301MPort> (prt(px(1, i), py(1, i)), module, Keys::imap(Keys::GATE_1G_INPUT, i)));
+		addInput(createInput<PJ301MPort> (prt(px(2, i), py(2, i)), module, Keys::imap(Keys::VOCT_1B_INPUT, i)));
+		addInput(createInput<PJ301MPort> (prt(px(2, i), py(1, i)), module, Keys::imap(Keys::GATE_1B_INPUT, i)));
+		addInput(createInput<PJ301MPort> (prt(px(3, i), py(2, i)), module, Keys::imap(Keys::VOCT_2R_INPUT, i)));
+		addInput(createInput<PJ301MPort> (prt(px(3, i), py(1, i)), module, Keys::imap(Keys::GATE_2R_INPUT, i)));
+		addInput(createInput<PJ301MPort> (prt(px(4, i), py(2, i)), module, Keys::imap(Keys::VOCT_2G_INPUT, i)));
+		addInput(createInput<PJ301MPort> (prt(px(4, i), py(1, i)), module, Keys::imap(Keys::GATE_2G_INPUT, i)));
+		addInput(createInput<PJ301MPort> (prt(px(5, i), py(2, i)), module, Keys::imap(Keys::VOCT_2B_INPUT, i)));
+		addInput(createInput<PJ301MPort> (prt(px(5, i), py(1, i)), module, Keys::imap(Keys::GATE_2B_INPUT, i)));
+	}
+
+	for (std::size_t i=0; i<6; ++i)
+	{
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i) - 30, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * 12 +  0));  // C
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i) - 25, fy(0-0.28) - 5), module, Keys::KEY_LIGHT + i * 12 +  1));  // C#
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i) - 20, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * 12 +  2));  // D
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i) - 15, fy(0-0.28) - 5), module, Keys::KEY_LIGHT + i * 12 +  3));  // Eb
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i) - 10, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * 12 +  4));  // E
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i)     , fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * 12 +  5));  // F
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i) +  5, fy(0-0.28) - 5), module, Keys::KEY_LIGHT + i * 12 +  6));  // Fs
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i) + 10, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * 12 +  7));  // G
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i) + 15, fy(0-0.28) - 5), module, Keys::KEY_LIGHT + i * 12 +  8));  // Ab
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i) + 20, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * 12 +  9));  // A
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i) + 25, fy(0-0.28) - 5), module, Keys::KEY_LIGHT + i * 12 + 10));  // Bb
+		addChild(createLight<SmallLight<RedLight>>(led(gx(i) + 30, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * 12 + 11));  // B
 	}
 }
