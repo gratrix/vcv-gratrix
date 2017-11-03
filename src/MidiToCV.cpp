@@ -6,7 +6,7 @@
 #include "dsp/digital.hpp"
 #include "Gratrix.hpp"
 
-struct MidiKey {
+struct GtxMidiKey {
 	int pitch = 60;
 	int at = 0; // aftertouch
 	int vel = 0; // velocity
@@ -14,7 +14,7 @@ struct MidiKey {
 	bool gate = false;
 };
 
-struct QuadMIDIToCVInterface : MidiIO, Module {
+struct GtxMidiInterface : MidiIO, Module {
 	enum ParamIds {
 		RESET_PARAM,
 		NUM_PARAMS
@@ -23,11 +23,12 @@ struct QuadMIDIToCVInterface : MidiIO, Module {
 		NUM_INPUTS
 	};
 	enum OutputIds {
-		PITCH_OUTPUT = 0,
-		GATE_OUTPUT = 6,
-		VELOCITY_OUTPUT = 12,
-		AT_OUTPUT = 18,
-		NUM_OUTPUTS = 24
+		PITCH_OUTPUT,     // N
+		GATE_OUTPUT,      // N
+		VELOCITY_OUTPUT,  // N
+		AT_OUTPUT,        // N
+		NUM_OUTPUTS,
+		OFF_OUTPUTS = PITCH_OUTPUT
 	};
 	enum LightIds {
 		RESET_LIGHT,
@@ -40,6 +41,11 @@ struct QuadMIDIToCVInterface : MidiIO, Module {
 		REASSIGN
 	};
 
+	static constexpr std::size_t omap(std::size_t port, std::size_t bank)
+	{
+		return port + bank * NUM_OUTPUTS;
+	}
+
 	bool pedal = false;
 
 	int mode = REASSIGN;
@@ -48,16 +54,15 @@ struct QuadMIDIToCVInterface : MidiIO, Module {
 
 	void setMode(int mode);
 
-	MidiKey activeKeys[6];
+	GtxMidiKey activeKeys[GTX__N];
 	std::list<int> open;
 
 	SchmittTrigger resetTrigger;
 
-	QuadMIDIToCVInterface() : MidiIO(), Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS) {
-
+	GtxMidiInterface() : MidiIO(), Module(NUM_PARAMS, NUM_INPUTS, GTX__N * (NUM_OUTPUTS - OFF_OUTPUTS) + OFF_OUTPUTS, NUM_LIGHTS) {
 	}
 
-	~QuadMIDIToCVInterface() {
+	~GtxMidiInterface() {
 	};
 
 	void step();
@@ -82,9 +87,9 @@ struct QuadMIDIToCVInterface : MidiIO, Module {
 
 };
 
-void QuadMIDIToCVInterface::resetMidi() {
+void GtxMidiInterface::resetMidi() {
 
-	for (int i = 0; i < 6; i++) {
+	for (int i = 0; i < GTX__N; i++) {
 		outputs[GATE_OUTPUT + i].value = 0.0;
 		activeKeys[i].gate = false;
 		activeKeys[i].vel = 0;
@@ -97,17 +102,17 @@ void QuadMIDIToCVInterface::resetMidi() {
 	lights[RESET_LIGHT].value = 1.0;
 }
 
-void QuadMIDIToCVInterface::step() {
+void GtxMidiInterface::step() {
 	static int msgsProcessed = 0;
 
 	if (isPortOpen()) {
 		std::vector<unsigned char> message;
 
 		// midiIn->getMessage returns empty vector if there are no messages in the queue
-		// NOTE: For the quadmidi we will process max 6 midi messages per step to avoid
+		// NOTE: For the quadmidi we will process max GTX__N midi messages per step to avoid
 		// problems with parallel input.
 		getMessage(&message);
-		while (msgsProcessed < 6 && message.size() > 0) {
+		while (msgsProcessed < GTX__N && message.size() > 0) {
 			processMidi(message);
 			getMessage(&message);
 			msgsProcessed++;
@@ -116,11 +121,11 @@ void QuadMIDIToCVInterface::step() {
 	}
 
 
-	for (int i = 0; i < 6; i++) {
-		outputs[GATE_OUTPUT + i].value = activeKeys[i].gate ? 10.0 : 0;
-		outputs[PITCH_OUTPUT + i].value = (activeKeys[i].pitch - 60) / 12.0;
-		outputs[VELOCITY_OUTPUT + i].value = activeKeys[i].vel / 127.0 * 10.0;
-		outputs[AT_OUTPUT + i].value = activeKeys[i].at / 127.0 * 10.0;
+	for (int i = 0; i < GTX__N; i++) {
+		outputs[omap(    GATE_OUTPUT, i)].value = activeKeys[i].gate ? 10.0 : 0;
+		outputs[omap(   PITCH_OUTPUT, i)].value = (activeKeys[i].pitch - 60) / 12.0;
+		outputs[omap(VELOCITY_OUTPUT, i)].value = activeKeys[i].vel / 127.0 * 10.0;
+		outputs[omap(      AT_OUTPUT, i)].value = activeKeys[i].at / 127.0 * 10.0;
 	}
 
 	if (resetTrigger.process(params[RESET_PARAM].value)) {
@@ -132,7 +137,7 @@ void QuadMIDIToCVInterface::step() {
 }
 
 
-void QuadMIDIToCVInterface::processMidi(std::vector<unsigned char> msg) {
+void GtxMidiInterface::processMidi(std::vector<unsigned char> msg) {
 	int channel = msg[0] & 0xf;
 	int status = (msg[0] >> 4) & 0xf;
 	int data1 = msg[1];
@@ -159,7 +164,7 @@ void QuadMIDIToCVInterface::processMidi(std::vector<unsigned char> msg) {
 			}
 			break;
 		case 0xa: // channel aftertouch
-			for (int i = 0; i < 6; i++) {
+			for (int i = 0; i < GTX__N; i++) {
 				if (activeKeys[i].pitch == data1) {
 					activeKeys[i].at = data2;
 				}
@@ -169,7 +174,7 @@ void QuadMIDIToCVInterface::processMidi(std::vector<unsigned char> msg) {
 			if (data1 == 0x40) { // pedal
 				pedal = (data2 >= 64);
 				if (!pedal) {
-					for (int i = 0; i < 6; i++) {
+					for (int i = 0; i < GTX__N; i++) {
 						activeKeys[i].gate = false;
 						open.push_back(i);
 					}
@@ -181,7 +186,7 @@ void QuadMIDIToCVInterface::processMidi(std::vector<unsigned char> msg) {
 	}
 
 	if (!pedal && !gate) {
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < GTX__N; i++) {
 			if (activeKeys[i].pitch == data1) {
 				activeKeys[i].gate = false;
 				activeKeys[i].vel = data2;
@@ -196,7 +201,7 @@ void QuadMIDIToCVInterface::processMidi(std::vector<unsigned char> msg) {
 
 	if (open.empty()) {
 		open.clear();
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < GTX__N; i++) {
 			open.push_back(i);
 		}
 	}
@@ -210,8 +215,8 @@ void QuadMIDIToCVInterface::processMidi(std::vector<unsigned char> msg) {
 
 	switch (mode) {
 		case RESET:
-			if (open.size() == 6 ) {
-				for (int i = 0; i < 6; i++) {
+			if (open.size() == GTX__N ) {
+				for (int i = 0; i < GTX__N; i++) {
 					activeKeys[i].gate = false;
 					open.push_back(i);
 				}
@@ -235,18 +240,18 @@ void QuadMIDIToCVInterface::processMidi(std::vector<unsigned char> msg) {
 
 }
 
-int QuadMIDIToCVInterface::getMode() const {
+int GtxMidiInterface::getMode() const {
 	return mode;
 }
 
-void QuadMIDIToCVInterface::setMode(int mode) {
+void GtxMidiInterface::setMode(int mode) {
 	resetMidi();
-	QuadMIDIToCVInterface::mode = mode;
+	GtxMidiInterface::mode = mode;
 }
 
 struct ModeItem : MenuItem {
 	int mode;
-	QuadMIDIToCVInterface *module;
+	GtxMidiInterface *module;
 
 	void onAction() {
 		module->setMode(mode);
@@ -254,7 +259,7 @@ struct ModeItem : MenuItem {
 };
 
 struct ModeChoice : ChoiceButton {
-	QuadMIDIToCVInterface *module;
+	GtxMidiInterface *module;
 	const std::vector<std::string> modeNames = {"ROTATE MODE", "RESET MODE", "REASSIGN MODE"};
 
 
@@ -282,7 +287,7 @@ GtxMidiWidget::GtxMidiWidget()
 {
 	GTX__WIDGET();
 
-	QuadMIDIToCVInterface *module = new QuadMIDIToCVInterface();
+	GtxMidiInterface *module = new GtxMidiInterface();
 	setModule(module);
 	box.size = Vec(12*15, 380);
 
@@ -315,8 +320,8 @@ GtxMidiWidget::GtxMidiWidget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x - 30, 365)));
 
-	addParam(createParam<LEDButton>(           but(fx(0.5), fy(0.4)), module, QuadMIDIToCVInterface::RESET_PARAM, 0.0, 1.0, 0.0));
-	addChild(createLight<SmallLight<RedLight>>(led(fx(0.5), fy(0.4)), module, QuadMIDIToCVInterface::RESET_LIGHT));
+	addParam(createParam<LEDButton>(           but(fx(0.5), fy(0.4)), module, GtxMidiInterface::RESET_PARAM, 0.0, 1.0, 0.0));
+	addChild(createLight<SmallLight<RedLight>>(led(fx(0.5), fy(0.4)), module, GtxMidiInterface::RESET_LIGHT));
 
 	{
 		float margin =  8;
@@ -350,13 +355,12 @@ GtxMidiWidget::GtxMidiWidget()
 	}
 
 	for (std::size_t i=0; i<GTX__N; ++i)
-		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(2, i)), module, QuadMIDIToCVInterface::   PITCH_OUTPUT + i));
-	for (std::size_t i=0; i<GTX__N; ++i)
-		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(1, i)), module, QuadMIDIToCVInterface::    GATE_OUTPUT + i));
-	for (std::size_t i=0; i<GTX__N; ++i)
-		addOutput(createOutput<PJ301MPort>(prt(px(0, i), py(1, i)), module, QuadMIDIToCVInterface::VELOCITY_OUTPUT + i));
-	for (std::size_t i=0; i<GTX__N; ++i)
-		addOutput(createOutput<PJ301MPort>(prt(px(0, i), py(2, i)), module, QuadMIDIToCVInterface::      AT_OUTPUT + i));
+	{
+		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(2, i)), module, GtxMidiInterface::omap(GtxMidiInterface::   PITCH_OUTPUT, i)));
+		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(1, i)), module, GtxMidiInterface::omap(GtxMidiInterface::    GATE_OUTPUT, i)));
+		addOutput(createOutput<PJ301MPort>(prt(px(0, i), py(1, i)), module, GtxMidiInterface::omap(GtxMidiInterface::VELOCITY_OUTPUT, i)));
+		addOutput(createOutput<PJ301MPort>(prt(px(0, i), py(2, i)), module, GtxMidiInterface::omap(GtxMidiInterface::      AT_OUTPUT, i)));
+	}
 }
 
 void GtxMidiWidget::step()
