@@ -28,23 +28,23 @@ struct Keys : Module
 		NUM_OUTPUTS
 	};
 	enum LightIds {
-		KEY_LIGHT  = 0,
-		NUM_LIGHTS = KEY_LIGHT + 6 * 12
+		KEY_LIGHT_1 = 0,
+		KEY_LIGHT_2 = KEY_LIGHT_1 + 6 * 12 * 3,
+		NUM_LIGHTS  = KEY_LIGHT_2 + 6 * 12 * 3
 	};
 
 	static constexpr std::size_t imap(std::size_t port, std::size_t bank)
 	{
-	//	return (port < OFF_INPUTS) ? port : port + bank * (NUM_INPUTS - OFF_INPUTS);
-		return                              port + bank *  NUM_INPUTS;
+		return port + bank *  NUM_INPUTS;
 	}
 
-	static void decode(float *lights, float input, float gate = 1.0)
+	static void decode(float *lights, int offset, float input, float gate = 1.0)
 	{
 		int note = static_cast<int>(std::floor(input * 12.0f + 0.5f)) + 3*12;
 
 		if (gate >= 0.5f && note >= 0 && note < 6*12)
 		{
-			lights[note] = 1.0f;
+			lights[note * 3 + offset] = 1.0f;
 		}
 	}
 
@@ -59,12 +59,12 @@ struct Keys : Module
 
 		for (std::size_t i=0; i<GTX__N; ++i)
 		{
-			decode(&leds[KEY_LIGHT], inputs[imap(VOCT_1R_INPUT, i)].value, inputs[imap(GATE_1R_INPUT, i)].value);
-			decode(&leds[KEY_LIGHT], inputs[imap(VOCT_1G_INPUT, i)].value, inputs[imap(GATE_1G_INPUT, i)].value);
-			decode(&leds[KEY_LIGHT], inputs[imap(VOCT_1B_INPUT, i)].value, inputs[imap(GATE_1B_INPUT, i)].value);
-			decode(&leds[KEY_LIGHT], inputs[imap(VOCT_2R_INPUT, i)].value, inputs[imap(GATE_2R_INPUT, i)].value);
-			decode(&leds[KEY_LIGHT], inputs[imap(VOCT_2G_INPUT, i)].value, inputs[imap(GATE_2G_INPUT, i)].value);
-			decode(&leds[KEY_LIGHT], inputs[imap(VOCT_2B_INPUT, i)].value, inputs[imap(GATE_2B_INPUT, i)].value);
+			decode(&leds[KEY_LIGHT_1], 0, inputs[imap(VOCT_1R_INPUT, i)].value, inputs[imap(GATE_1R_INPUT, i)].value);
+			decode(&leds[KEY_LIGHT_1], 1, inputs[imap(VOCT_1G_INPUT, i)].value, inputs[imap(GATE_1G_INPUT, i)].value);
+			decode(&leds[KEY_LIGHT_1], 2, inputs[imap(VOCT_1B_INPUT, i)].value, inputs[imap(GATE_1B_INPUT, i)].value);
+			decode(&leds[KEY_LIGHT_2], 0, inputs[imap(VOCT_2R_INPUT, i)].value, inputs[imap(GATE_2R_INPUT, i)].value);
+			decode(&leds[KEY_LIGHT_2], 1, inputs[imap(VOCT_2G_INPUT, i)].value, inputs[imap(GATE_2G_INPUT, i)].value);
+			decode(&leds[KEY_LIGHT_2], 2, inputs[imap(VOCT_2B_INPUT, i)].value, inputs[imap(GATE_2B_INPUT, i)].value);
 		}
 
 		// Write output in one go, seems to prevent flicker
@@ -134,17 +134,33 @@ KeysWidget::KeysWidget()
 
 	for (std::size_t i=0; i<6; ++i)
 	{
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i) - 30, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * 12 +  0));  // C
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i) - 25, fy(0-0.28) - 5), module, Keys::KEY_LIGHT + i * 12 +  1));  // C#
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i) - 20, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * 12 +  2));  // D
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i) - 15, fy(0-0.28) - 5), module, Keys::KEY_LIGHT + i * 12 +  3));  // Eb
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i) - 10, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * 12 +  4));  // E
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i)     , fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * 12 +  5));  // F
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i) +  5, fy(0-0.28) - 5), module, Keys::KEY_LIGHT + i * 12 +  6));  // Fs
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i) + 10, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * 12 +  7));  // G
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i) + 15, fy(0-0.28) - 5), module, Keys::KEY_LIGHT + i * 12 +  8));  // Ab
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i) + 20, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * 12 +  9));  // A
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i) + 25, fy(0-0.28) - 5), module, Keys::KEY_LIGHT + i * 12 + 10));  // Bb
-		addChild(createLight<SmallLight<RedLight>>(led(gx(i) + 30, fy(0-0.28) + 5), module, Keys::KEY_LIGHT + i * 12 + 11));  // B
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i) - 30, fy(0-0.28) + 5), module, Keys::KEY_LIGHT_1 + 3 * (i * 12 +  0)));  // C
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i) - 25, fy(0-0.28) - 5), module, Keys::KEY_LIGHT_1 + 3 * (i * 12 +  1)));  // C#
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i) - 20, fy(0-0.28) + 5), module, Keys::KEY_LIGHT_1 + 3 * (i * 12 +  2)));  // D
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i) - 15, fy(0-0.28) - 5), module, Keys::KEY_LIGHT_1 + 3 * (i * 12 +  3)));  // Eb
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i) - 10, fy(0-0.28) + 5), module, Keys::KEY_LIGHT_1 + 3 * (i * 12 +  4)));  // E
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i)     , fy(0-0.28) + 5), module, Keys::KEY_LIGHT_1 + 3 * (i * 12 +  5)));  // F
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i) +  5, fy(0-0.28) - 5), module, Keys::KEY_LIGHT_1 + 3 * (i * 12 +  6)));  // Fs
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i) + 10, fy(0-0.28) + 5), module, Keys::KEY_LIGHT_1 + 3 * (i * 12 +  7)));  // G
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i) + 15, fy(0-0.28) - 5), module, Keys::KEY_LIGHT_1 + 3 * (i * 12 +  8)));  // Ab
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i) + 20, fy(0-0.28) + 5), module, Keys::KEY_LIGHT_1 + 3 * (i * 12 +  9)));  // A
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i) + 25, fy(0-0.28) - 5), module, Keys::KEY_LIGHT_1 + 3 * (i * 12 + 10)));  // Bb
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i) + 30, fy(0-0.28) + 5), module, Keys::KEY_LIGHT_1 + 3 * (i * 12 + 11)));  // B
+	}
+
+	for (std::size_t i=0; i<6; ++i)
+	{
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i) - 30, fy(0+0.28) + 5), module, Keys::KEY_LIGHT_2 + 3 * (i * 12 +  0)));  // C
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i) - 25, fy(0+0.28) - 5), module, Keys::KEY_LIGHT_2 + 3 * (i * 12 +  1)));  // C#
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i) - 20, fy(0+0.28) + 5), module, Keys::KEY_LIGHT_2 + 3 * (i * 12 +  2)));  // D
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i) - 15, fy(0+0.28) - 5), module, Keys::KEY_LIGHT_2 + 3 * (i * 12 +  3)));  // Eb
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i) - 10, fy(0+0.28) + 5), module, Keys::KEY_LIGHT_2 + 3 * (i * 12 +  4)));  // E
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i)     , fy(0+0.28) + 5), module, Keys::KEY_LIGHT_2 + 3 * (i * 12 +  5)));  // F
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i) +  5, fy(0+0.28) - 5), module, Keys::KEY_LIGHT_2 + 3 * (i * 12 +  6)));  // Fs
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i) + 10, fy(0+0.28) + 5), module, Keys::KEY_LIGHT_2 + 3 * (i * 12 +  7)));  // G
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i) + 15, fy(0+0.28) - 5), module, Keys::KEY_LIGHT_2 + 3 * (i * 12 +  8)));  // Ab
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i) + 20, fy(0+0.28) + 5), module, Keys::KEY_LIGHT_2 + 3 * (i * 12 +  9)));  // A
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i) + 25, fy(0+0.28) - 5), module, Keys::KEY_LIGHT_2 + 3 * (i * 12 + 10)));  // Bb
+		addChild(createLight<SmallLight<RedGreenBlueLight>>(led(gx(i) + 30, fy(0+0.28) + 5), module, Keys::KEY_LIGHT_2 + 3 * (i * 12 + 11)));  // B
 	}
 }
