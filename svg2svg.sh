@@ -7,7 +7,7 @@
 "/c/Program Files/Inkscape/Inkscape.exe" build/res/VCA-F1.svg  --export-plain-svg=res/VCA-F1.svg  --export-text-to-path
 "/c/Program Files/Inkscape/Inkscape.exe" build/res/Env-F1.svg  --export-plain-svg=res/Env-F1.svg  --export-text-to-path
 "/c/Program Files/Inkscape/Inkscape.exe" build/res/Octave.svg  --export-plain-svg=res/Octave.svg  --export-text-to-path
-"/c/Program Files/Inkscape/Inkscape.exe" build/res/Keys.svg    --export-plain-svg=res/Keys.svg    --export-text-to-path
+"/c/Program Files/Inkscape/Inkscape.exe" build/res/Keys-G1.svg --export-plain-svg=res/Keys-G1.svg --export-text-to-path
 "/c/Program Files/Inkscape/Inkscape.exe" build/res/Split.svg   --export-plain-svg=res/Split.svg   --export-text-to-path
 "/c/Program Files/Inkscape/Inkscape.exe" build/res/Chord12.svg --export-plain-svg=res/Chord12.svg --export-text-to-path
 "/c/Program Files/Inkscape/Inkscape.exe" build/res/Fade-G1.svg --export-plain-svg=res/Fade-G1.svg --export-text-to-path

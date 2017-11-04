@@ -87,7 +87,7 @@ KeysWidget::KeysWidget()
 
 	#if GTX__SAVE_SVG
 	{
-		PanelGen pg(assetPlugin(plugin, "build/res/Keys.svg"), box.size, "KEYS");
+		PanelGen pg(assetPlugin(plugin, "build/res/Keys-G1.svg"), box.size, "KEYS-G1");
 
 		pg.line(Vec(fx(0-.4), fy(0.36)), Vec(fx(2+.4), fy(0.36)), "fill:none;stroke:#7092BE;stroke-width:1");
 		pg.line(Vec(fx(3-.4), fy(0.36)), Vec(fx(5+.4), fy(0.36)), "fill:none;stroke:#7092BE;stroke-width:1");
@@ -112,11 +112,11 @@ KeysWidget::KeysWidget()
 		#if GTX__LOAD_SVG
 		SVGPanel *panel = new SVGPanel();
 		panel->box.size = box.size;
-		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Keys.svg")));
+		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Keys-G1.svg")));
 		#else
 		Panel *panel = new LightPanel();
 		panel->box.size = box.size;
-		panel->backgroundImage = Image::load(assetPlugin(plugin, "res/Keys.png"));
+		panel->backgroundImage = Image::load(assetPlugin(plugin, "res/Keys-G1.png"));
 		#endif
 		addChild(panel);
 	}

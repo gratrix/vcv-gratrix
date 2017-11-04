@@ -21,7 +21,7 @@ void init(rack::Plugin *p) {
 //	p->addModel(createModel<MuxWidget>     ("Gratrix", "Gratrix", "Mux",     "Mux"));
 //	p->addModel(createModel<SplitWidget>   ("Gratrix", "Gratrix", "Split",   "Split"));
 	p->addModel(createModel<OctaveWidget>  ("Gratrix", "Gratrix", "Octave",  "Octave"));
-	p->addModel(createModel<KeysWidget>    ("Gratrix", "Gratrix", "Keys",    "Keys"));
+	p->addModel(createModel<KeysWidget>    ("Gratrix", "Gratrix", "Keys-G1", "Keys-G1"));
 	p->addModel(createModel<Blank3Widget>  ("Gratrix", "Gratrix", "Blank3",  "Blank 3"));
 	p->addModel(createModel<Blank6Widget>  ("Gratrix", "Gratrix", "Blank6",  "Blank 6"));
 	p->addModel(createModel<Blank9Widget>  ("Gratrix", "Gratrix", "Blank9",  "Blank 9"));
