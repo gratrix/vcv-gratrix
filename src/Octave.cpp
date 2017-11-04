@@ -58,11 +58,10 @@ struct Octave : Module
 			safe  = note + (E * 1000);  // push away from negative numbers
 			key   = safe % E;
 			oct   = safe / E;
-			led   = 1.0f; // (oct & 1) ? -1.0f : 1.0f;
+			led   = (oct & 1) ? -1.0f : 1.0f;
 			oct  -= 1000;
 		}
 	};
-
 
 	Decode input;
 
@@ -79,6 +78,11 @@ struct Octave : Module
 
 	void step() override
 	{
+		// Clear all lights
+
+		float leds[NUM_LIGHTS] = {};
+
+		// Decode inputs and params
 		input.step(inputs[VOCT_INPUT].value);
 
 		for (std::size_t i=0; i<N; ++i)
@@ -93,13 +97,18 @@ struct Octave : Module
 
 		// Lights
 
-		for (auto &light : lights) light.value = 0.0f;
-
-		lights[KEY_LIGHT + input.key].value = input.led;
+		leds[KEY_LIGHT + input.key] = 1.0f;
 
 		if (LO_BEGIN <= input.oct && input.oct <= LO_END)
 		{
-			lights[OCT_LIGHT + input.oct - LO_BEGIN].value = input.led;
+			leds[OCT_LIGHT + input.oct - LO_BEGIN] = 1.0f;
+		}
+
+		// Write output in one go, seems to prevent flicker
+
+		for (std::size_t i=0; i<NUM_LIGHTS; ++i)
+		{
+			lights[i].value = leds[i];
 		}
 	}
 };
