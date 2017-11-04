@@ -12,7 +12,8 @@ enum Spec
 };
 
 
-// ===========================================================================================================
+//============================================================================================================
+//! \brief Octave moddule.
 
 struct Octave : Module
 {
@@ -65,10 +66,16 @@ struct Octave : Module
 
 	Decode input;
 
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief Constructor.
+
 	Octave()
 	:
 		Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS)
 	{}
+
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief Step function.
 
 	void step() override
 	{
@@ -101,6 +108,9 @@ struct Octave : Module
 int x(std::size_t i, double radius) { return static_cast<int>(6*15     + 0.5 + radius * dx(i, E)); }
 int y(std::size_t i, double radius) { return static_cast<int>(-20+206  + 0.5 + radius * dy(i, E)); }
 
+
+//============================================================================================================
+//! \brief Octave widget.
 
 OctaveWidget::OctaveWidget()
 {
