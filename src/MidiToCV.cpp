@@ -65,25 +65,25 @@ struct GtxMidiInterface : MidiIO, Module {
 	~GtxMidiInterface() {
 	};
 
-	void step();
+	void step() override;
 
 	void processMidi(std::vector<unsigned char> msg);
 
-	json_t *toJson() {
+	json_t *toJson() override {
 		json_t *rootJ = json_object();
 		addBaseJson(rootJ);
 		return rootJ;
 	}
 
-	void fromJson(json_t *rootJ) {
+	void fromJson(json_t *rootJ) override {
 		baseFromJson(rootJ);
 	}
 
-	void reset() {
+	void reset() override {
 		resetMidi();
 	}
 
-	void resetMidi();
+	void resetMidi() override;
 
 };
 
@@ -253,7 +253,7 @@ struct ModeItem : MenuItem {
 	int mode;
 	GtxMidiInterface *module;
 
-	void onAction() {
+	void onAction(EventAction &e) {
 		module->setMode(mode);
 	}
 };
@@ -263,7 +263,7 @@ struct ModeChoice : ChoiceButton {
 	const std::vector<std::string> modeNames = {"ROTATE MODE", "RESET MODE", "REASSIGN MODE"};
 
 
-	void onAction() {
+	void onAction(EventAction &e) {
 		Menu *menu = gScene->createMenu();
 		menu->box.pos = getAbsoluteOffset(Vec(0, box.size.y)).round();
 		menu->box.size.x = box.size.x;

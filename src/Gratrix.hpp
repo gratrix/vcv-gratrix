@@ -2190,7 +2190,7 @@ os << "</font>" << std::endl;
 
 struct GtxMidiWidget : ModuleWidget {
 	GtxMidiWidget();
-	void step();
+	void step() override;
 };
 
 struct VCO_F1_Widget : ModuleWidget {
