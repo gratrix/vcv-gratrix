@@ -149,9 +149,9 @@ struct Chord12 : Module
 
 		bool act_prm = false;
 
-		if (params[PROG_PARAM].value <= 1.0)
+		if (params[PROG_PARAM].value <= 1.0f)
 		{
-			prg_prm.step(clampf(params[PROG_PARAM].value, 0.0001, 0.9999) - 0.5f/E);
+			prg_prm.step(clampf(params[PROG_PARAM].value, 0.0001f, 0.9999f) - 0.5f/E);
 			act_prm = true;
 		}
 
@@ -169,7 +169,7 @@ struct Chord12 : Module
 			leds[PROG_LIGHT + prg_cv.key*2+1] = 1.0f;  // Red
 		}
 
-		leds[FUND_LIGHT + input.key] = +1.0f;  // Red
+		leds[FUND_LIGHT + input.key] = 1.0f;  // Red
 
 		// Chord bit
 
@@ -205,7 +205,7 @@ struct Chord12 : Module
 			{
 				if (note_enable[prg_prm.key][j])
 				{
-					leds[NOTE_LIGHT + j*2] = 1.0; // Green
+					leds[NOTE_LIGHT + j*2] = 1.0f; // Green
 				}
 			}
 		}
@@ -215,7 +215,7 @@ struct Chord12 : Module
 			{
 				if (note_enable[prg_cv.key][j])
 				{
-					leds[NOTE_LIGHT + j*2+1] = 1.0; // Red
+					leds[NOTE_LIGHT + j*2+1] = 1.0f; // Red
 				}
 			}
 		}
@@ -235,7 +235,7 @@ struct Chord12 : Module
 
 			while (b < N)
 			{
-				gen[b++] = -10.0;
+				gen[b++] = -10.0f;
 			}
 		}
 
