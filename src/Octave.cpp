@@ -45,7 +45,6 @@ struct Octave : Module
 		int   note  = 0;
 		int   key   = 0;
 		int   oct   = 0;
-		float led   = 0.0f;
 
 		void step(float input)
 		{
@@ -57,9 +56,7 @@ struct Octave : Module
 			note  = static_cast<int>(fnote);
 			safe  = note + (E * 1000);  // push away from negative numbers
 			key   = safe % E;
-			oct   = safe / E;
-			led   = (oct & 1) ? -1.0f : 1.0f;
-			oct  -= 1000;
+			oct   = (safe / E) - 1000;
 		}
 	};
 
