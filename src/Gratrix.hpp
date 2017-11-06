@@ -10,8 +10,6 @@
 #include "rack.hpp"
 
 
-#define GreenRedLight RedLight
-
 #define GTX__N          6
 #define GTX__2PI        6.283185307179586476925
 #define GTX__IO_RADIUS  26.0
