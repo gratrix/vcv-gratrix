@@ -79,13 +79,24 @@ struct Fade02 : Module
 
 		for (std::size_t i=0; i<GTX__N; ++i)
 		{
-			float temp_1A = inputs[imap(IN1A_INPUT, i)].value * (1.0f - blendAB) + inputs[IN1B_INPUT].value *         blendAB;
-			float temp_1B = inputs[imap(IN1A_INPUT, i)].value *         blendAB  + inputs[IN1B_INPUT].value * (1.0f - blendAB);
-			float temp_2A = inputs[imap(IN2A_INPUT, i)].value * (1.0f - blendAB) + inputs[IN2B_INPUT].value *         blendAB;
-			float temp_2B = inputs[imap(IN2A_INPUT, i)].value *         blendAB  + inputs[IN2B_INPUT].value * (1.0f - blendAB);
+			float input1A  = inputs[imap(IN1A_INPUT, i)].active ? inputs[imap(IN1A_INPUT, i)].value : inputs[imap(IN1A_INPUT, GTX__N)].value;
+			float input1B  = inputs[imap(IN1B_INPUT, i)].active ? inputs[imap(IN1B_INPUT, i)].value : inputs[imap(IN1B_INPUT, GTX__N)].value;
+			float input2A  = inputs[imap(IN2A_INPUT, i)].active ? inputs[imap(IN2A_INPUT, i)].value : inputs[imap(IN2A_INPUT, GTX__N)].value;
+			float input2B  = inputs[imap(IN2B_INPUT, i)].active ? inputs[imap(IN2B_INPUT, i)].value : inputs[imap(IN2B_INPUT, GTX__N)].value;
 
-			outputs[omap(OUT1A_OUTPUT, i)].value = temp_1A * (1.0f - blend12) + temp_2A *         blend12;
-			outputs[omap(OUT2B_OUTPUT, i)].value = temp_1B *         blend12  + temp_2B * (1.0f - blend12);
+			float delta1AB = blendAB * (input1B - input1A);
+			float delta2AB = blendAB * (input2B - input2A);
+
+			float temp_1A  = input1A + delta1AB;
+			float temp_1B  = input1B - delta1AB;
+			float temp_2A  = input2A + delta2AB;
+			float temp_2B  = input2B - delta2AB;
+
+			float delta12A = blend12 * (temp_2A - temp_1A);
+			float delta12B = blend12 * (temp_2B - temp_1B);
+
+			outputs[omap(OUT1A_OUTPUT, i)].value = temp_1A + delta12A;
+			outputs[omap(OUT2B_OUTPUT, i)].value = temp_2B - delta12B;
 		}
 
 		lights[OUT_1AP_GREEN].value = lights[OUT_2BP_RED].value =        blendAB;
