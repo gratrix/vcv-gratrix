@@ -103,10 +103,9 @@ void GtxMidiInterface::resetMidi() {
 }
 
 void GtxMidiInterface::step() {
-	static int msgsProcessed = 0;
-
 	if (isPortOpen()) {
 		std::vector<unsigned char> message;
+		int msgsProcessed = 0;
 
 		// midiIn->getMessage returns empty vector if there are no messages in the queue
 		// NOTE: For the quadmidi we will process max GTX__N midi messages per step to avoid
@@ -117,7 +116,6 @@ void GtxMidiInterface::step() {
 			getMessage(&message);
 			msgsProcessed++;
 		}
-		msgsProcessed = 0;
 	}
 
 
@@ -142,8 +140,7 @@ void GtxMidiInterface::processMidi(std::vector<unsigned char> msg) {
 	int status = (msg[0] >> 4) & 0xf;
 	int data1 = msg[1];
 	int data2 = msg[2];
-
-	static int gate;
+	bool gate;
 
 	// Filter channels
 	if (this->channel >= 0 && this->channel != channel)
@@ -174,6 +171,7 @@ void GtxMidiInterface::processMidi(std::vector<unsigned char> msg) {
 			if (data1 == 0x40) { // pedal
 				pedal = (data2 >= 64);
 				if (!pedal) {
+					open.clear();
 					for (int i = 0; i < GTX__N; i++) {
 						activeKeys[i].gate = false;
 						open.push_back(i);
@@ -185,7 +183,11 @@ void GtxMidiInterface::processMidi(std::vector<unsigned char> msg) {
 			return;
 	}
 
-	if (!pedal && !gate) {
+	if (pedal && !gate) {
+		return;
+	}
+
+	if (!gate) {
 		for (int i = 0; i < GTX__N; i++) {
 			if (activeKeys[i].pitch == data1) {
 				activeKeys[i].gate = false;
@@ -200,18 +202,17 @@ void GtxMidiInterface::processMidi(std::vector<unsigned char> msg) {
 	}
 
 	if (open.empty()) {
-		open.clear();
 		for (int i = 0; i < GTX__N; i++) {
 			open.push_back(i);
 		}
 	}
-
 
 	if (!activeKeys[0].gate && !activeKeys[1].gate &&
 		!activeKeys[2].gate && !activeKeys[3].gate &&
 		!activeKeys[4].gate && !activeKeys[5].gate) {
 		open.sort();
 	}
+
 
 	switch (mode) {
 		case RESET:
@@ -227,17 +228,25 @@ void GtxMidiInterface::processMidi(std::vector<unsigned char> msg) {
 			break;
 		case ROTATE:
 			break;
-		default:
-			fprintf(stderr, "No mode selected?!\n");
 	}
 
-	activeKeys[open.front()].gate = true;
-	activeKeys[open.front()].pitch = data1;
-	activeKeys[open.front()].vel = data2;
+	int next = open.front();
 	open.pop_front();
-	return;
 
+	for (int i = 0; i < GTX__N; i++) {
+		if (activeKeys[i].pitch == data1 && activeKeys[i].gate) {
+			activeKeys[i].vel = data2;
+			if (std::find(open.begin(), open.end(), i) != open.end())
+				open.remove(i);
 
+			open.push_front(i);
+			activeKeys[i].gate = false;
+		}
+	}
+
+	activeKeys[next].gate = true;
+	activeKeys[next].pitch = data1;
+	activeKeys[next].vel = data2;
 }
 
 int GtxMidiInterface::getMode() const {
