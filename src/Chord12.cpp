@@ -315,7 +315,7 @@ Chord12Widget::Chord12Widget()
 	{
 		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(2, i)), module, Chord12::omap(Chord12::VOCT_OUTPUT, i)));
 	}
-#undef GreenRedLight
+
 	for (std::size_t i=0; i<T; ++i)
 	{
 		addParam(createParam<LEDButton>(but(x(i), y(i)), module, i + Chord12::NOTE_PARAM, 0.0, 1.0, 0.0));
