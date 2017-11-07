@@ -13,7 +13,7 @@
 #define GTX__N          6
 #define GTX__2PI        6.283185307179586476925
 #define GTX__IO_RADIUS  26.0
-#define GTX__SAVE_SVG   0
+#define GTX__SAVE_SVG   1
 #define GTX__LOAD_SVG   1
 #define GTX__WIDGET()   // do { std::cout << "Gratrix Module : " << __FUNCTION__ << "();" << std::endl; } while(0);
 
@@ -2215,8 +2215,8 @@ struct MuxWidget : ModuleWidget {
  	MuxWidget();
 };
 
-struct Chord12Widget : ModuleWidget {
- 	Chord12Widget();
+struct Chord_G1_Widget : ModuleWidget {
+ 	Chord_G1_Widget();
 };
 
 struct Fade_G1_Widget : ModuleWidget {
