@@ -245,16 +245,18 @@ struct Chord12 : Module
 
 		for (std::size_t i=0; i<N; ++i)
 		{
-			outputs[omap(i, VOCT_OUTPUT)].value = gen[i];
+			outputs[omap(VOCT_OUTPUT, i)].value = gen[i];
 		}
 	}
 };
 
 
-int    x (int    i, double radius = 37.0, double spill = 1.65) { return static_cast<int>(6+6*15 + 0.5 + (radius + spill * i) * dx(i, E)); }
-int    y (int    i, double radius = 37.0, double spill = 1.65) { return static_cast<int>(180    + 0.5 + (radius + spill * i) * dy(i, E)); }
-double xd(double i, double radius = 37.0, double spill = 1.65) { return                 (6+6*15       + (radius + spill * i) * dx(i, E)); }
-double yd(double i, double radius = 37.0, double spill = 1.65) { return                 (180          + (radius + spill * i) * dy(i, E)); }
+static int    x (int    i, double radius = 37.0, double spill = 1.65) { return static_cast<int>(6+6*15 + 0.5 + (radius + spill * i) * dx(i, E)); }
+static int    y (int    i, double radius = 37.0, double spill = 1.65) { return static_cast<int>(180    + 0.5 + (radius + spill * i) * dy(i, E)); }
+#if GTX__SAVE_SVG
+static double xd(double i, double radius = 37.0, double spill = 1.65) { return                 (6+6*15       + (radius + spill * i) * dx(i, E)); }
+static double yd(double i, double radius = 37.0, double spill = 1.65) { return                 (180          + (radius + spill * i) * dy(i, E)); }
+#endif
 
 
 //============================================================================================================
