@@ -254,12 +254,9 @@ struct Chord_G1 : Module
 };
 
 
-static int    x (int    i, double radius = 37.0, double spill = 1.65) { return static_cast<int>(6+6*15 + 0.5 + (radius + spill * i) * dx(i, E)); }
-static int    y (int    i, double radius = 37.0, double spill = 1.65) { return static_cast<int>(180    + 0.5 + (radius + spill * i) * dy(i, E)); }
-#if GTX__SAVE_SVG
-static double xd(double i, double radius = 37.0, double spill = 1.65) { return                 (6+6*15       + (radius + spill * i) * dx(i, E)); }
-static double yd(double i, double radius = 37.0, double spill = 1.65) { return                 (180          + (radius + spill * i) * dy(i, E)); }
-#endif
+static double x0(double shift = 0) { return 6+6*15 + shift * 66; }
+static double xd(double i, double radius = 37.0, double spill = 1.65) { return (x0()    + (radius + spill * i) * dx(i, E)); }
+static double yd(double i, double radius = 37.0, double spill = 1.65) { return (gy(1.5) + (radius + spill * i) * dy(i, E)); }
 
 
 //============================================================================================================
@@ -277,21 +274,26 @@ Chord_G1_Widget::Chord_G1_Widget()
 	{
 		PanelGen pg(assetPlugin(plugin, "build/res/Chord-G1.svg"), box.size, "CHORD-G1");
 
-		pg.nob_med(0.5, -0.28, "PROGRAM SELECT");
-		pg.prt_in (0, 2-0.14,  "V/OCT");
-		pg.prt_in (1, 2-0.14,  "GATE");
-		pg.bus_out(2, 1,       "GATE");
-		pg.bus_out(2, 2,       "V/OCT");
+		pg.nob_med_raw(x0(),   fy(-0.28), "PROGRAM");
+		pg.prt_in_raw (x0(-1), fy(-0.28), "CV");
+		pg.nob_med_raw(x0(+1), fy(-0.28), "SELECT");
+		pg.nob_med_raw(x0(),   fy(+0.28), "BASS NOTE");
+		pg.prt_in_raw (x0(-1), fy(+0.28), "V/OCT");
+		pg.prt_in_raw (x0(+1), fy(+0.28), "GATE");
+
+		pg.bus_inx(0.5,  1,    "CHORD NOTES");
+		pg.bus_out(2.0,  1,    "GATE");
+		pg.bus_out(2.0,  2,    "V/OCT");
 
 		for (double i=0.0; i<T-1.0; i+=0.1)
 		{
 			pg.line(Vec(xd(i), yd(i)), Vec(xd(i+0.1), yd(i+0.1)), "fill:none;stroke:#7092BE;stroke-width:2");
 		}
 
-		pg.line(Vec(6+6*15, 180), Vec(xd(24), yd(24)), "fill:none;stroke:#7092BE;stroke-width:4");
-		pg.line(Vec(6+6*15, 180), Vec(xd(16), yd(16)), "fill:none;stroke:#7092BE;stroke-width:4");
-		pg.line(Vec(6+6*15, 180), Vec(xd(19), yd(19)), "fill:none;stroke:#7092BE;stroke-width:4");
-		pg.line(Vec(6+6*15, 180), Vec(xd(22), yd(22)), "fill:none;stroke:#7092BE;stroke-width:4");
+		pg.line(Vec(x0(), gy(1.5)), Vec(xd(24), yd(24)), "fill:none;stroke:#7092BE;stroke-width:4");
+		pg.line(Vec(x0(), gy(1.5)), Vec(xd(16), yd(16)), "fill:none;stroke:#7092BE;stroke-width:4");
+		pg.line(Vec(x0(), gy(1.5)), Vec(xd(19), yd(19)), "fill:none;stroke:#7092BE;stroke-width:4");
+		pg.line(Vec(x0(), gy(1.5)), Vec(xd(22), yd(22)), "fill:none;stroke:#7092BE;stroke-width:4");
 	}
 	#endif
 
@@ -313,11 +315,10 @@ Chord_G1_Widget::Chord_G1_Widget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
-	addParam(createParam<RoundBlackKnob>(n_m(fx(1+0.18), fy(-0.28)), module, Chord_G1::PROG_PARAM, 0.0, 1.2, 0.0));
-
-	addInput(createInput<PJ301MPort>(prt(fx(0-0.23), fy(-0.28)),  module, Chord_G1::PROG_INPUT));
-	addInput(createInput<PJ301MPort>(prt(gx(1)     , gy(2+0.14)), module, Chord_G1::GATE_INPUT));
-	addInput(createInput<PJ301MPort>(prt(gx(0)     , gy(2+0.14)), module, Chord_G1::VOCT_INPUT));
+	addParam(createParam<RoundBlackKnob>(n_m(x0(+1), fy(-0.28)), module, Chord_G1::PROG_PARAM, 0.0, 1.2, 0.0));
+	addInput(createInput<PJ301MPort>    (prt(x0(-1), fy(-0.28)), module, Chord_G1::PROG_INPUT));
+	addInput(createInput<PJ301MPort>    (prt(x0(+1), fy(+0.28)), module, Chord_G1::GATE_INPUT));
+	addInput(createInput<PJ301MPort>    (prt(x0(-1), fy(+0.28)), module, Chord_G1::VOCT_INPUT));
 
 	for (std::size_t i=0; i<N; ++i)
 	{
@@ -327,33 +328,33 @@ Chord_G1_Widget::Chord_G1_Widget()
 
 	for (std::size_t i=0; i<T; ++i)
 	{
-		addParam(createParam<LEDButton>(but(x(i), y(i)), module, i + Chord_G1::NOTE_PARAM, 0.0, 1.0, 0.0));
-		addChild(createLight<SmallLight<GreenRedLight>>(led(x(i), y(i)), module, Chord_G1::NOTE_LIGHT + i*2));
+		addParam(createParam<LEDButton>(but(xd(i), yd(i)), module, i + Chord_G1::NOTE_PARAM, 0.0, 1.0, 0.0));
+		addChild(createLight<SmallLight<GreenRedLight>>(led(xd(i), yd(i)), module, Chord_G1::NOTE_LIGHT + i*2));
 	}
 
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) - 30, fy(0-0.28) + 5), module, Chord_G1::PROG_LIGHT +  0*2));  // C
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) - 25, fy(0-0.28) - 5), module, Chord_G1::PROG_LIGHT +  1*2));  // C#
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) - 20, fy(0-0.28) + 5), module, Chord_G1::PROG_LIGHT +  2*2));  // D
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) - 15, fy(0-0.28) - 5), module, Chord_G1::PROG_LIGHT +  3*2));  // Eb
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) - 10, fy(0-0.28) + 5), module, Chord_G1::PROG_LIGHT +  4*2));  // E
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45)     , fy(0-0.28) + 5), module, Chord_G1::PROG_LIGHT +  5*2));  // F
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) +  5, fy(0-0.28) - 5), module, Chord_G1::PROG_LIGHT +  6*2));  // Fs
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) + 10, fy(0-0.28) + 5), module, Chord_G1::PROG_LIGHT +  7*2));  // G
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) + 15, fy(0-0.28) - 5), module, Chord_G1::PROG_LIGHT +  8*2));  // Ab
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) + 20, fy(0-0.28) + 5), module, Chord_G1::PROG_LIGHT +  9*2));  // A
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) + 25, fy(0-0.28) - 5), module, Chord_G1::PROG_LIGHT + 10*2));  // Bb
-	addChild(createLight<SmallLight<GreenRedLight>>(led(gx(0.45) + 30, fy(0-0.28) + 5), module, Chord_G1::PROG_LIGHT + 11*2));  // B
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() - 30, fy(-0.28) + 5), module, Chord_G1::PROG_LIGHT +  0*2));  // C
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() - 25, fy(-0.28) - 5), module, Chord_G1::PROG_LIGHT +  1*2));  // C#
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() - 20, fy(-0.28) + 5), module, Chord_G1::PROG_LIGHT +  2*2));  // D
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() - 15, fy(-0.28) - 5), module, Chord_G1::PROG_LIGHT +  3*2));  // Eb
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() - 10, fy(-0.28) + 5), module, Chord_G1::PROG_LIGHT +  4*2));  // E
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0()     , fy(-0.28) + 5), module, Chord_G1::PROG_LIGHT +  5*2));  // F
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() +  5, fy(-0.28) - 5), module, Chord_G1::PROG_LIGHT +  6*2));  // Fs
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() + 10, fy(-0.28) + 5), module, Chord_G1::PROG_LIGHT +  7*2));  // G
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() + 15, fy(-0.28) - 5), module, Chord_G1::PROG_LIGHT +  8*2));  // Ab
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() + 20, fy(-0.28) + 5), module, Chord_G1::PROG_LIGHT +  9*2));  // A
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() + 25, fy(-0.28) - 5), module, Chord_G1::PROG_LIGHT + 10*2));  // Bb
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() + 30, fy(-0.28) + 5), module, Chord_G1::PROG_LIGHT + 11*2));  // B
 
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00) - 30, gy(2-0.14) + 5), module, Chord_G1::FUND_LIGHT +  0));  // C
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00) - 25, gy(2-0.14) - 5), module, Chord_G1::FUND_LIGHT +  1));  // C#
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00) - 20, gy(2-0.14) + 5), module, Chord_G1::FUND_LIGHT +  2));  // D
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00) - 15, gy(2-0.14) - 5), module, Chord_G1::FUND_LIGHT +  3));  // Eb
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00) - 10, gy(2-0.14) + 5), module, Chord_G1::FUND_LIGHT +  4));  // E
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00)     , gy(2-0.14) + 5), module, Chord_G1::FUND_LIGHT +  5));  // F
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00) +  5, gy(2-0.14) - 5), module, Chord_G1::FUND_LIGHT +  6));  // Fs
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00) + 10, gy(2-0.14) + 5), module, Chord_G1::FUND_LIGHT +  7));  // G
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00) + 15, gy(2-0.14) - 5), module, Chord_G1::FUND_LIGHT +  8));  // Ab
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00) + 20, gy(2-0.14) + 5), module, Chord_G1::FUND_LIGHT +  9));  // A
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00) + 25, gy(2-0.14) - 5), module, Chord_G1::FUND_LIGHT + 10));  // Bb
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.00) + 30, gy(2-0.14) + 5), module, Chord_G1::FUND_LIGHT + 11));  // B
+	addChild(createLight<SmallLight<     RedLight>>(led(x0() - 30, fy(+0.28) + 5), module, Chord_G1::FUND_LIGHT +  0));  // C
+	addChild(createLight<SmallLight<     RedLight>>(led(x0() - 25, fy(+0.28) - 5), module, Chord_G1::FUND_LIGHT +  1));  // C#
+	addChild(createLight<SmallLight<     RedLight>>(led(x0() - 20, fy(+0.28) + 5), module, Chord_G1::FUND_LIGHT +  2));  // D
+	addChild(createLight<SmallLight<     RedLight>>(led(x0() - 15, fy(+0.28) - 5), module, Chord_G1::FUND_LIGHT +  3));  // Eb
+	addChild(createLight<SmallLight<     RedLight>>(led(x0() - 10, fy(+0.28) + 5), module, Chord_G1::FUND_LIGHT +  4));  // E
+	addChild(createLight<SmallLight<     RedLight>>(led(x0()     , fy(+0.28) + 5), module, Chord_G1::FUND_LIGHT +  5));  // F
+	addChild(createLight<SmallLight<     RedLight>>(led(x0() +  5, fy(+0.28) - 5), module, Chord_G1::FUND_LIGHT +  6));  // Fs
+	addChild(createLight<SmallLight<     RedLight>>(led(x0() + 10, fy(+0.28) + 5), module, Chord_G1::FUND_LIGHT +  7));  // G
+	addChild(createLight<SmallLight<     RedLight>>(led(x0() + 15, fy(+0.28) - 5), module, Chord_G1::FUND_LIGHT +  8));  // Ab
+	addChild(createLight<SmallLight<     RedLight>>(led(x0() + 20, fy(+0.28) + 5), module, Chord_G1::FUND_LIGHT +  9));  // A
+	addChild(createLight<SmallLight<     RedLight>>(led(x0() + 25, fy(+0.28) - 5), module, Chord_G1::FUND_LIGHT + 10));  // Bb
+	addChild(createLight<SmallLight<     RedLight>>(led(x0() + 30, fy(+0.28) + 5), module, Chord_G1::FUND_LIGHT + 11));  // B
 }

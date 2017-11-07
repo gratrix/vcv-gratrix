@@ -54,7 +54,7 @@ inline int    fy(double i) { return gy(i - 0.1); }
 inline int    rad_n_b() { return 54/2; }
 inline int    rad_n_m() { return 36/2; }
 inline int    rad_n_s() { return 27/2; }
-inline int    rad_led() { return  5; }
+inline int    rad_led() { return  4; }
 inline int    rad_but() { return 10; }
 inline int    rad_scr() { return  8; }
 inline int    rad_prt() { return 13; }
@@ -164,11 +164,15 @@ public:
 
 	void nob_med(double x, double y, const std::string title = "")
 	{
-	//	circle(Vec(fx(x), fy(y)), rad_n_m() - 3, "fill:#888888;stroke:#440022;stroke-width:1");
+		return nob_med_raw(fx(x), fy(y));
+	}
+	void nob_med_raw(double x, double y, const std::string title = "")
+	{
+	//	circle(Vec(x, y), rad_n_m() - 3, "fill:#888888;stroke:#440022;stroke-width:1");
 
 		if (!title.empty())
 		{
-			text(Vec(fx(x), fy(y) - rad_n_m() - 5), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
+			text(Vec(x, y - rad_n_m() - 5), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
 		}
 	}
 
@@ -188,20 +192,22 @@ public:
 
 	void prt_in(double x, double y, const std::string title = "", const std::string subtitle = "")
 	{
-		int xx = gx(x);
-		int yy = gy(y);
+		return prt_in_raw(gx(x), gy(y));
+	}
 
-	//	circle(Vec(xx, yy), rad_prt() + 4, "fill:#7092BE;stroke:#7092BE;stroke-width:1");
-	//	circle(Vec(xx, yy), rad_prt() - 3, "fill:#888888;stroke:#440022;stroke-width:1");
+	void prt_in_raw(double x, double y, const std::string title = "", const std::string subtitle = "")
+	{
+	//	circle(Vec(x, y), rad_prt() + 4, "fill:#7092BE;stroke:#7092BE;stroke-width:1");
+	//	circle(Vec(x, y), rad_prt() - 3, "fill:#888888;stroke:#440022;stroke-width:1");
 
 		if (!title.empty())
 		{
-			text(Vec(xx, yy - rad_prt() - 7), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
+			text(Vec(x, y - rad_prt() - 7), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
 		}
 
 		if (!subtitle.empty())
 		{
-			text(Vec(xx, yy + rad_prt() + 7 + 8), subtitle, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
+			text(Vec(x, y + rad_prt() + 7 + 8), subtitle, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
 		}
 	}
 
@@ -240,6 +246,14 @@ public:
 		if (!subtitle.empty())
 		{
 			text(Vec(xx, yy + rad_prt() + 7 + 8), subtitle, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
+		}
+	}
+
+	void bus_inx(double x, double y, const std::string title = "")
+	{
+		if (!title.empty())
+		{
+			text(Vec(gx(x), gy(y) - 44), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
 		}
 	}
 
