@@ -135,11 +135,11 @@ VCAWidget::VCAWidget()
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
 	addParam(createParam<RoundHugeBlackKnob>(n_b(fx(0),      fy(0)),     module, VCA::LEVEL_PARAM, 0.0, 1.0, 0.5));
-	addParam(createParam<RoundBlackKnob>    (n_m(fx(1+0.18), fy(-0.28)), module, VCA::MIX_1_PARAM, 0.0, 1.0, 0.5));
-	addParam(createParam<RoundBlackKnob>    (n_m(fx(1+0.18), fy(+0.28)), module, VCA::MIX_2_PARAM, 0.0, 1.0, 0.5));
+	addParam(createParam<RoundBlackKnob>    (n_m(fx(1-0.18), fy(-0.28)), module, VCA::MIX_1_PARAM, 0.0, 1.0, 0.5));
+	addParam(createParam<RoundBlackKnob>    (n_m(fx(1-0.18), fy(+0.28)), module, VCA::MIX_2_PARAM, 0.0, 1.0, 0.5));
 
-	addOutput(createOutput<PJ301MPort>(prt(fx(1-0.28), fy(-0.28)), module, VCA::MIX_1_OUTPUT));
-	addOutput(createOutput<PJ301MPort>(prt(fx(1-0.28), fy(+0.28)), module, VCA::MIX_2_OUTPUT));
+	addOutput(createOutput<PJ301MPort>(prt(fx(1+0.28), fy(-0.28)), module, VCA::MIX_1_OUTPUT));
+	addOutput(createOutput<PJ301MPort>(prt(fx(1+0.28), fy(+0.28)), module, VCA::MIX_2_OUTPUT));
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
