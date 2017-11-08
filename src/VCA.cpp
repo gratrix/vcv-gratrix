@@ -108,6 +108,9 @@ VCAWidget::VCAWidget()
 
 		pg.nob_big(0, 0, "LEVEL");
 
+		pg.nob_med(1, -0.28, "MIX OUT 1");
+		pg.nob_med(1, +0.28, "MIX OUT 2");
+
 		pg.bus_in (0, 1, "EXP"); pg.bus_in (1, 1, "LIN");
 		pg.bus_in (0, 2, "IN");  pg.bus_out(1, 2, "OUT");
 	}
@@ -131,25 +134,12 @@ VCAWidget::VCAWidget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
-	int r7 = 103;
+	addParam(createParam<RoundHugeBlackKnob>(n_b(fx(0),      fy(0)),     module, VCA::LEVEL_PARAM, 0.0, 1.0, 0.5));
+	addParam(createParam<RoundBlackKnob>    (n_m(fx(1+0.18), fy(-0.28)), module, VCA::MIX_1_PARAM, 0.0, 1.0, 0.5));
+	addParam(createParam<RoundBlackKnob>    (n_m(fx(1+0.18), fy(+0.28)), module, VCA::MIX_2_PARAM, 0.0, 1.0, 0.5));
 
-	int d3, d4;
-	{
-		int size = 36;
-		int gap  = (box.size.x - 4 * size) / 6;
-		int span = gap + size;
-		d3 = box.size.x - 2 * span;
-		d4 = box.size.x - 1 * span;
-	}
-
-	addParam(createParam<RoundHugeBlackKnob>(n_b(fx(0), fy(0)), module, VCA::LEVEL_PARAM, 0.0, 1.0, 0.5));
-
-	// Mixer
-	addParam(createParam<RoundBlackKnob>(Vec(d3, r7 - 42), module, VCA::MIX_1_PARAM, 0.0, 1.0, 0.5));
-	addParam(createParam<RoundBlackKnob>(Vec(d4, r7 - 42), module, VCA::MIX_2_PARAM, 0.0, 1.0, 0.5));
-
-	addOutput(createOutput<PJ301MPort>(prt(px(1, 4)-3, py(0, 2)), module, VCA::MIX_1_OUTPUT));
-	addOutput(createOutput<PJ301MPort>(prt(px(1, 0)  , py(0, 2)), module, VCA::MIX_2_OUTPUT));
+	addOutput(createOutput<PJ301MPort>(prt(fx(1-0.28), fy(-0.28)), module, VCA::MIX_1_OUTPUT));
+	addOutput(createOutput<PJ301MPort>(prt(fx(1-0.28), fy(+0.28)), module, VCA::MIX_2_OUTPUT));
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
