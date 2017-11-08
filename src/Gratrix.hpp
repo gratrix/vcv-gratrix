@@ -132,7 +132,7 @@ public:
 	//	grid();
 	}
 
-	void tog(double x, double y, const std::string title = "", const std::string subtitle = "")
+	void tog(double x, double y, const std::string &title = "", const std::string &subtitle = "")
 	{
 	//	circle(Vec(fx(x), fy(y)), 14, "fill:#888888;stroke:#440022;stroke-width:1");
 
@@ -147,7 +147,7 @@ public:
 		}
 	}
 
-	void nob_big(double x, double y, const std::string title = "", const std::string subtitle = "")
+	void nob_big(double x, double y, const std::string &title = "", const std::string &subtitle = "")
 	{
 	//	circle(Vec(fx(x), fy(y)), rad_n_b() - 3, "fill:#888888;stroke:#440022;stroke-width:1");
 
@@ -162,11 +162,11 @@ public:
 		}
 	}
 
-	void nob_med(double x, double y, const std::string title = "")
+	void nob_med(double x, double y, const std::string &title = "")
 	{
-		return nob_med_raw(fx(x), fy(y));
+		return nob_med_raw(fx(x), fy(y), title);
 	}
-	void nob_med_raw(double x, double y, const std::string title = "")
+	void nob_med_raw(double x, double y, const std::string &title = "")
 	{
 	//	circle(Vec(x, y), rad_n_m() - 3, "fill:#888888;stroke:#440022;stroke-width:1");
 
@@ -176,7 +176,7 @@ public:
 		}
 	}
 
-	void but2(double x, double y, const std::string title = "")
+	void but2(double x, double y, const std::string &title = "")
 	{
 		int xx = fx(x);
 		int yy = fy(y);
@@ -190,12 +190,12 @@ public:
 		}
 	}
 
-	void prt_in(double x, double y, const std::string title = "", const std::string subtitle = "")
+	void prt_in(double x, double y, const std::string &title = "", const std::string &subtitle = "")
 	{
-		return prt_in_raw(gx(x), gy(y));
+		return prt_in_raw(gx(x), gy(y), title, subtitle);
 	}
 
-	void prt_in_raw(double x, double y, const std::string title = "", const std::string subtitle = "")
+	void prt_in_raw(double x, double y, const std::string &title = "", const std::string &subtitle = "")
 	{
 	//	circle(Vec(x, y), rad_prt() + 4, "fill:#7092BE;stroke:#7092BE;stroke-width:1");
 	//	circle(Vec(x, y), rad_prt() - 3, "fill:#888888;stroke:#440022;stroke-width:1");
@@ -211,7 +211,7 @@ public:
 		}
 	}
 
-	void prt_in2(double x, double y, const std::string title = "", const std::string subtitle = "")
+	void prt_in2(double x, double y, const std::string &title = "", const std::string &subtitle = "")
 	{
 		int xx = fx(x);
 		int yy = fy(y);
@@ -230,7 +230,7 @@ public:
 		}
 	}
 
-	void prt_out(double x, double y, const std::string title = "", const std::string subtitle = "")
+	void prt_out(double x, double y, const std::string &title = "", const std::string &subtitle = "")
 	{
 		int xx = (y == 0.0) ? fx(x) : gx(x);
 		int yy = (y == 0.0) ? fy(y) : gy(y);
@@ -249,7 +249,7 @@ public:
 		}
 	}
 
-	void bus_inx(double x, double y, const std::string title = "")
+	void bus_inx(double x, double y, const std::string &title = "")
 	{
 		if (!title.empty())
 		{
@@ -257,7 +257,7 @@ public:
 		}
 	}
 
-	void bus_in(double x, double y, const std::string title = "")
+	void bus_in(double x, double y, const std::string &title = "")
 	{
 		circle(Vec(gx(x), gy(y)), 40, "fill:#BED7FC;stroke:#7092BE;stroke-width:1");
 
@@ -272,7 +272,7 @@ public:
 		}
 	}
 
-	void bus_out(double x, double y, const std::string title = "")
+	void bus_out(double x, double y, const std::string &title = "")
 	{
 		circle(Vec(gx(x), gy(y)), 40, "fill:#7092BE;stroke:#7092BE;stroke-width:1");
 
