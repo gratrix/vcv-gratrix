@@ -1,15 +1,13 @@
 #include "Gratrix.hpp"
 
 
-
-
 // ===========================================================================================================
 
 struct VCA : MicroModule {
 	enum ParamIds {
 		LEVEL_PARAM,
-		MONO_PARAM,
-		STEREO_PARAM,
+		MIX_1_PARAM,
+		MIX_2_PARAM,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -20,9 +18,8 @@ struct VCA : MicroModule {
 		OFF_INPUTS = EXP_INPUT
 	};
 	enum OutputIds {
-		MONO_OUTPUT,   // 1
-		LEFT_OUTPUT,   // 1
-		RIGHT_OUTPUT,  // 1
+		MIX_1_OUTPUT,  // 1
+		MIX_2_OUTPUT,  // 1
 		OUT_OUTPUT,    // N
 		NUM_OUTPUTS,
 		OFF_OUTPUTS = OUT_OUTPUT
@@ -61,8 +58,7 @@ struct VCABank : Module
 
 	static constexpr std::size_t imap(std::size_t port, std::size_t bank)
 	{
-	//	return (port < VCA::OFF_INPUTS)  ? port : port + bank * (VCA::NUM_INPUTS  - VCA::OFF_INPUTS);
-		return                                    port + bank *  VCA::NUM_INPUTS;
+		return port + bank * VCA::NUM_INPUTS;
 	}
 
 	static constexpr std::size_t omap(std::size_t port, std::size_t bank)
@@ -83,20 +79,15 @@ struct VCABank : Module
 			for (std::size_t p=0; p<VCA::NUM_OUTPUTS; ++p) outputs[omap(p, i)].value = inst[i].outputs[p].value;
 		}
 
-		float mono  = 0.0f;
-		float left  = 0.0f;
-		float right = 0.0f;
+		float mix = 0.0f;
 
 		for (std::size_t i=0; i<GTX__N; ++i)
 		{
-			mono  += inst[i].outputs[VCA::OUT_OUTPUT].value;
-			left  += inst[i].outputs[VCA::OUT_OUTPUT].value;  // TODO add pan
-			right += inst[i].outputs[VCA::OUT_OUTPUT].value;  // TODO add pan
+			mix += inst[i].outputs[VCA::OUT_OUTPUT].value;
 		}
 
-		outputs[VCA::MONO_OUTPUT] .value =  mono  * params[VCA::MONO_PARAM]  .value;
-		outputs[VCA::LEFT_OUTPUT] .value =  left  * params[VCA::STEREO_PARAM].value;
-		outputs[VCA::RIGHT_OUTPUT].value =  right * params[VCA::STEREO_PARAM].value;
+		outputs[VCA::MIX_1_OUTPUT].value = mix * params[VCA::MIX_1_PARAM].value;
+		outputs[VCA::MIX_2_OUTPUT].value = mix * params[VCA::MIX_2_PARAM].value;
 	}
 };
 
@@ -151,15 +142,14 @@ VCAWidget::VCAWidget()
 		d4 = box.size.x - 1 * span;
 	}
 
-	addParam(createParam<RoundHugeBlackKnob>(n_b(fx(0), fy(0)), module, VCA::LEVEL_PARAM,  0.0, 1.0, 0.5));
+	addParam(createParam<RoundHugeBlackKnob>(n_b(fx(0), fy(0)), module, VCA::LEVEL_PARAM, 0.0, 1.0, 0.5));
 
 	// Mixer
-	addParam(createParam<RoundBlackKnob>(Vec(d3, r7 - 42), module, VCA::MONO_PARAM,   0.0, 1.0, 0.5));
-	addParam(createParam<RoundBlackKnob>(Vec(d4, r7 - 42), module, VCA::STEREO_PARAM, 0.0, 1.0, 0.5));
+	addParam(createParam<RoundBlackKnob>(Vec(d3, r7 - 42), module, VCA::MIX_1_PARAM, 0.0, 1.0, 0.5));
+	addParam(createParam<RoundBlackKnob>(Vec(d4, r7 - 42), module, VCA::MIX_2_PARAM, 0.0, 1.0, 0.5));
 
-	addOutput(createOutput<PJ301MPort>(prt(px(1, 4)-3, py(0, 2)), module, VCA::MONO_OUTPUT));
-	addOutput(createOutput<PJ301MPort>(prt(px(1, 0)  , py(0, 2)), module, VCA::LEFT_OUTPUT));
-	addOutput(createOutput<PJ301MPort>(prt(px(1, 1)+3, py(0, 2)), module, VCA::RIGHT_OUTPUT));
+	addOutput(createOutput<PJ301MPort>(prt(px(1, 4)-3, py(0, 2)), module, VCA::MIX_1_OUTPUT));
+	addOutput(createOutput<PJ301MPort>(prt(px(1, 0)  , py(0, 2)), module, VCA::MIX_2_OUTPUT));
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
@@ -170,7 +160,7 @@ VCAWidget::VCAWidget()
 		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(2, i)), module, VCABank::omap(VCA::OUT_OUTPUT, i)));
 	}
 
-	addInput (createInput <PJ301MPort>(prt(gx(1), gy(1)), module, VCABank::imap(VCA::LIN_INPUT, GTX__N)));
-	addInput (createInput <PJ301MPort>(prt(gx(0), gy(1)), module, VCABank::imap(VCA::EXP_INPUT, GTX__N)));
-	addInput (createInput <PJ301MPort>(prt(gx(0), gy(2)), module, VCABank::imap(VCA::IN_INPUT,  GTX__N)));
+	addInput(createInput<PJ301MPort>(prt(gx(1), gy(1)), module, VCABank::imap(VCA::LIN_INPUT, GTX__N)));
+	addInput(createInput<PJ301MPort>(prt(gx(0), gy(1)), module, VCABank::imap(VCA::EXP_INPUT, GTX__N)));
+	addInput(createInput<PJ301MPort>(prt(gx(0), gy(2)), module, VCABank::imap(VCA::IN_INPUT,  GTX__N)));
 }
