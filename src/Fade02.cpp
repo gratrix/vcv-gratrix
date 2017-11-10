@@ -71,8 +71,8 @@ struct Fade02 : Module
 
 	void step() override
 	{
-		float blend12 = params[BLEND12_INPUT].value;
-		float blendAB = params[BLENDAB_INPUT].value;
+		float blend12 = params[BLEND12_PARAM].value;
+		float blendAB = params[BLENDAB_PARAM].value;
 
 		if (inputs[BLEND12_INPUT].active) blend12 *= clampf(inputs[BLEND12_INPUT].normalize(10.0) / 10.0, 0.0, 1.0);
 		if (inputs[BLENDAB_INPUT].active) blendAB *= clampf(inputs[BLENDAB_INPUT].normalize(10.0) / 10.0, 0.0, 1.0);

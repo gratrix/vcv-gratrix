@@ -53,7 +53,7 @@ struct Fade01 : Module
 
 	void step() override
 	{
-		float blend12 = params[BLEND12_INPUT].value;
+		float blend12 = params[BLEND12_PARAM].value;
 
 		if (inputs[BLEND12_INPUT].active) blend12 *= clampf(inputs[BLEND12_INPUT].normalize(10.0) / 10.0, 0.0, 1.0);
 
