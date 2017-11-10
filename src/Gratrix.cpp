@@ -18,6 +18,7 @@ void init(rack::Plugin *p) {
 	p->addModel(createModel<Chord_G1_Widget>("Gratrix", "Gratrix", "Chord-G1", "Chord-G1"));
 	p->addModel(createModel<Fade_G1_Widget> ("Gratrix", "Gratrix", "Fade-G1",  "Fade-G1"));
 	p->addModel(createModel<Fade_G2_Widget> ("Gratrix", "Gratrix", "Fade-G2",  "Fade-G2"));
+	p->addModel(createModel<Vol_G1_Widget>  ("Gratrix", "Gratrix", "Vol-G1",   "Vol-G1"));
 //	p->addModel(createModel<MuxWidget>      ("Gratrix", "Gratrix", "Mux",      "Mux"));
 //	p->addModel(createModel<SplitWidget>    ("Gratrix", "Gratrix", "Split",    "Split"));
 	p->addModel(createModel<OctaveWidget>   ("Gratrix", "Gratrix", "Octave",   "Octave"));

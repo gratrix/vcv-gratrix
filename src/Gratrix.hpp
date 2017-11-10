@@ -2241,6 +2241,10 @@ struct Fade_G2_Widget : ModuleWidget {
  	Fade_G2_Widget();
 };
 
+struct Vol_G1_Widget : ModuleWidget {
+ 	Vol_G1_Widget();
+};
+
 struct SplitWidget : ModuleWidget {
  	SplitWidget();
 };
