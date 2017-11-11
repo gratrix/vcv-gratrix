@@ -63,11 +63,11 @@ Vol_G1_Widget::Vol_G1_Widget()
 
 	#if GTX__SAVE_SVG
 	{
-		PanelGen pg(assetPlugin(plugin, "build/res/Vol-G1.svg"), box.size, "VOL-G1");
+		PanelGen pg(assetPlugin(plugin, "build/res/Vol-G1.svg"), box.size, "VOL - G1");
 
 		pg.nob_big(0, 0, "SCALE");
 		pg.bus_inx(0, 1, "VOL");
-		pg.bus_in(0, 2, "IN 1");
+		pg.bus_in (0, 2, "IN");
 	}
 	#endif
 
