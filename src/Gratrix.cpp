@@ -9,22 +9,22 @@ void init(rack::Plugin *p) {
 #ifdef VERSION
 	p->version = TOSTRING(VERSION);
 #endif
-	p->addModel(createModel<GtxMidiWidget>  ("Gratrix", "Gratrix", "MIDI-C1",  "MIDI-C1"));
-	p->addModel(createModel<VCO_F1_Widget>  ("Gratrix", "Gratrix", "VCO-F1",   "VCO-F1"));
-	p->addModel(createModel<VCO_F2_Widget>  ("Gratrix", "Gratrix", "VCO-F2",   "VCO-F2"));
-	p->addModel(createModel<VCF_F1_Widget>  ("Gratrix", "Gratrix", "VCF-F1",   "VCF-F1"));
-	p->addModel(createModel<VCAWidget>      ("Gratrix", "Gratrix", "VCA-F1",   "VCA-F1"));
-	p->addModel(createModel<ADSRWidget>     ("Gratrix", "Gratrix", "Env-F1",   "Env-F1"));
-	p->addModel(createModel<Chord_G1_Widget>("Gratrix", "Gratrix", "Chord-G1", "Chord-G1"));
-	p->addModel(createModel<Fade_G1_Widget> ("Gratrix", "Gratrix", "Fade-G1",  "Fade-G1"));
-	p->addModel(createModel<Fade_G2_Widget> ("Gratrix", "Gratrix", "Fade-G2",  "Fade-G2"));
-	p->addModel(createModel<Vol_G1_Widget>  ("Gratrix", "Gratrix", "Vol-G1",   "Vol-G1"));
-//	p->addModel(createModel<MuxWidget>      ("Gratrix", "Gratrix", "Mux",      "Mux"));
-//	p->addModel(createModel<SplitWidget>    ("Gratrix", "Gratrix", "Split",    "Split"));
-	p->addModel(createModel<OctaveWidget>   ("Gratrix", "Gratrix", "Octave",   "Octave"));
-	p->addModel(createModel<KeysWidget>     ("Gratrix", "Gratrix", "Keys-G1",  "Keys-G1"));
-	p->addModel(createModel<Blank3Widget>   ("Gratrix", "Gratrix", "Blank3",   "Blank 3"));
-	p->addModel(createModel<Blank6Widget>   ("Gratrix", "Gratrix", "Blank6",   "Blank 6"));
-	p->addModel(createModel<Blank9Widget>   ("Gratrix", "Gratrix", "Blank9",   "Blank 9"));
-	p->addModel(createModel<Blank12Widget>  ("Gratrix", "Gratrix", "Blank12",  "Blank 12"));
+	p->addModel(createModel<GtxMidiWidget>  ("Gratrix", "MIDI-C1",  "MIDI-C1",  MIDI_TAG, EXTERNAL_TAG));
+	p->addModel(createModel<VCO_F1_Widget>  ("Gratrix", "VCO-F1",   "VCO-F1",   OSCILLATOR_TAG));
+	p->addModel(createModel<VCO_F2_Widget>  ("Gratrix", "VCO-F2",   "VCO-F2",   OSCILLATOR_TAG));
+	p->addModel(createModel<VCF_F1_Widget>  ("Gratrix", "VCF-F1",   "VCF-F1",   FILTER_TAG));
+	p->addModel(createModel<VCAWidget>      ("Gratrix", "VCA-F1",   "VCA-F1",   AMPLIFIER_TAG));
+	p->addModel(createModel<ADSRWidget>     ("Gratrix", "Env-F1",   "Env-F1",   ENVELOPE_GENERATOR_TAG));
+	p->addModel(createModel<Chord_G1_Widget>("Gratrix", "Chord-G1", "Chord-G1", SYNTH_VOICE_TAG));  // right tag?
+	p->addModel(createModel<Fade_G1_Widget> ("Gratrix", "Fade-G1",  "Fade-G1",  MIXER_TAG));        // right tag?
+	p->addModel(createModel<Fade_G2_Widget> ("Gratrix", "Fade-G2",  "Fade-G2",  MIXER_TAG));        // right tag?
+	p->addModel(createModel<Vol_G1_Widget>  ("Gratrix", "Vol-G1",   "Vol-G1",   VISUAL_TAG));
+//	p->addModel(createModel<MuxWidget>      ("Gratrix", "Mux",      "Mux",      MIXER_TAG));
+//	p->addModel(createModel<SplitWidget>    ("Gratrix", "Split",    "Split",    MULTIPLE_TAG));
+	p->addModel(createModel<OctaveWidget>   ("Gratrix", "Octave",   "Octave",   SYNTH_VOICE_TAG));  // right tag?
+	p->addModel(createModel<KeysWidget>     ("Gratrix", "Keys-G1",  "Keys-G1",  VISUAL_TAG));
+	p->addModel(createModel<Blank3Widget>   ("Gratrix", "Blank3",   "Blank 3",  BLANK_TAG));
+	p->addModel(createModel<Blank6Widget>   ("Gratrix", "Blank6",   "Blank 6",  BLANK_TAG));
+	p->addModel(createModel<Blank9Widget>   ("Gratrix", "Blank9",   "Blank 9",  BLANK_TAG));
+	p->addModel(createModel<Blank12Widget>  ("Gratrix", "Blank12",  "Blank 12", BLANK_TAG));
 }
