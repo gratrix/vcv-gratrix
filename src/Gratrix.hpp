@@ -123,8 +123,9 @@ public:
 			circle(Vec(      1.5*15, 7), 17, "fill:#BED7FC;stroke:none");
 			circle(Vec(box.x-1.5*15, 7), 17, "fill:#BED7FC;stroke:none");
 
-			text(Vec(box.x / 2, 22), "I"+title+"I", "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:13; text-anchor:middle; fill:#BED7FC;stroke:#BED7FC;stroke-width:9");
-			text(Vec(box.x / 2, 22),     title,     "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:13; text-anchor:middle; fill:black;");
+			text(Vec(box.x / 2, 22),     title    , "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:13; text-anchor:middle; fill:#BED7FC;stroke:#BED7FC;stroke-width:9");
+			text(Vec(box.x / 2, 22), "|"+title+"|", "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:13; text-anchor:middle; fill:#BED7FC;stroke:#BED7FC;stroke-width:3");
+			text(Vec(box.x / 2, 22),     title    , "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:13; text-anchor:middle; fill:black;");
 
 			text(Vec(box.x / 2, box.y - 6), "GRATRIX", "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:#777777;");
 		}
