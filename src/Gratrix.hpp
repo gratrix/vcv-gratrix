@@ -2200,79 +2200,24 @@ os << "</font>" << std::endl;
 //============================================================================================================
 //! \name Module Widgets
 
-
-struct GtxMidiWidget : ModuleWidget {
-	GtxMidiWidget();
-	void step() override;
-};
-
-struct VCO_F1_Widget : ModuleWidget {
-	VCO_F1_Widget();
-};
-
-struct VCO_F2_Widget : ModuleWidget {
-	VCO_F2_Widget();
-};
-
-struct VCF_F1_Widget : ModuleWidget {
-	VCF_F1_Widget();
-};
-
-struct VCAWidget : ModuleWidget {
-	VCAWidget();
-};
-
-struct ADSRWidget : ModuleWidget {
-	ADSRWidget();
-};
-
-struct MuxWidget : ModuleWidget {
- 	MuxWidget();
-};
-
-struct Chord_G1_Widget : ModuleWidget {
- 	Chord_G1_Widget();
-};
-
-struct Fade_G1_Widget : ModuleWidget {
- 	Fade_G1_Widget();
-};
-
-struct Fade_G2_Widget : ModuleWidget {
- 	Fade_G2_Widget();
-};
-
-struct VU_G1_Widget : ModuleWidget {
- 	VU_G1_Widget();
-};
-
-struct SplitWidget : ModuleWidget {
- 	SplitWidget();
-};
-
-struct OctaveWidget : ModuleWidget {
-	OctaveWidget();
-};
-
-struct KeysWidget : ModuleWidget {
-	KeysWidget();
-};
-
-struct Blank3Widget : ModuleWidget {
-	Blank3Widget();
-};
-
-struct Blank6Widget : ModuleWidget {
-	Blank6Widget();
-};
-
-struct Blank9Widget : ModuleWidget {
-	Blank9Widget();
-};
-
-struct Blank12Widget : ModuleWidget {
-	Blank12Widget();
-};
+struct GtxMidiWidget   : ModuleWidget { GtxMidiWidget(); void step() override; };
+struct VCO_F1_Widget   : ModuleWidget { VCO_F1_Widget();   };
+struct VCO_F2_Widget   : ModuleWidget { VCO_F2_Widget();   };
+struct VCF_F1_Widget   : ModuleWidget { VCF_F1_Widget();   };
+struct VCAWidget       : ModuleWidget { VCAWidget();       };
+struct ADSRWidget      : ModuleWidget { ADSRWidget();      };
+struct MuxWidget       : ModuleWidget { MuxWidget();       };
+struct Chord_G1_Widget : ModuleWidget { Chord_G1_Widget(); };
+struct Fade_G1_Widget  : ModuleWidget { Fade_G1_Widget();  };
+struct Fade_G2_Widget  : ModuleWidget { Fade_G2_Widget();  };
+struct VU_G1_Widget    : ModuleWidget { VU_G1_Widget();    };
+struct SplitWidget     : ModuleWidget { SplitWidget();     };
+struct OctaveWidget    : ModuleWidget { OctaveWidget();    };
+struct KeysWidget      : ModuleWidget { KeysWidget();      };
+struct Blank3Widget    : ModuleWidget { Blank3Widget();    };
+struct Blank6Widget    : ModuleWidget { Blank6Widget();    };
+struct Blank9Widget    : ModuleWidget { Blank9Widget();    };
+struct Blank12Widget   : ModuleWidget { Blank12Widget();   };
 
 
 #endif
