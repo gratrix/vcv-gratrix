@@ -261,6 +261,51 @@ struct ModeItem : MenuItem {
 	}
 };
 
+
+//============================================================================================================
+//! \brief Menu for selection the MIDI device.
+//!
+//! This code is taken from MidiIO.{cpp/hpp} and altered to accommodate the narrower width of the module.
+
+struct MidiChoice2 : ChoiceButton {
+	MidiIO *midiModule;
+
+	void step() override;
+	void onAction(EventAction &e) override;
+};
+
+void MidiChoice2::onAction(EventAction &e) {
+	Menu *menu = gScene->createMenu();
+	menu->box.pos = getAbsoluteOffset(Vec(0, box.size.y)).round();
+	menu->box.size.x = box.size.x;
+
+	{
+		MidiItem *midiItem = new MidiItem();
+		midiItem->midiModule = midiModule;
+		midiItem->text = "";
+		menu->pushChild(midiItem);
+	}
+
+	std::vector<std::string> deviceNames = midiModule->getDevices();
+	for (unsigned int i = 0; i < deviceNames.size(); i++) {
+		MidiItem *midiItem = new MidiItem();
+		midiItem->midiModule = midiModule;
+		midiItem->text = deviceNames[i];
+		menu->pushChild(midiItem);
+	}
+}
+
+void MidiChoice2::step() {
+	if (midiModule->getDeviceName() == "") {
+		text = "No Dev.";
+		return;
+	}
+	std::string name = midiModule->getDeviceName();
+	text = ellipsize(name, 9);
+}
+
+// ===========================================================================================================
+
 struct ModeChoice : ChoiceButton {
 	Interface *module;
 	const std::vector<std::string> modeNames = {"Rotate", "Reset", "Reassign"};
@@ -333,7 +378,7 @@ Widget::Widget()
 		float yPos   = 42;
 
 		{
-			MidiChoice *midiChoice = new MidiChoice();
+			MidiChoice2 *midiChoice = new MidiChoice2();
 			midiChoice->midiModule = dynamic_cast<MidiIO *>(module);
 			midiChoice->box.pos = Vec(margin, yPos);
 			midiChoice->box.size.x = box.size.x - margin * 2;
