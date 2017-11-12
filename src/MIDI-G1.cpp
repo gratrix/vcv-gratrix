@@ -265,44 +265,21 @@ struct ModeItem : MenuItem {
 //============================================================================================================
 //! \brief Menu for selection the MIDI device.
 //!
-//! This code is taken from MidiIO.{cpp/hpp} and altered to accommodate the narrower width of the module.
+//! This code derives from MidiIO.{cpp/hpp} MidiChoice altered so the menus fit the narrower panel width.
 
-struct MidiChoice2 : ChoiceButton {
-	MidiIO *midiModule;
-
-	void step() override;
-	void onAction(EventAction &e) override;
-};
-
-void MidiChoice2::onAction(EventAction &e) {
-	Menu *menu = gScene->createMenu();
-	menu->box.pos = getAbsoluteOffset(Vec(0, box.size.y)).round();
-	menu->box.size.x = box.size.x;
-
+struct MidiChoice2 : MidiChoice
+{
+	void step() override
 	{
-		MidiItem *midiItem = new MidiItem();
-		midiItem->midiModule = midiModule;
-		midiItem->text = "";
-		menu->pushChild(midiItem);
+		if (midiModule->getDeviceName() == "")
+		{
+			text = "No Dev.";
+			return;
+		}
+		std::string name = midiModule->getDeviceName();
+		text = ellipsize(name, 9);
 	}
-
-	std::vector<std::string> deviceNames = midiModule->getDevices();
-	for (unsigned int i = 0; i < deviceNames.size(); i++) {
-		MidiItem *midiItem = new MidiItem();
-		midiItem->midiModule = midiModule;
-		midiItem->text = deviceNames[i];
-		menu->pushChild(midiItem);
-	}
-}
-
-void MidiChoice2::step() {
-	if (midiModule->getDeviceName() == "") {
-		text = "No Dev.";
-		return;
-	}
-	std::string name = midiModule->getDeviceName();
-	text = ellipsize(name, 9);
-}
+};
 
 // ===========================================================================================================
 
