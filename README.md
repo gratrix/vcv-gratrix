@@ -4,3 +4,4 @@ Please head over to [gratrix.net/vcvrack](http://gratrix.net/vcvrack/) for detai
 
 ![Gratrix Modules screenshot](http://gratrix.net/vcvrack/shot.png)
 
+I plan to make a binary release when VCV Rack reaches version 0.5.
