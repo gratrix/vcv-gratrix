@@ -10,7 +10,7 @@ void init(rack::Plugin *p) {
 	p->version = TOSTRING(VERSION);
 #endif
 	p->addModel(createModel<GTX::MIDI_C1::Widget>("Gratrix", "MIDI-C1",  "MIDI-C1",  MIDI_TAG, EXTERNAL_TAG));
-//	p->addModel(createModel<GTX::MIDI_G1::Widget>("Gratrix", "MIDI-G1",  "MIDI-G1",  MIDI_TAG, EXTERNAL_TAG));
+	p->addModel(createModel<GTX::MIDI_G1::Widget>("Gratrix", "MIDI-G1",  "MIDI-G1",  MIDI_TAG, EXTERNAL_TAG));
 	p->addModel(createModel<VCO_F1_Widget>       ("Gratrix", "VCO-F1",   "VCO-F1",   OSCILLATOR_TAG));
 	p->addModel(createModel<VCO_F2_Widget>       ("Gratrix", "VCO-F2",   "VCO-F2",   OSCILLATOR_TAG));
 	p->addModel(createModel<VCF_F1_Widget>       ("Gratrix", "VCF-F1",   "VCF-F1",   FILTER_TAG));

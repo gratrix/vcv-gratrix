@@ -2203,7 +2203,7 @@ os << "</font>" << std::endl;
 namespace GTX {
 
 namespace MIDI_C1 { struct Widget : ModuleWidget { Widget(); void step() override; }; }
-//namespace MIDI_G1 { struct Widget : ModuleWidget { Widget(); void step() override; }; }
+namespace MIDI_G1 { struct Widget : ModuleWidget { Widget(); void step() override; }; }
 
 }
 
