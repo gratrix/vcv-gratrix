@@ -280,30 +280,11 @@ struct ModeItem : MenuItem {
 };
 
 
-//============================================================================================================
-//! \brief Menu for selection the MIDI device.
-//!
-//! This code derives from MidiIO.{cpp/hpp} MidiChoice altered so the menus fit the MIDI-C1 panel width.
-
-struct MidiChoice2 : MidiChoice
-{
-	void step() override
-	{
-		if (midiModule->getDeviceName() == "")
-		{
-			text = "No Device";
-			return;
-		}
-		std::string name = midiModule->getDeviceName();
-		text = ellipsize(name, 22);
-	}
-};
-
 // ===========================================================================================================
 
 struct ModeChoice : ChoiceButton {
 	Interface *module;
-	const std::vector<std::string> modeNames = {"ROTATE MODE", "RESET MODE", "REASSIGN MODE"};
+	const std::vector<std::string> modeNames = {"Rotate mode", "Reset mode", "Reassign mode"};
 
 
 	void onAction(EventAction &e) {
@@ -322,6 +303,26 @@ struct ModeChoice : ChoiceButton {
 
 	void step() {
 		text = modeNames[module->getMode()];
+	}
+};
+
+
+//============================================================================================================
+//! \brief Menu for selection the MIDI device.
+//!
+//! This code derives from MidiIO.{cpp/hpp} MidiChoice altered so the menus fit the MIDI-C1 panel width.
+
+struct MidiChoice2 : MidiChoice
+{
+	void step() override
+	{
+		if (midiModule->getDeviceName() == "")
+		{
+			text = "No Device";
+			return;
+		}
+		std::string name = midiModule->getDeviceName();
+		text = ellipsize(name, 22);
 	}
 };
 
