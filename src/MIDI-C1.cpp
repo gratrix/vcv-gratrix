@@ -1,3 +1,12 @@
+//============================================================================================================
+//!
+//! \file MIDI-C1.cpp
+//!
+//! \brief MIDI-C1 is a six voice straight clone of the VCV Rack Core module 'Quad MIDI-to-CV Interface'.
+//!
+//============================================================================================================
+
+
 #include <list>
 #include <algorithm>
 #include "rtmidi/RtMidi.h"
@@ -6,7 +15,10 @@
 #include "dsp/digital.hpp"
 #include "Gratrix.hpp"
 
-struct GtxMidiKey {
+namespace GTX {
+namespace MIDI_C1 {
+
+struct Key {
 	int pitch = 60;
 	int at = 0; // aftertouch
 	int vel = 0; // velocity
@@ -14,7 +26,7 @@ struct GtxMidiKey {
 	bool gate = false;
 };
 
-struct GtxMidiInterface : MidiIO, Module {
+struct Interface : MidiIO, Module {
 	enum ParamIds {
 		RESET_PARAM,
 		NUM_PARAMS
@@ -54,15 +66,15 @@ struct GtxMidiInterface : MidiIO, Module {
 
 	void setMode(int mode);
 
-	GtxMidiKey activeKeys[GTX__N];
+	Key activeKeys[GTX__N];
 	std::list<int> open;
 
 	SchmittTrigger resetTrigger;
 
-	GtxMidiInterface() : MidiIO(), Module(NUM_PARAMS, NUM_INPUTS, GTX__N * (NUM_OUTPUTS - OFF_OUTPUTS) + OFF_OUTPUTS, NUM_LIGHTS) {
+	Interface() : MidiIO(), Module(NUM_PARAMS, NUM_INPUTS, GTX__N * (NUM_OUTPUTS - OFF_OUTPUTS) + OFF_OUTPUTS, NUM_LIGHTS) {
 	}
 
-	~GtxMidiInterface() {
+	~Interface() {
 	};
 
 	void step() override;
@@ -87,7 +99,7 @@ struct GtxMidiInterface : MidiIO, Module {
 
 };
 
-void GtxMidiInterface::resetMidi() {
+void Interface::resetMidi() {
 
 	for (int i = 0; i < GTX__N; i++) {
 		outputs[GATE_OUTPUT + i].value = 0.0;
@@ -102,7 +114,7 @@ void GtxMidiInterface::resetMidi() {
 	lights[RESET_LIGHT].value = 1.0;
 }
 
-void GtxMidiInterface::step() {
+void Interface::step() {
 	if (isPortOpen()) {
 		std::vector<unsigned char> message;
 		int msgsProcessed = 0;
@@ -135,7 +147,7 @@ void GtxMidiInterface::step() {
 }
 
 
-void GtxMidiInterface::processMidi(std::vector<unsigned char> msg) {
+void Interface::processMidi(std::vector<unsigned char> msg) {
 	int channel = msg[0] & 0xf;
 	int status = (msg[0] >> 4) & 0xf;
 	int data1 = msg[1];
@@ -249,18 +261,18 @@ void GtxMidiInterface::processMidi(std::vector<unsigned char> msg) {
 	activeKeys[next].vel = data2;
 }
 
-int GtxMidiInterface::getMode() const {
+int Interface::getMode() const {
 	return mode;
 }
 
-void GtxMidiInterface::setMode(int mode) {
+void Interface::setMode(int mode) {
 	resetMidi();
-	GtxMidiInterface::mode = mode;
+	Interface::mode = mode;
 }
 
 struct ModeItem : MenuItem {
 	int mode;
-	GtxMidiInterface *module;
+	Interface *module;
 
 	void onAction(EventAction &e) {
 		module->setMode(mode);
@@ -268,7 +280,7 @@ struct ModeItem : MenuItem {
 };
 
 struct ModeChoice : ChoiceButton {
-	GtxMidiInterface *module;
+	Interface *module;
 	const std::vector<std::string> modeNames = {"ROTATE MODE", "RESET MODE", "REASSIGN MODE"};
 
 
@@ -292,11 +304,13 @@ struct ModeChoice : ChoiceButton {
 };
 
 
-GtxMidiWidget::GtxMidiWidget()
+// ===========================================================================================================
+
+Widget::Widget()
 {
 	GTX__WIDGET();
 
-	GtxMidiInterface *module = new GtxMidiInterface();
+	Interface *module = new Interface();
 	setModule(module);
 	box.size = Vec(12*15, 380);
 
@@ -329,8 +343,8 @@ GtxMidiWidget::GtxMidiWidget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x - 30, 365)));
 
-	addParam(createParam<LEDButton>(           but(fx(0.5), fy(0.4)), module, GtxMidiInterface::RESET_PARAM, 0.0, 1.0, 0.0));
-	addChild(createLight<SmallLight<RedLight>>(led(fx(0.5), fy(0.4)), module, GtxMidiInterface::RESET_LIGHT));
+	addParam(createParam<LEDButton>(           but(fx(0.5), fy(0.4)), module, Interface::RESET_PARAM, 0.0, 1.0, 0.0));
+	addChild(createLight<SmallLight<RedLight>>(led(fx(0.5), fy(0.4)), module, Interface::RESET_LIGHT));
 
 	{
 		float margin =  8;
@@ -365,14 +379,18 @@ GtxMidiWidget::GtxMidiWidget()
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
-		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(2, i)), module, GtxMidiInterface::omap(GtxMidiInterface::   PITCH_OUTPUT, i)));
-		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(1, i)), module, GtxMidiInterface::omap(GtxMidiInterface::    GATE_OUTPUT, i)));
-		addOutput(createOutput<PJ301MPort>(prt(px(0, i), py(1, i)), module, GtxMidiInterface::omap(GtxMidiInterface::VELOCITY_OUTPUT, i)));
-		addOutput(createOutput<PJ301MPort>(prt(px(0, i), py(2, i)), module, GtxMidiInterface::omap(GtxMidiInterface::      AT_OUTPUT, i)));
+		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(2, i)), module, Interface::omap(Interface::   PITCH_OUTPUT, i)));
+		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(1, i)), module, Interface::omap(Interface::    GATE_OUTPUT, i)));
+		addOutput(createOutput<PJ301MPort>(prt(px(0, i), py(1, i)), module, Interface::omap(Interface::VELOCITY_OUTPUT, i)));
+		addOutput(createOutput<PJ301MPort>(prt(px(0, i), py(2, i)), module, Interface::omap(Interface::      AT_OUTPUT, i)));
 	}
 }
 
-void GtxMidiWidget::step()
+void Widget::step()
 {
 	ModuleWidget::step();
 }
+
+
+} // MIDI_C1
+} // GTX

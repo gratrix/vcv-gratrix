@@ -2200,7 +2200,13 @@ os << "</font>" << std::endl;
 //============================================================================================================
 //! \name Module Widgets
 
-struct GtxMidiWidget   : ModuleWidget { GtxMidiWidget(); void step() override; };
+namespace GTX {
+
+namespace MIDI_C1 { struct Widget : ModuleWidget { Widget(); void step() override; }; }
+//namespace MIDI_G1 { struct Widget : ModuleWidget { Widget(); void step() override; }; }
+
+}
+
 struct VCO_F1_Widget   : ModuleWidget { VCO_F1_Widget();   };
 struct VCO_F2_Widget   : ModuleWidget { VCO_F2_Widget();   };
 struct VCF_F1_Widget   : ModuleWidget { VCF_F1_Widget();   };
