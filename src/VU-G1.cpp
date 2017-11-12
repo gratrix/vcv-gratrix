@@ -3,7 +3,7 @@
 
 // ===========================================================================================================
 
-struct Vol_G1 : Module
+struct VU_G1 : Module
 {
 	enum ParamIds {
 		NUM_PARAMS
@@ -19,7 +19,7 @@ struct Vol_G1 : Module
 		NUM_LIGHTS = 10  // N
 	};
 
-	Vol_G1()
+	VU_G1()
 	:
 		Module(NUM_PARAMS, (GTX__N+1) * NUM_INPUTS, NUM_OUTPUTS, GTX__N * NUM_LIGHTS)
 	{
@@ -50,20 +50,20 @@ struct Vol_G1 : Module
 
 // ===========================================================================================================
 
-Vol_G1_Widget::Vol_G1_Widget()
+VU_G1_Widget::VU_G1_Widget()
 {
 	GTX__WIDGET();
 
-	Vol_G1 *module = new Vol_G1();
+	VU_G1 *module = new VU_G1();
 	setModule(module);
-	box.size = Vec(9*15, 380);
+	box.size = Vec(6*15, 380);
 
 	#if GTX__SAVE_SVG
 	{
-		PanelGen pg(assetPlugin(plugin, "build/res/Vol-G1.svg"), box.size, "VU-G1");
+		PanelGen pg(assetPlugin(plugin, "build/res/VU-G1.svg"), box.size, "VU-G1");
 
-		pg.nob_big(0.25, 0, "VOLUME");
-		pg.bus_in (0.25, 2, "IN");
+		pg.nob_big(0, 0, "VOLUME");
+		pg.bus_in (0, 2, "IN");
 	}
 	#endif
 
@@ -71,11 +71,11 @@ Vol_G1_Widget::Vol_G1_Widget()
 		#if GTX__LOAD_SVG
 		SVGPanel *panel = new SVGPanel();
 		panel->box.size = box.size;
-		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Vol-G1.svg")));
+		panel->setBackground(SVG::load(assetPlugin(plugin, "res/VU-G1.svg")));
 		#else
 		Panel *panel = new LightPanel();
 		panel->box.size = box.size;
-		panel->backgroundImage = Image::load(assetPlugin(plugin, "res/Vol-G1.png"));
+		panel->backgroundImage = Image::load(assetPlugin(plugin, "res/VU-G1.png"));
 		#endif
 		addChild(panel);
 	}
@@ -87,21 +87,21 @@ Vol_G1_Widget::Vol_G1_Widget()
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
-		addInput(createInput<PJ301MPort>(prt(px(0.25, i), py(2, i)), module, Vol_G1::imap(Vol_G1::IN1_INPUT, i)));
+		addInput(createInput<PJ301MPort>(prt(px(0, i), py(2, i)), module, VU_G1::imap(VU_G1::IN1_INPUT, i)));
 	}
 
-	addInput(createInput<PJ301MPort>(prt(gx(0.25), gy(2)), module, Vol_G1::imap(Vol_G1::IN1_INPUT, GTX__N)));
+	addInput(createInput<PJ301MPort>(prt(gx(0), gy(2)), module, VU_G1::imap(VU_G1::IN1_INPUT, GTX__N)));
 
 	for (std::size_t i=0, k=0; i<GTX__N; ++i)
 	{
-		for (std::size_t j=0; j<Vol_G1::NUM_LIGHTS; ++j, ++k)
+		for (std::size_t j=0; j<VU_G1::NUM_LIGHTS; ++j, ++k)
 		{
 			switch (j)
 			{
-				case 0  : addChild(createLight<SmallLight<   RedLight>>(led(gx(0.25)+(i-2.5f)*16.0f, gy(0.5)+(j-4.5f)*11.0f), module, k)); break;
+				case 0  : addChild(createLight<SmallLight<   RedLight>>(led(gx(0)+(i-2.5f)*13.0f, gy(0.5)+(j-4.5f)*11.0f), module, k)); break;
 				case 1  :
-				case 2  : addChild(createLight<SmallLight<YellowLight>>(led(gx(0.25)+(i-2.5f)*16.0f, gy(0.5)+(j-4.5f)*11.0f), module, k)); break;
-				default : addChild(createLight<SmallLight< GreenLight>>(led(gx(0.25)+(i-2.5f)*16.0f, gy(0.5)+(j-4.5f)*11.0f), module, k)); break;
+				case 2  : addChild(createLight<SmallLight<YellowLight>>(led(gx(0)+(i-2.5f)*13.0f, gy(0.5)+(j-4.5f)*11.0f), module, k)); break;
+				default : addChild(createLight<SmallLight< GreenLight>>(led(gx(0)+(i-2.5f)*13.0f, gy(0.5)+(j-4.5f)*11.0f), module, k)); break;
 			}
 		}
 	}

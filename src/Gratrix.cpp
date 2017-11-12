@@ -18,7 +18,7 @@ void init(rack::Plugin *p) {
 	p->addModel(createModel<Chord_G1_Widget>("Gratrix", "Chord-G1", "Chord-G1", SYNTH_VOICE_TAG));  // right tag?
 	p->addModel(createModel<Fade_G1_Widget> ("Gratrix", "Fade-G1",  "Fade-G1",  MIXER_TAG));        // right tag?
 	p->addModel(createModel<Fade_G2_Widget> ("Gratrix", "Fade-G2",  "Fade-G2",  MIXER_TAG));        // right tag?
-	p->addModel(createModel<Vol_G1_Widget>  ("Gratrix", "Vol-G1",   "Vol-G1",   VISUAL_TAG));
+	p->addModel(createModel<VU_G1_Widget>   ("Gratrix", "VU-G1",    "VU-G1",    VISUAL_TAG));
 //	p->addModel(createModel<MuxWidget>      ("Gratrix", "Mux",      "Mux",      MIXER_TAG));
 //	p->addModel(createModel<SplitWidget>    ("Gratrix", "Split",    "Split",    MULTIPLE_TAG));
 	p->addModel(createModel<OctaveWidget>   ("Gratrix", "Octave",   "Octave",   SYNTH_VOICE_TAG));  // right tag?

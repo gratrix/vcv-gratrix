@@ -127,7 +127,7 @@ public:
 			text(Vec(box.x / 2, 22), "|"+title+"|", "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:13; text-anchor:middle; fill:#BED7FC;stroke:#BED7FC;stroke-width:3");
 			text(Vec(box.x / 2, 22),     title    , "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:13; text-anchor:middle; fill:black;");
 
-			text(Vec(box.x / 2, box.y - 6), "GRATRIX", "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:#777777;");
+			text(Vec(box.x / 2, box.y - 6), (box.x <= 6*15 ? "GTX" : "GRATRIX"), "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:#777777;");
 		}
 
 	//	grid();
@@ -2242,8 +2242,8 @@ struct Fade_G2_Widget : ModuleWidget {
  	Fade_G2_Widget();
 };
 
-struct Vol_G1_Widget : ModuleWidget {
- 	Vol_G1_Widget();
+struct VU_G1_Widget : ModuleWidget {
+ 	VU_G1_Widget();
 };
 
 struct SplitWidget : ModuleWidget {
