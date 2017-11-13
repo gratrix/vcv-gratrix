@@ -2207,6 +2207,8 @@ namespace Blank_03 { struct Widget : ModuleWidget { Widget(); }; }
 namespace Blank_06 { struct Widget : ModuleWidget { Widget(); }; }
 namespace Blank_09 { struct Widget : ModuleWidget { Widget(); }; }
 namespace Blank_12 { struct Widget : ModuleWidget { Widget(); }; }
+namespace Fade_G1  { struct Widget : ModuleWidget { Widget(); }; }
+namespace Fade_G2  { struct Widget : ModuleWidget { Widget(); }; }
 }
 
 struct VCO_F1_Widget   : ModuleWidget { VCO_F1_Widget();   };
@@ -2216,8 +2218,6 @@ struct VCAWidget       : ModuleWidget { VCAWidget();       };
 struct ADSRWidget      : ModuleWidget { ADSRWidget();      };
 struct MuxWidget       : ModuleWidget { MuxWidget();       };
 struct Chord_G1_Widget : ModuleWidget { Chord_G1_Widget(); };
-struct Fade_G1_Widget  : ModuleWidget { Fade_G1_Widget();  };
-struct Fade_G2_Widget  : ModuleWidget { Fade_G2_Widget();  };
 struct VU_G1_Widget    : ModuleWidget { VU_G1_Widget();    };
 struct SplitWidget     : ModuleWidget { SplitWidget();     };
 struct OctaveWidget    : ModuleWidget { OctaveWidget();    };

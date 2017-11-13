@@ -1,9 +1,23 @@
+//============================================================================================================
+//!
+//! \file Fade-G1.cpp
+//!
+//! \brief Fade-G1 is a two input six voice one-dimensional fader.
+//!
+//============================================================================================================
+
+
 #include "Gratrix.hpp"
 
 
-// ===========================================================================================================
+namespace GTX {
+namespace Fade_G1 {
 
-struct Fade01 : Module
+
+// ===========================================================================================================
+//! \brief The implementation.
+
+struct Impl : Module
 {
 	enum ParamIds {
 		BLEND12_PARAM,
@@ -30,7 +44,7 @@ struct Fade01 : Module
 		NUM_LIGHTS
 	};
 
-	Fade01()
+	Impl()
 	:
 		Module(NUM_PARAMS,
 		(GTX__N+1) * (NUM_INPUTS  - OFF_INPUTS ) + OFF_INPUTS,
@@ -75,12 +89,13 @@ struct Fade01 : Module
 
 
 // ===========================================================================================================
+//! \brief The widget.
 
-Fade_G1_Widget::Fade_G1_Widget()
+Widget::Widget()
 {
 	GTX__WIDGET();
 
-	Fade01 *module = new Fade01();
+	Impl *module = new Impl();
 	setModule(module);
 	box.size = Vec(12*15, 380);
 
@@ -113,20 +128,20 @@ Fade_G1_Widget::Fade_G1_Widget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
-	addParam(createParam<RoundHugeBlackKnob>(n_b(fx(1), fy(0)), module, Fade01::BLEND12_PARAM, 0.0, 1.0, 0.0));
+	addParam(createParam<RoundHugeBlackKnob>(n_b(fx(1), fy(0)), module, Impl::BLEND12_PARAM, 0.0, 1.0, 0.0));
 
-	addInput(createInput<PJ301MPort>(prt(fx(0), fy(0)), module, Fade01::BLEND12_INPUT));
+	addInput(createInput<PJ301MPort>(prt(fx(0), fy(0)), module, Impl::BLEND12_INPUT));
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
-		addInput (createInput<PJ301MPort> (prt(px(0, i), py(1, i)), module, Fade01::imap(Fade01::IN1_INPUT,   i)));
-		addInput (createInput<PJ301MPort> (prt(px(0, i), py(2, i)), module, Fade01::imap(Fade01::IN2_INPUT,   i)));
-		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(1, i)), module, Fade01::omap(Fade01::OUT1_OUTPUT, i)));
-		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(2, i)), module, Fade01::omap(Fade01::OUT2_OUTPUT, i)));
+		addInput (createInput<PJ301MPort> (prt(px(0, i), py(1, i)), module, Impl::imap(Impl::IN1_INPUT,   i)));
+		addInput (createInput<PJ301MPort> (prt(px(0, i), py(2, i)), module, Impl::imap(Impl::IN2_INPUT,   i)));
+		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(1, i)), module, Impl::omap(Impl::OUT1_OUTPUT, i)));
+		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(2, i)), module, Impl::omap(Impl::OUT2_OUTPUT, i)));
 	}
 
-	addInput(createInput<PJ301MPort>(prt(gx(0), gy(1)), module, Fade01::imap(Fade01::IN1_INPUT, GTX__N)));
-	addInput(createInput<PJ301MPort>(prt(gx(0), gy(2)), module, Fade01::imap(Fade01::IN2_INPUT, GTX__N)));
+	addInput(createInput<PJ301MPort>(prt(gx(0), gy(1)), module, Impl::imap(Impl::IN1_INPUT, GTX__N)));
+	addInput(createInput<PJ301MPort>(prt(gx(0), gy(2)), module, Impl::imap(Impl::IN2_INPUT, GTX__N)));
 
 	for (std::size_t i=0, x=0; x<2; ++x)
 	{
@@ -136,3 +151,7 @@ Fade_G1_Widget::Fade_G1_Widget()
 		}
 	}
 }
+
+
+} // Fade_G1
+} // GTX
