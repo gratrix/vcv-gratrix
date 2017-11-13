@@ -1,9 +1,23 @@
+//============================================================================================================
+//!
+//! \file VU-G1.cpp
+//!
+//! \brief VU-G1 is a simple six input volume monitoring module.
+//!
+//============================================================================================================
+
+
 #include "Gratrix.hpp"
 
 
-// ===========================================================================================================
+namespace GTX {
+namespace VU_G1 {
 
-struct VU_G1 : Module
+
+// ===========================================================================================================
+//! \brief The implementation.
+
+struct Impl : Module
 {
 	enum ParamIds {
 		NUM_PARAMS
@@ -19,7 +33,7 @@ struct VU_G1 : Module
 		NUM_LIGHTS = 10  // N
 	};
 
-	VU_G1()
+	Impl()
 	:
 		Module(NUM_PARAMS, (GTX__N+1) * NUM_INPUTS, NUM_OUTPUTS, GTX__N * NUM_LIGHTS)
 	{
@@ -49,12 +63,13 @@ struct VU_G1 : Module
 
 
 // ===========================================================================================================
+//! \brief The widget.
 
-VU_G1_Widget::VU_G1_Widget()
+Widget::Widget()
 {
 	GTX__WIDGET();
 
-	VU_G1 *module = new VU_G1();
+	Impl *module = new Impl();
 	setModule(module);
 	box.size = Vec(6*15, 380);
 
@@ -87,14 +102,14 @@ VU_G1_Widget::VU_G1_Widget()
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
-		addInput(createInput<PJ301MPort>(prt(px(0, i), py(2, i)), module, VU_G1::imap(VU_G1::IN1_INPUT, i)));
+		addInput(createInput<PJ301MPort>(prt(px(0, i), py(2, i)), module, Impl::imap(Impl::IN1_INPUT, i)));
 	}
 
-	addInput(createInput<PJ301MPort>(prt(gx(0), gy(2)), module, VU_G1::imap(VU_G1::IN1_INPUT, GTX__N)));
+	addInput(createInput<PJ301MPort>(prt(gx(0), gy(2)), module, Impl::imap(Impl::IN1_INPUT, GTX__N)));
 
 	for (std::size_t i=0, k=0; i<GTX__N; ++i)
 	{
-		for (std::size_t j=0; j<VU_G1::NUM_LIGHTS; ++j, ++k)
+		for (std::size_t j=0; j<Impl::NUM_LIGHTS; ++j, ++k)
 		{
 			switch (j)
 			{
@@ -106,3 +121,7 @@ VU_G1_Widget::VU_G1_Widget()
 		}
 	}
 }
+
+
+} // VU_G1
+} // GTX
