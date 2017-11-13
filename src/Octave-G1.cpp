@@ -1,4 +1,21 @@
+//============================================================================================================
+//!
+//! \file Octave-G1.cpp
+//!
+//! \brief Octave-G1 quantises the input to 12-ET and provides an octaves-worth of output.
+//!
+//============================================================================================================
+
+
 #include "Gratrix.hpp"
+
+
+namespace GTX {
+namespace Octave_G1 {
+
+
+//============================================================================================================
+//! \brief Some settings.
 
 enum Spec
 {
@@ -13,9 +30,9 @@ enum Spec
 
 
 //============================================================================================================
-//! \brief Octave moddule.
+//! \brief The implementation.
 
-struct Octave : Module
+struct Impl : Module
 {
 	enum ParamIds {
 		NUM_PARAMS
@@ -65,7 +82,7 @@ struct Octave : Module
 	//--------------------------------------------------------------------------------------------------------
 	//! \brief Constructor.
 
-	Octave()
+	Impl()
 	:
 		Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS)
 	{}
@@ -116,13 +133,13 @@ int y(std::size_t i, double radius) { return static_cast<int>(-20+206  + 0.5 + r
 
 
 //============================================================================================================
-//! \brief Octave widget.
+//! \brief The widget.
 
-OctaveWidget::OctaveWidget()
+Widget::Widget()
 {
 	GTX__WIDGET();
 
-	Octave *module = new Octave();
+	Impl *module = new Impl();
 	setModule(module);
 	box.size = Vec(12*15, 380);
 
@@ -131,7 +148,7 @@ OctaveWidget::OctaveWidget()
 
 	#if GTX__SAVE_SVG
 	{
-		PanelGen pg(assetPlugin(plugin, "build/res/Octave.svg"), box.size, "OCTAVE");
+		PanelGen pg(assetPlugin(plugin, "build/res/Octave-G1.svg"), box.size, "OCTAVE-G1");
 
 		pg.circle(Vec(x(0, 0), y(0, 0)), r2+16, "fill:#7092BE;stroke:none");
 		pg.circle(Vec(x(0, 0), y(0, 0)), r2-16, "fill:#CEE1FD;stroke:none");
@@ -162,11 +179,11 @@ OctaveWidget::OctaveWidget()
 		#if GTX__LOAD_SVG
 		SVGPanel *panel = new SVGPanel();
 		panel->box.size = box.size;
-		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Octave.svg")));
+		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Octave-G1.svg")));
 		#else
 		Panel *panel = new LightPanel();
 		panel->box.size = box.size;
-		panel->backgroundImage = Image::load(assetPlugin(plugin, "res/Octave.png"));
+		panel->backgroundImage = Image::load(assetPlugin(plugin, "res/Octave-G1.png"));
 		#endif
 		addChild(panel);
 	}
@@ -176,33 +193,37 @@ OctaveWidget::OctaveWidget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
-	addInput(createInput<PJ301MPort>(prt(x(0, 0), y(0, 0)), module, Octave::VOCT_INPUT));
+	addInput(createInput<PJ301MPort>(prt(x(0, 0), y(0, 0)), module, Impl::VOCT_INPUT));
 	for (std::size_t i=0; i<N; ++i)
 	{
-		addOutput(createOutput<PJ301MPort>(prt(x(i, r2), y(i, r2)), module, i + Octave::NOTE_OUTPUT));
+		addOutput(createOutput<PJ301MPort>(prt(x(i, r2), y(i, r2)), module, i + Impl::NOTE_OUTPUT));
 	}
 
-	addOutput(createOutput<PJ301MPort>(prt(gx(-0.20), gy(2)), module, 0 + Octave::OCT_OUTPUT));
-	addOutput(createOutput<PJ301MPort>(prt(gx( 0.15), gy(2)), module, 1 + Octave::OCT_OUTPUT));
-	addOutput(createOutput<PJ301MPort>(prt(gx( 0.50), gy(2)), module, 2 + Octave::OCT_OUTPUT));
-	addOutput(createOutput<PJ301MPort>(prt(gx( 0.85), gy(2)), module, 3 + Octave::OCT_OUTPUT));
-	addOutput(createOutput<PJ301MPort>(prt(gx( 1.20), gy(2)), module, 4 + Octave::OCT_OUTPUT));
+	addOutput(createOutput<PJ301MPort>(prt(gx(-0.20), gy(2)), module, 0 + Impl::OCT_OUTPUT));
+	addOutput(createOutput<PJ301MPort>(prt(gx( 0.15), gy(2)), module, 1 + Impl::OCT_OUTPUT));
+	addOutput(createOutput<PJ301MPort>(prt(gx( 0.50), gy(2)), module, 2 + Impl::OCT_OUTPUT));
+	addOutput(createOutput<PJ301MPort>(prt(gx( 0.85), gy(2)), module, 3 + Impl::OCT_OUTPUT));
+	addOutput(createOutput<PJ301MPort>(prt(gx( 1.20), gy(2)), module, 4 + Impl::OCT_OUTPUT));
 
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) - 30, fy(0-0.28) + 5), module, Octave::KEY_LIGHT +  0));  // C
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) - 25, fy(0-0.28) - 5), module, Octave::KEY_LIGHT +  1));  // C#
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) - 20, fy(0-0.28) + 5), module, Octave::KEY_LIGHT +  2));  // D
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) - 15, fy(0-0.28) - 5), module, Octave::KEY_LIGHT +  3));  // Eb
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) - 10, fy(0-0.28) + 5), module, Octave::KEY_LIGHT +  4));  // E
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5)     , fy(0-0.28) + 5), module, Octave::KEY_LIGHT +  5));  // F
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) +  5, fy(0-0.28) - 5), module, Octave::KEY_LIGHT +  6));  // Fs
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + 10, fy(0-0.28) + 5), module, Octave::KEY_LIGHT +  7));  // G
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + 15, fy(0-0.28) - 5), module, Octave::KEY_LIGHT +  8));  // Ab
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + 20, fy(0-0.28) + 5), module, Octave::KEY_LIGHT +  9));  // A
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + 25, fy(0-0.28) - 5), module, Octave::KEY_LIGHT + 10));  // Bb
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + 30, fy(0-0.28) + 5), module, Octave::KEY_LIGHT + 11));  // B
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) - 30, fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  0));  // C
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) - 25, fy(0-0.28) - 5), module, Impl::KEY_LIGHT +  1));  // C#
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) - 20, fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  2));  // D
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) - 15, fy(0-0.28) - 5), module, Impl::KEY_LIGHT +  3));  // Eb
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) - 10, fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  4));  // E
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5)     , fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  5));  // F
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) +  5, fy(0-0.28) - 5), module, Impl::KEY_LIGHT +  6));  // Fs
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + 10, fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  7));  // G
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + 15, fy(0-0.28) - 5), module, Impl::KEY_LIGHT +  8));  // Ab
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + 20, fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  9));  // A
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + 25, fy(0-0.28) - 5), module, Impl::KEY_LIGHT + 10));  // Bb
+	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + 30, fy(0-0.28) + 5), module, Impl::KEY_LIGHT + 11));  // B
 
 	for (std::size_t i=0; i<LO_SIZE; ++i)
 	{
-		addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + (i - LO_SIZE/2) * 10, fy(0-0.28) + 20), module, Octave::OCT_LIGHT + i));
+		addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + (i - LO_SIZE/2) * 10, fy(0-0.28) + 20), module, Impl::OCT_LIGHT + i));
 	}
 }
+
+
+} // Octave_G1
+} // GTX

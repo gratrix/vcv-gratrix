@@ -2201,17 +2201,18 @@ os << "</font>" << std::endl;
 //! \name Module Widgets
 
 namespace GTX {
-namespace MIDI_C1  { struct Widget : ModuleWidget { Widget(); void step() override; }; }
-namespace MIDI_G1  { struct Widget : ModuleWidget { Widget(); void step() override; }; }
-namespace Blank_03 { struct Widget : ModuleWidget { Widget(); }; }
-namespace Blank_06 { struct Widget : ModuleWidget { Widget(); }; }
-namespace Blank_09 { struct Widget : ModuleWidget { Widget(); }; }
-namespace Blank_12 { struct Widget : ModuleWidget { Widget(); }; }
-namespace Fade_G1  { struct Widget : ModuleWidget { Widget(); }; }
-namespace Fade_G2  { struct Widget : ModuleWidget { Widget(); }; }
-namespace Keys_G1  { struct Widget : ModuleWidget { Widget(); }; }
-namespace VU_G1    { struct Widget : ModuleWidget { Widget(); }; }
-namespace Chord_G1 { struct Widget : ModuleWidget { Widget(); }; }
+namespace MIDI_C1   { struct Widget : ModuleWidget { Widget(); void step() override; }; }
+namespace MIDI_G1   { struct Widget : ModuleWidget { Widget(); void step() override; }; }
+namespace Blank_03  { struct Widget : ModuleWidget { Widget(); }; }
+namespace Blank_06  { struct Widget : ModuleWidget { Widget(); }; }
+namespace Blank_09  { struct Widget : ModuleWidget { Widget(); }; }
+namespace Blank_12  { struct Widget : ModuleWidget { Widget(); }; }
+namespace Fade_G1   { struct Widget : ModuleWidget { Widget(); }; }
+namespace Fade_G2   { struct Widget : ModuleWidget { Widget(); }; }
+namespace Keys_G1   { struct Widget : ModuleWidget { Widget(); }; }
+namespace VU_G1     { struct Widget : ModuleWidget { Widget(); }; }
+namespace Chord_G1  { struct Widget : ModuleWidget { Widget(); }; }
+namespace Octave_G1 { struct Widget : ModuleWidget { Widget(); }; }
 }
 
 struct VCO_F1_Widget   : ModuleWidget { VCO_F1_Widget();   };
@@ -2220,7 +2221,6 @@ struct VCF_F1_Widget   : ModuleWidget { VCF_F1_Widget();   };
 struct VCAWidget       : ModuleWidget { VCAWidget();       };
 struct ADSRWidget      : ModuleWidget { ADSRWidget();      };
 struct MuxWidget       : ModuleWidget { MuxWidget();       };
-struct OctaveWidget    : ModuleWidget { OctaveWidget();    };
 
 
 #endif
