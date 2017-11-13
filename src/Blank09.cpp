@@ -1,17 +1,36 @@
+//============================================================================================================
+//!
+//! \file Blank09.cpp
+//!
+//! \brief Blank 9 is a simple do nothing 9-hole high quality blank.
+//!
+//============================================================================================================
+
+
 #include "Gratrix.hpp"
 
 
-struct Blank9 : Module
+namespace GTX {
+namespace Blank_09 {
+
+
+// ===========================================================================================================
+//! \brief The widget.
+
+struct Impl : Module
 {
-	Blank9() : Module(0, 0, 0) {}
+	Impl() : Module(0, 0, 0) {}
 };
 
 
-Blank9Widget::Blank9Widget()
+// ===========================================================================================================
+//! \brief The widget.
+
+Widget::Widget()
 {
 	GTX__WIDGET();
 
-	Blank9 *module = new Blank9();
+	Impl *module = new Impl();
 	setModule(module);
 	box.size = Vec(9*15, 380);
 
@@ -39,3 +58,7 @@ Blank9Widget::Blank9Widget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 }
+
+
+} // Blank_09
+} // GTX

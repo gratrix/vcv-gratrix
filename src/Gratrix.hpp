@@ -2201,10 +2201,12 @@ os << "</font>" << std::endl;
 //! \name Module Widgets
 
 namespace GTX {
-
-namespace MIDI_C1 { struct Widget : ModuleWidget { Widget(); void step() override; }; }
-namespace MIDI_G1 { struct Widget : ModuleWidget { Widget(); void step() override; }; }
-
+namespace MIDI_C1  { struct Widget : ModuleWidget { Widget(); void step() override; }; }
+namespace MIDI_G1  { struct Widget : ModuleWidget { Widget(); void step() override; }; }
+namespace Blank_03 { struct Widget : ModuleWidget { Widget(); }; }
+namespace Blank_06 { struct Widget : ModuleWidget { Widget(); }; }
+namespace Blank_09 { struct Widget : ModuleWidget { Widget(); }; }
+namespace Blank_12 { struct Widget : ModuleWidget { Widget(); }; }
 }
 
 struct VCO_F1_Widget   : ModuleWidget { VCO_F1_Widget();   };
@@ -2220,10 +2222,6 @@ struct VU_G1_Widget    : ModuleWidget { VU_G1_Widget();    };
 struct SplitWidget     : ModuleWidget { SplitWidget();     };
 struct OctaveWidget    : ModuleWidget { OctaveWidget();    };
 struct KeysWidget      : ModuleWidget { KeysWidget();      };
-struct Blank3Widget    : ModuleWidget { Blank3Widget();    };
-struct Blank6Widget    : ModuleWidget { Blank6Widget();    };
-struct Blank9Widget    : ModuleWidget { Blank9Widget();    };
-struct Blank12Widget   : ModuleWidget { Blank12Widget();   };
 
 
 #endif

@@ -1,17 +1,36 @@
+//============================================================================================================
+//!
+//! \file Blank03.cpp
+//!
+//! \brief Blank 3 is a simple do nothing 3-hole high quality blank.
+//!
+//============================================================================================================
+
+
 #include "Gratrix.hpp"
 
 
-struct Blank3 : Module
+namespace GTX {
+namespace Blank_03 {
+
+
+// ===========================================================================================================
+//! \brief The widget.
+
+struct Impl : Module
 {
-	Blank3() : Module(0, 0, 0) {}
+	Impl() : Module(0, 0, 0) {}
 };
 
 
-Blank3Widget::Blank3Widget()
+// ===========================================================================================================
+//! \brief The widget.
+
+Widget::Widget()
 {
 	GTX__WIDGET();
 
-	Blank3 *module = new Blank3();
+	Impl *module = new Impl();
 	setModule(module);
 	box.size = Vec(3*15, 380);
 
@@ -37,3 +56,7 @@ Blank3Widget::Blank3Widget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 0)));
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 }
+
+
+} // Blank_03
+} // GTX

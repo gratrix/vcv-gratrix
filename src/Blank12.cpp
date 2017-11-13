@@ -1,17 +1,36 @@
+//============================================================================================================
+//!
+//! \file Blank12.cpp
+//!
+//! \brief Blank 12 is a simple do nothing 12-hole high quality blank.
+//!
+//============================================================================================================
+
+
 #include "Gratrix.hpp"
 
 
-struct Blank12 : Module
+namespace GTX {
+namespace Blank_12 {
+
+
+// ===========================================================================================================
+//! \brief The widget.
+
+struct Impl : Module
 {
-	Blank12() : Module(0, 0, 0) {}
+	Impl() : Module(0, 0, 0) {}
 };
 
 
-Blank12Widget::Blank12Widget()
+// ===========================================================================================================
+//! \brief The widget.
+
+Widget::Widget()
 {
 	GTX__WIDGET();
 
-	Blank12 *module = new Blank12();
+	Impl *module = new Impl();
 	setModule(module);
 	box.size = Vec(12*15, 380);
 
@@ -39,3 +58,7 @@ Blank12Widget::Blank12Widget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 }
+
+
+} // Blank_12
+} // GTX

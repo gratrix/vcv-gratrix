@@ -1,17 +1,36 @@
+//============================================================================================================
+//!
+//! \file Blank06.cpp
+//!
+//! \brief Blank 6 is a simple do nothing 6-hole high quality blank.
+//!
+//============================================================================================================
+
+
 #include "Gratrix.hpp"
 
 
-struct Blank6 : Module
+namespace GTX {
+namespace Blank_06 {
+
+
+// ===========================================================================================================
+//! \brief The widget.
+
+struct Impl : Module
 {
-	Blank6() : Module(0, 0, 0) {}
+	Impl() : Module(0, 0, 0) {}
 };
 
 
-Blank6Widget::Blank6Widget()
+// ===========================================================================================================
+//! \brief The widget.
+
+Widget::Widget()
 {
 	GTX__WIDGET();
 
-	Blank6 *module = new Blank6();
+	Impl *module = new Impl();
 	setModule(module);
 	box.size = Vec(6*15, 380);
 
@@ -39,3 +58,7 @@ Blank6Widget::Blank6Widget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 }
+
+
+} // Blank_06
+} // GTX
