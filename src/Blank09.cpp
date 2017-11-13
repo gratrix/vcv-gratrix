@@ -15,7 +15,7 @@ namespace Blank_09 {
 
 
 // ===========================================================================================================
-//! \brief The widget.
+//! \brief The implementation.
 
 struct Impl : Module
 {
