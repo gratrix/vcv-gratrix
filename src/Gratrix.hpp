@@ -2220,7 +2220,6 @@ struct VCAWidget       : ModuleWidget { VCAWidget();       };
 struct ADSRWidget      : ModuleWidget { ADSRWidget();      };
 struct MuxWidget       : ModuleWidget { MuxWidget();       };
 struct Chord_G1_Widget : ModuleWidget { Chord_G1_Widget(); };
-struct SplitWidget     : ModuleWidget { SplitWidget();     };
 struct OctaveWidget    : ModuleWidget { OctaveWidget();    };
 
 
