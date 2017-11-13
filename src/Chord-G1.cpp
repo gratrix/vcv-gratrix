@@ -1,5 +1,22 @@
+//============================================================================================================
+//!
+//! \file Chord-G1.cpp
+//!
+//! \brief Chord-G1 genearates chords via a CV program selection and a fundamental bass note V/octave input.
+//!
+//============================================================================================================
+
+
 #include "Gratrix.hpp"
 #include "dsp/digital.hpp"
+
+
+namespace GTX {
+namespace Chord_G1 {
+
+
+// ===========================================================================================================
+//! \brief Some settings.
 
 enum Spec
 {
@@ -9,10 +26,10 @@ enum Spec
 };
 
 
-//============================================================================================================
-//! \brief Chord 12 moddule.
+// ===========================================================================================================
+//! \brief The implementation.
 
-struct Chord_G1 : Module
+struct Impl : Module
 {
 	enum ParamIds {
 		PROG_PARAM = 0,
@@ -75,7 +92,7 @@ struct Chord_G1 : Module
 	//--------------------------------------------------------------------------------------------------------
 	//! \brief Constructor.
 
-	Chord_G1()
+	Impl()
 	:
 		Module(NUM_PARAMS, NUM_INPUTS, N * NUM_OUTPUTS, NUM_LIGHTS)
 	{}
@@ -254,19 +271,21 @@ struct Chord_G1 : Module
 };
 
 
+// ===========================================================================================================
+
 static double x0(double shift = 0) { return 6+6*15 + shift * 66; }
 static double xd(double i, double radius = 37.0, double spill = 1.65) { return (x0()    + (radius + spill * i) * dx(i, E)); }
 static double yd(double i, double radius = 37.0, double spill = 1.65) { return (gy(1.5) + (radius + spill * i) * dy(i, E)); }
 
 
-//============================================================================================================
-//! \brief Chord 12 widget.
+// ===========================================================================================================
+//! \brief The widget.
 
-Chord_G1_Widget::Chord_G1_Widget()
+Widget::Widget()
 {
 	GTX__WIDGET();
 
-	Chord_G1 *module = new Chord_G1();
+	Impl *module = new Impl();
 	setModule(module);
 	box.size = Vec(18*15, 380);
 
@@ -315,46 +334,50 @@ Chord_G1_Widget::Chord_G1_Widget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
-	addParam(createParam<RoundBlackKnob>(n_m(x0(+1), fy(-0.28)), module, Chord_G1::PROG_PARAM, 0.0, 1.2, 0.0));
-	addInput(createInput<PJ301MPort>    (prt(x0(-1), fy(-0.28)), module, Chord_G1::PROG_INPUT));
-	addInput(createInput<PJ301MPort>    (prt(x0(+1), fy(+0.28)), module, Chord_G1::GATE_INPUT));
-	addInput(createInput<PJ301MPort>    (prt(x0(-1), fy(+0.28)), module, Chord_G1::VOCT_INPUT));
+	addParam(createParam<RoundBlackKnob>(n_m(x0(+1), fy(-0.28)), module, Impl::PROG_PARAM, 0.0, 1.2, 0.0));
+	addInput(createInput<PJ301MPort>    (prt(x0(-1), fy(-0.28)), module, Impl::PROG_INPUT));
+	addInput(createInput<PJ301MPort>    (prt(x0(+1), fy(+0.28)), module, Impl::GATE_INPUT));
+	addInput(createInput<PJ301MPort>    (prt(x0(-1), fy(+0.28)), module, Impl::VOCT_INPUT));
 
 	for (std::size_t i=0; i<N; ++i)
 	{
-		addOutput(createOutput<PJ301MPort>(prt(px(2, i), py(1, i)), module, Chord_G1::omap(Chord_G1::GATE_OUTPUT, i)));
-		addOutput(createOutput<PJ301MPort>(prt(px(2, i), py(2, i)), module, Chord_G1::omap(Chord_G1::VOCT_OUTPUT, i)));
+		addOutput(createOutput<PJ301MPort>(prt(px(2, i), py(1, i)), module, Impl::omap(Impl::GATE_OUTPUT, i)));
+		addOutput(createOutput<PJ301MPort>(prt(px(2, i), py(2, i)), module, Impl::omap(Impl::VOCT_OUTPUT, i)));
 	}
 
 	for (std::size_t i=0; i<T; ++i)
 	{
-		addParam(createParam<LEDButton>(but(xd(i), yd(i)), module, i + Chord_G1::NOTE_PARAM, 0.0, 1.0, 0.0));
-		addChild(createLight<SmallLight<GreenRedLight>>(led(xd(i), yd(i)), module, Chord_G1::NOTE_LIGHT + i*2));
+		addParam(createParam<LEDButton>(but(xd(i), yd(i)), module, i + Impl::NOTE_PARAM, 0.0, 1.0, 0.0));
+		addChild(createLight<SmallLight<GreenRedLight>>(led(xd(i), yd(i)), module, Impl::NOTE_LIGHT + i*2));
 	}
 
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() - 30, fy(-0.28) + 5), module, Chord_G1::PROG_LIGHT +  0*2));  // C
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() - 25, fy(-0.28) - 5), module, Chord_G1::PROG_LIGHT +  1*2));  // C#
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() - 20, fy(-0.28) + 5), module, Chord_G1::PROG_LIGHT +  2*2));  // D
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() - 15, fy(-0.28) - 5), module, Chord_G1::PROG_LIGHT +  3*2));  // Eb
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() - 10, fy(-0.28) + 5), module, Chord_G1::PROG_LIGHT +  4*2));  // E
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0()     , fy(-0.28) + 5), module, Chord_G1::PROG_LIGHT +  5*2));  // F
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() +  5, fy(-0.28) - 5), module, Chord_G1::PROG_LIGHT +  6*2));  // Fs
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() + 10, fy(-0.28) + 5), module, Chord_G1::PROG_LIGHT +  7*2));  // G
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() + 15, fy(-0.28) - 5), module, Chord_G1::PROG_LIGHT +  8*2));  // Ab
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() + 20, fy(-0.28) + 5), module, Chord_G1::PROG_LIGHT +  9*2));  // A
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() + 25, fy(-0.28) - 5), module, Chord_G1::PROG_LIGHT + 10*2));  // Bb
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() + 30, fy(-0.28) + 5), module, Chord_G1::PROG_LIGHT + 11*2));  // B
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() - 30, fy(-0.28) + 5), module, Impl::PROG_LIGHT +  0*2));  // C
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() - 25, fy(-0.28) - 5), module, Impl::PROG_LIGHT +  1*2));  // C#
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() - 20, fy(-0.28) + 5), module, Impl::PROG_LIGHT +  2*2));  // D
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() - 15, fy(-0.28) - 5), module, Impl::PROG_LIGHT +  3*2));  // Eb
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() - 10, fy(-0.28) + 5), module, Impl::PROG_LIGHT +  4*2));  // E
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0()     , fy(-0.28) + 5), module, Impl::PROG_LIGHT +  5*2));  // F
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() +  5, fy(-0.28) - 5), module, Impl::PROG_LIGHT +  6*2));  // Fs
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() + 10, fy(-0.28) + 5), module, Impl::PROG_LIGHT +  7*2));  // G
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() + 15, fy(-0.28) - 5), module, Impl::PROG_LIGHT +  8*2));  // Ab
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() + 20, fy(-0.28) + 5), module, Impl::PROG_LIGHT +  9*2));  // A
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() + 25, fy(-0.28) - 5), module, Impl::PROG_LIGHT + 10*2));  // Bb
+	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() + 30, fy(-0.28) + 5), module, Impl::PROG_LIGHT + 11*2));  // B
 
-	addChild(createLight<SmallLight<     RedLight>>(led(x0() - 30, fy(+0.28) + 5), module, Chord_G1::FUND_LIGHT +  0));  // C
-	addChild(createLight<SmallLight<     RedLight>>(led(x0() - 25, fy(+0.28) - 5), module, Chord_G1::FUND_LIGHT +  1));  // C#
-	addChild(createLight<SmallLight<     RedLight>>(led(x0() - 20, fy(+0.28) + 5), module, Chord_G1::FUND_LIGHT +  2));  // D
-	addChild(createLight<SmallLight<     RedLight>>(led(x0() - 15, fy(+0.28) - 5), module, Chord_G1::FUND_LIGHT +  3));  // Eb
-	addChild(createLight<SmallLight<     RedLight>>(led(x0() - 10, fy(+0.28) + 5), module, Chord_G1::FUND_LIGHT +  4));  // E
-	addChild(createLight<SmallLight<     RedLight>>(led(x0()     , fy(+0.28) + 5), module, Chord_G1::FUND_LIGHT +  5));  // F
-	addChild(createLight<SmallLight<     RedLight>>(led(x0() +  5, fy(+0.28) - 5), module, Chord_G1::FUND_LIGHT +  6));  // Fs
-	addChild(createLight<SmallLight<     RedLight>>(led(x0() + 10, fy(+0.28) + 5), module, Chord_G1::FUND_LIGHT +  7));  // G
-	addChild(createLight<SmallLight<     RedLight>>(led(x0() + 15, fy(+0.28) - 5), module, Chord_G1::FUND_LIGHT +  8));  // Ab
-	addChild(createLight<SmallLight<     RedLight>>(led(x0() + 20, fy(+0.28) + 5), module, Chord_G1::FUND_LIGHT +  9));  // A
-	addChild(createLight<SmallLight<     RedLight>>(led(x0() + 25, fy(+0.28) - 5), module, Chord_G1::FUND_LIGHT + 10));  // Bb
-	addChild(createLight<SmallLight<     RedLight>>(led(x0() + 30, fy(+0.28) + 5), module, Chord_G1::FUND_LIGHT + 11));  // B
+	addChild(createLight<SmallLight<     RedLight>>(led(x0() - 30, fy(+0.28) + 5), module, Impl::FUND_LIGHT +  0));  // C
+	addChild(createLight<SmallLight<     RedLight>>(led(x0() - 25, fy(+0.28) - 5), module, Impl::FUND_LIGHT +  1));  // C#
+	addChild(createLight<SmallLight<     RedLight>>(led(x0() - 20, fy(+0.28) + 5), module, Impl::FUND_LIGHT +  2));  // D
+	addChild(createLight<SmallLight<     RedLight>>(led(x0() - 15, fy(+0.28) - 5), module, Impl::FUND_LIGHT +  3));  // Eb
+	addChild(createLight<SmallLight<     RedLight>>(led(x0() - 10, fy(+0.28) + 5), module, Impl::FUND_LIGHT +  4));  // E
+	addChild(createLight<SmallLight<     RedLight>>(led(x0()     , fy(+0.28) + 5), module, Impl::FUND_LIGHT +  5));  // F
+	addChild(createLight<SmallLight<     RedLight>>(led(x0() +  5, fy(+0.28) - 5), module, Impl::FUND_LIGHT +  6));  // Fs
+	addChild(createLight<SmallLight<     RedLight>>(led(x0() + 10, fy(+0.28) + 5), module, Impl::FUND_LIGHT +  7));  // G
+	addChild(createLight<SmallLight<     RedLight>>(led(x0() + 15, fy(+0.28) - 5), module, Impl::FUND_LIGHT +  8));  // Ab
+	addChild(createLight<SmallLight<     RedLight>>(led(x0() + 20, fy(+0.28) + 5), module, Impl::FUND_LIGHT +  9));  // A
+	addChild(createLight<SmallLight<     RedLight>>(led(x0() + 25, fy(+0.28) - 5), module, Impl::FUND_LIGHT + 10));  // Bb
+	addChild(createLight<SmallLight<     RedLight>>(led(x0() + 30, fy(+0.28) + 5), module, Impl::FUND_LIGHT + 11));  // B
 }
+
+
+} // Chord_G1
+} // GTX

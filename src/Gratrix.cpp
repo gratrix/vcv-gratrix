@@ -18,7 +18,7 @@ void init(rack::Plugin *p) {
 	p->addModel(createModel<VCF_F1_Widget>        ("Gratrix", "VCF-F1",   "VCF-F1",   FILTER_TAG));
 	p->addModel(createModel<VCAWidget>            ("Gratrix", "VCA-F1",   "VCA-F1",   AMPLIFIER_TAG));
 	p->addModel(createModel<ADSRWidget>           ("Gratrix", "Env-F1",   "Env-F1",   ENVELOPE_GENERATOR_TAG));
-	p->addModel(createModel<Chord_G1_Widget>      ("Gratrix", "Chord-G1", "Chord-G1", SYNTH_VOICE_TAG));  // right tag?
+	p->addModel(createModel<GTX::Chord_G1::Widget>("Gratrix", "Chord-G1", "Chord-G1", SYNTH_VOICE_TAG));  // right tag?
 	p->addModel(createModel<GTX::Fade_G1::Widget> ("Gratrix", "Fade-G1",  "Fade-G1",  MIXER_TAG));        // right tag?
 	p->addModel(createModel<GTX::Fade_G2::Widget> ("Gratrix", "Fade-G2",  "Fade-G2",  MIXER_TAG));        // right tag?
 	p->addModel(createModel<GTX::VU_G1::Widget>   ("Gratrix", "VU-G1",    "VU-G1",    VISUAL_TAG));
