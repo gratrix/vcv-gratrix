@@ -25,7 +25,7 @@ void init(rack::Plugin *p) {
 //	p->addModel(createModel<MuxWidget>            ("Gratrix", "Mux",      "Mux",      MIXER_TAG));
 //	p->addModel(createModel<SplitWidget>          ("Gratrix", "Split",    "Split",    MULTIPLE_TAG));
 	p->addModel(createModel<OctaveWidget>         ("Gratrix", "Octave",   "Octave",   SYNTH_VOICE_TAG));  // right tag?
-	p->addModel(createModel<KeysWidget>           ("Gratrix", "Keys-G1",  "Keys-G1",  VISUAL_TAG));
+	p->addModel(createModel<GTX::Keys_G1::Widget> ("Gratrix", "Keys-G1",  "Keys-G1",  VISUAL_TAG));
 	p->addModel(createModel<GTX::Blank_03::Widget>("Gratrix", "Blank3",   "Blank 3",  BLANK_TAG));
 	p->addModel(createModel<GTX::Blank_06::Widget>("Gratrix", "Blank6",   "Blank 6",  BLANK_TAG));
 	p->addModel(createModel<GTX::Blank_09::Widget>("Gratrix", "Blank9",   "Blank 9",  BLANK_TAG));
