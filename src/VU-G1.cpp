@@ -50,11 +50,11 @@ struct Impl : Module
 		{
 			float input = inputs[imap(IN1_INPUT, i)].active ? inputs[imap(IN1_INPUT, i)].value : inputs[imap(IN1_INPUT, GTX__N)].value;
 			float dB    = logf(fabsf(input * 0.1f)) * (10.0f / logf(20.0f));
-			float dB2   = dB * (1.0f / 3.0f) + 1.0f;
+			float dB2   = dB * (1.0f / 3.0f);
 
 			for (int j = 0; j < NUM_LIGHTS; j++)
 			{
-				float b = clampf(dB2 + j, 0.0f, 1.0f);
+				float b = clampf(dB2 + (j+1), 0.0f, 1.0f);
 
 				lights[NUM_LIGHTS * i + j].setBrightnessSmooth(b * 0.9f);
 			}
