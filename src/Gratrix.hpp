@@ -2211,6 +2211,7 @@ namespace Fade_G1   { struct Widget : ModuleWidget { Widget(); }; }
 namespace Fade_G2   { struct Widget : ModuleWidget { Widget(); }; }
 namespace Keys_G1   { struct Widget : ModuleWidget { Widget(); }; }
 namespace VU_G1     { struct Widget : ModuleWidget { Widget(); }; }
+namespace Scope_G1  { struct Widget : ModuleWidget { Widget(); }; }
 namespace Chord_G1  { struct Widget : ModuleWidget { Widget(); }; }
 namespace Octave_G1 { struct Widget : ModuleWidget { Widget(); }; }
 }
