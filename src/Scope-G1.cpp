@@ -302,6 +302,12 @@ Widget::Widget() {
 		pg.bus_in(0, 2, "IN");
 		pg.bus_in(1, 2, "EXT");
 
+		pg.nob_sml_raw(gx(2-0.22), gy(2-0.24), "X SCL");
+		pg.nob_sml_raw(gx(2-0.22), gy(2+0.22), "X POS");
+		pg.nob_sml_raw(gx(2+0.22), gy(2-0.24), "TIME");
+		pg.nob_sml_raw(gx(2+0.22), gy(2+0.22), "TRIG");
+		pg.nob_sml_raw(gx(3-0.22), gy(2     ), "INT/EXT");
+
 		pg.rect(screen_pos, screen_size, "fill:#333333;stroke:none");
 	}
 	#endif
@@ -332,11 +338,11 @@ Widget::Widget() {
 		addChild(display);
 	}
 
-	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(gx(2-0.22), gy(2-0.22)), module, Scope::X_SCALE_PARAM, -2.0,   8.0,   0.0));
+	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(gx(2-0.22), gy(2-0.24)), module, Scope::X_SCALE_PARAM, -2.0,   8.0,   0.0));
 	addParam(createParam<RoundSmallBlackKnob>(    n_s(gx(2-0.22), gy(2+0.22)), module, Scope::X_POS_PARAM,  -10.0,  10.0,   0.0));
-	addParam(createParam<RoundSmallBlackKnob>(    n_s(gx(2+0.22), gy(2-0.22)), module, Scope::TIME_PARAM,    -6.0, -16.0, -14.0));
+	addParam(createParam<RoundSmallBlackKnob>(    n_s(gx(2+0.22), gy(2-0.24)), module, Scope::TIME_PARAM,    -6.0, -16.0, -14.0));
 	addParam(createParam<RoundSmallBlackKnob>(    n_s(gx(2+0.22), gy(2+0.22)), module, Scope::TRIG_PARAM,   -10.0,  10.0,   0.0));
-	addParam(createParam<CKD6>(                   n_s(gx(3     ), gy(2     )), module, Scope::EXTERNAL_PARAM, 0.0,   1.0,   0.0));
+	addParam(createParam<CKD6>(                   n_s(gx(3-0.22), gy(2     )), module, Scope::EXTERNAL_PARAM, 0.0,   1.0,   0.0));
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
@@ -344,8 +350,8 @@ Widget::Widget() {
 		addInput(createInput<PJ301MPort>(prt(px(1, i), py(2, i)), module, Scope::imap(Scope::TRIG_INPUT, i)));
 	}
 
-	addChild(createLight<SmallLight<GreenLight>>(n_s(gx(3), gy(2)-20), module, Scope::INTERNAL_LIGHT));
-	addChild(createLight<SmallLight<GreenLight>>(n_s(gx(3), gy(2)+30), module, Scope::EXTERNAL_LIGHT));
+	addChild(createLight<SmallLight<GreenLight>>(led(gx(3-0.22-0.2), gy(2)-10), module, Scope::INTERNAL_LIGHT));
+	addChild(createLight<SmallLight<GreenLight>>(led(gx(3-0.22+0.2), gy(2)-10), module, Scope::EXTERNAL_LIGHT));
 }
 
 

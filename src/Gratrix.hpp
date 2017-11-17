@@ -148,18 +148,20 @@ public:
 		}
 	}
 
-	void nob_big(double x, double y, const std::string &title = "", const std::string &subtitle = "")
+	void nob_big(double x, double y, const std::string &title = "")
 	{
-	//	circle(Vec(fx(x), fy(y)), rad_n_b() - 3, "fill:#888888;stroke:#440022;stroke-width:1");
-
+		return nob_big_raw(fx(x), fy(y), title);
+	}
+	void nob_big_raw(double x, double y, const std::string &title = "", const std::string &subtitle = "")
+	{
 		if (!title.empty())
 		{
-			text(Vec(fx(x), fy(y) - rad_n_b() - 10), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:11; text-anchor:middle; fill:black;");
+			text(Vec(x, y - rad_n_b() - 10), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:11; text-anchor:middle; fill:black;");
 		}
 
 		if (!subtitle.empty())
 		{
-			text(Vec(fx(x), fy(y) + rad_n_b() + 7 + 8), subtitle, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
+			text(Vec(x, y + rad_n_b() + 7 + 8), subtitle, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
 		}
 	}
 
@@ -169,11 +171,21 @@ public:
 	}
 	void nob_med_raw(double x, double y, const std::string &title = "")
 	{
-	//	circle(Vec(x, y), rad_n_m() - 3, "fill:#888888;stroke:#440022;stroke-width:1");
-
 		if (!title.empty())
 		{
 			text(Vec(x, y - rad_n_m() - 5), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
+		}
+	}
+
+	void nob_sml(double x, double y, const std::string &title = "")
+	{
+		return nob_sml_raw(fx(x), fy(y), title);
+	}
+	void nob_sml_raw(double x, double y, const std::string &title = "")
+	{
+		if (!title.empty())
+		{
+			text(Vec(x, y - rad_n_s() - 5), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
 		}
 	}
 
