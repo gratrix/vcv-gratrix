@@ -41,15 +41,9 @@ Widget::Widget()
 	#endif
 
 	{
-		#if GTX__LOAD_SVG
 		SVGPanel *panel = new SVGPanel();
 		panel->box.size = box.size;
 		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Blank12.svg")));
-		#else
-		Panel *panel = new LightPanel();
-		panel->box.size = box.size;
-		panel->backgroundImage = Image::load(assetPlugin(plugin, "res/Blank12.png"));
-		#endif
 		addChild(panel);
 	}
 

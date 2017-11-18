@@ -287,15 +287,9 @@ VCO_F1_Widget::VCO_F1_Widget()
 	#endif
 
 	{
-		#if GTX__LOAD_SVG
 		SVGPanel *panel = new SVGPanel();
 		panel->box.size = box.size;
 		panel->setBackground(SVG::load(assetPlugin(plugin, "res/VCO-F1.svg")));
-		#else
-		Panel *panel = new LightPanel();
-		panel->box.size = box.size;
-		panel->backgroundImage = Image::load(assetPlugin(plugin, "res/VCO-F1.png"));
-		#endif
 		addChild(panel);
 	}
 
@@ -444,15 +438,9 @@ VCO_F2_Widget::VCO_F2_Widget() {
 	#endif
 
 	{
-		#if GTX__LOAD_SVG
-		SVGPanel *panel = new SVGPanel();
-		panel->box.size = box.size;
-		panel->setBackground(SVG::load(assetPlugin(plugin, "res/VCO-F2.svg")));
-		#else
 		Panel *panel = new LightPanel();
 		panel->box.size = box.size;
 		panel->backgroundImage = Image::load(assetPlugin(plugin, "res/VCO-F2.png"));
-		#endif
 		addChild(panel);
 	}
 
