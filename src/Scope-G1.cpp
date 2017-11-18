@@ -25,6 +25,7 @@ struct Scope : Module {
 		TIME_PARAM,
 		TRIG_PARAM,
 		EXTERNAL_PARAM,
+		DISP_PARAM,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -42,6 +43,7 @@ struct Scope : Module {
 	};
 
 	struct Voice {
+		bool active = false;
 		float bufferX[BUFFER_SIZE] = {};
 		int bufferIndex = 0;
 		float frameIndex = 0;
@@ -51,7 +53,7 @@ struct Scope : Module {
 
 	SchmittTrigger extTrigger;
 	bool external = false;
-	Voice voice[GTX__N];
+	Voice voice[GTX__N+1];
 
 	Scope() : Module(NUM_PARAMS, GTX__N * NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS) {}
 
@@ -92,13 +94,39 @@ void Scope::step() {
 	float deltaTime = powf(2.0, params[TIME_PARAM].value);
 	int frameCount = (int)ceilf(deltaTime * engineGetSampleRate());
 
+	Input x_sum, trig_sum;
+	int count = 0;
+
 	for (int k=0; k<GTX__N; ++k)
 	{
 		voice[k].step(external, frameCount, params[TRIG_PARAM], inputs[imap(X_INPUT, k)], inputs[imap(TRIG_INPUT, k)]);
+
+		if (inputs[imap(X_INPUT, k)].active)
+		{
+			x_sum.active = true;
+			x_sum.value += inputs[imap(X_INPUT, k)].value;
+			count++;
+		}
+
+		if (inputs[imap(TRIG_INPUT, k)].active) // GTX TODO - may need better logic here
+		{
+			trig_sum.active = true;
+			trig_sum.value += inputs[imap(TRIG_INPUT, k)].value;
+		}
 	}
+
+	if (count > 0)
+	{
+		x_sum.value /= static_cast<float>(count);
+	}
+
+	voice[GTX__N].step(external, frameCount, params[TRIG_PARAM], x_sum, trig_sum);
 }
 
 void Scope::Voice::step(bool external, int frameCount, const Param &trig_param, const Input &x_input, const Input &trig_input) {
+	// Copy active state
+	active = x_input.active;
+
 	// Add frame to buffer
 	if (bufferIndex < BUFFER_SIZE) {
 		if (++frameIndex > frameCount) {
@@ -110,7 +138,7 @@ void Scope::Voice::step(bool external, int frameCount, const Param &trig_param, 
 
 	// Are we waiting on the next trigger?
 	if (bufferIndex >= BUFFER_SIZE) {
-		// Trigger immediately if external but nothing plugged in, or in Lissajous mode
+		// Trigger immediately if external but nothing plugged in
 		if (external && !trig_input.active) {
 			bufferIndex = 0;
 			frameIndex = 0;
@@ -168,18 +196,10 @@ struct ScopeDisplay : TransparentWidget {
 		font = Font::load(assetPlugin(plugin, "res/fonts/Sudo.ttf"));
 	}
 
-	void drawWaveform(NVGcontext *vg, float *valuesX, int k) {
+	void drawWaveform(NVGcontext *vg, float *valuesX, const Rect &b) {
 		if (!valuesX)
 			return;
 		nvgSave(vg);
-		Rect b = Rect(Vec(0, 15), box.size.minus(Vec(0, 15*2)));
-
-		// SG TODO - imporve
-		b.size.x /= (GTX__N/2);
-		b.size.y /= (GTX__N/3);
-		b.pos.x  += (k%3) * b.size.x;
-		b.pos.y  += (k/3) * b.size.y;
-
 		nvgScissor(vg, b.pos.x, b.pos.y, b.size.x, b.size.y);
 		nvgBeginPath(vg);
 		// Draw maximum display left to right
@@ -203,12 +223,10 @@ struct ScopeDisplay : TransparentWidget {
 		nvgRestore(vg);
 	}
 
-	void drawTrig(NVGcontext *vg, float value) {
-		Rect b = Rect(Vec(0, 15), box.size.minus(Vec(0, 15*2)));
+	void drawTrig(NVGcontext *vg, float value, const Rect &b) {
 		nvgScissor(vg, b.pos.x, b.pos.y, b.size.x, b.size.y);
-
 		value = value / 2.0 + 0.5;
-		Vec p = Vec(box.size.x, b.pos.y + b.size.y * (1.0 - value));
+		Vec p = Vec(b.pos.x + b.size.x, b.pos.y + b.size.y * (1.0 - value));
 
 		// Draw line
 		nvgStrokeColor(vg, nvgRGBA(0xff, 0xff, 0xff, 0x10));
@@ -257,22 +275,41 @@ struct ScopeDisplay : TransparentWidget {
 	void draw(NVGcontext *vg) override {
 		float gainX = powf(2.0, roundf(module->params[Scope::X_SCALE_PARAM].value));
 		float offsetX = module->params[Scope::X_POS_PARAM].value;
+		int   disp = static_cast<int>(module->params[Scope::DISP_PARAM].value + 0.5f);
 
-		for (int k=0; k<GTX__N; ++k)
+		int k0, k1, kM;
+
+		     if (disp == 0       ) { k0 =      0; k1 = GTX__N;   kM = 0;   } // six up
+		else if (disp == GTX__N+1) { k0 = GTX__N; k1 = GTX__N+1; kM = 100; } // sum
+		else                       { k0 = disp-1; k1 =   disp  ; kM = 100; } // individual
+
+		for (int k=k0; k<k1; ++k)
 		{
+			Rect b = Rect(Vec(0, 15), box.size.minus(Vec(0, 15*2)));
+
+			// GTX TODO - imporve
+			if (kM < GTX__N)
+			{
+				b.size.x /= (GTX__N/2);
+				b.size.y /= (GTX__N/3);
+				b.pos.x  += (k%3) * b.size.x;
+				b.pos.y  += (k/3) * b.size.y;
+			}
+
 			float valuesX[BUFFER_SIZE];
 			for (int i = 0; i < BUFFER_SIZE; i++) {
 				valuesX[i] = (module->voice[k].bufferX[i] + offsetX) * gainX / 10.0;
 			}
 
 			// Draw waveforms
-			if (module->inputs[Scope::imap(Scope::X_INPUT, k)].active) {
-				nvgStrokeColor(vg, nvgRGBA(0x28, 0xb0, 0xf3, 0xc0));
-				drawWaveform(vg, valuesX, k);
+			if (module->voice[k].active) {
+				if (k&1) nvgStrokeColor(vg, nvgRGBA(0xe1, 0x02, 0x78, 0xc0));
+				else     nvgStrokeColor(vg, nvgRGBA(0x28, 0xb0, 0xf3, 0xc0));
+				drawWaveform(vg, valuesX, b);
 			}
 
 			float valueTrig = (module->params[Scope::TRIG_PARAM].value + offsetX) * gainX / 10.0;
-			drawTrig(vg, valueTrig);
+			drawTrig(vg, valueTrig, b);
 		}
 
 		// Calculate and draw stats
@@ -307,6 +344,7 @@ Widget::Widget() {
 		pg.nob_sml_raw(gx(2+0.22), gy(2-0.24), "TIME");
 		pg.nob_sml_raw(gx(2+0.22), gy(2+0.22), "TRIG");
 		pg.nob_sml_raw(gx(3-0.22), gy(2     ), "INT/EXT");
+		pg.nob_sml_raw(gx(3+0.22), gy(2-0.24), "DISP");
 
 		pg.rect(screen_pos, screen_size, "fill:#333333;stroke:none");
 	}
@@ -338,11 +376,12 @@ Widget::Widget() {
 		addChild(display);
 	}
 
-	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(gx(2-0.22), gy(2-0.24)), module, Scope::X_SCALE_PARAM, -2.0,   8.0,   0.0));
-	addParam(createParam<RoundSmallBlackKnob>(    n_s(gx(2-0.22), gy(2+0.22)), module, Scope::X_POS_PARAM,  -10.0,  10.0,   0.0));
-	addParam(createParam<RoundSmallBlackKnob>(    n_s(gx(2+0.22), gy(2-0.24)), module, Scope::TIME_PARAM,    -6.0, -16.0, -14.0));
-	addParam(createParam<RoundSmallBlackKnob>(    n_s(gx(2+0.22), gy(2+0.22)), module, Scope::TRIG_PARAM,   -10.0,  10.0,   0.0));
-	addParam(createParam<CKD6>(                   n_s(gx(3-0.22), gy(2     )), module, Scope::EXTERNAL_PARAM, 0.0,   1.0,   0.0));
+	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(gx(2-0.22), gy(2-0.24)), module, Scope::X_SCALE_PARAM, -2.0,      8.0,   0.0));
+	addParam(createParam<RoundSmallBlackKnob>(    n_s(gx(2-0.22), gy(2+0.22)), module, Scope::X_POS_PARAM,  -10.0,     10.0,   0.0));
+	addParam(createParam<RoundSmallBlackKnob>(    n_s(gx(2+0.22), gy(2-0.24)), module, Scope::TIME_PARAM,    -6.0,    -16.0, -14.0));
+	addParam(createParam<RoundSmallBlackKnob>(    n_s(gx(2+0.22), gy(2+0.22)), module, Scope::TRIG_PARAM,   -10.0,     10.0,   0.0));
+	addParam(createParam<CKD6>(                   n_s(gx(3-0.22), gy(2     )), module, Scope::EXTERNAL_PARAM, 0.0,      1.0,   0.0));
+	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(gx(3+0.22), gy(2-0.24)), module, Scope::DISP_PARAM,     0.0, GTX__N+1,   0.0));
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
