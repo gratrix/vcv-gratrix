@@ -438,9 +438,9 @@ VCO_F2_Widget::VCO_F2_Widget() {
 	#endif
 
 	{
-		Panel *panel = new LightPanel();
+		SVGPanel *panel = new SVGPanel();
 		panel->box.size = box.size;
-		panel->backgroundImage = Image::load(assetPlugin(plugin, "res/VCO-F2.png"));
+		panel->setBackground(SVG::load(assetPlugin(plugin, "res/VCO-F2.svg")));
 		addChild(panel);
 	}
 
