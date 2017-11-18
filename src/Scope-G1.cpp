@@ -312,13 +312,13 @@ Widget::Widget() {
 		PanelGen pg(assetPlugin(plugin, "build/res/Scope-G1.svg"), box.size, "SCOPE-G1");
 
 		pg.bus_in(0, 2, "IN");
-		pg.bus_in(1, 2, "EXT");
+		pg.bus_in(2, 2, "EXT TRIG");
 
-		pg.nob_sml_raw(gx(2-0.22), gy(2-0.24), "X SCL");
-		pg.nob_sml_raw(gx(2-0.22), gy(2+0.22), "X POS");
-		pg.nob_sml_raw(gx(2+0.22), gy(2-0.24), "TIME");
-		pg.nob_sml_raw(gx(2+0.22), gy(2+0.22), "TRIG");
-		pg.tog_raw    (gx(3-0.22), gy(2     ), "INT", "EXT");
+		pg.nob_sml_raw(gx(1-0.22), gy(2-0.24), "SCALE");
+		pg.nob_sml_raw(gx(1-0.22), gy(2+0.22), "POS");
+		pg.nob_sml_raw(gx(1+0.22), gy(2-0.24), "TIME");
+		pg.nob_sml_raw(gx(1+0.22), gy(2+0.22), "TRIG");
+		pg.tog_raw    (gx(3-0.22), gy(2-0.24), "INT", "EXT");
 		pg.nob_sml_raw(gx(3+0.22), gy(2-0.24), "DISP");
 
 		pg.rect(screen_pos, screen_size, "fill:#333333;stroke:none");
@@ -345,17 +345,17 @@ Widget::Widget() {
 		addChild(display);
 	}
 
-	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(gx(2-0.22), gy(2-0.24)), module, Scope::X_SCALE_PARAM, -2.0,      8.0,   0.0));
-	addParam(createParam<RoundSmallBlackKnob>(    n_s(gx(2-0.22), gy(2+0.22)), module, Scope::X_POS_PARAM,  -10.0,     10.0,   0.0));
-	addParam(createParam<RoundSmallBlackKnob>(    n_s(gx(2+0.22), gy(2-0.24)), module, Scope::TIME_PARAM,    -6.0,    -16.0, -14.0));
-	addParam(createParam<RoundSmallBlackKnob>(    n_s(gx(2+0.22), gy(2+0.22)), module, Scope::TRIG_PARAM,   -10.0,     10.0,   0.0));
-	addParam(createParam<CKSS>(                   tog(gx(3-0.22), gy(2     )), module, Scope::EXTERNAL_PARAM, 0.0,      1.0,   1.0));
+	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(gx(1-0.22), gy(2-0.24)), module, Scope::X_SCALE_PARAM, -2.0,      8.0,   0.0));
+	addParam(createParam<RoundSmallBlackKnob>(    n_s(gx(1-0.22), gy(2+0.22)), module, Scope::X_POS_PARAM,  -10.0,     10.0,   0.0));
+	addParam(createParam<RoundSmallBlackKnob>(    n_s(gx(1+0.22), gy(2-0.24)), module, Scope::TIME_PARAM,    -6.0,    -16.0, -14.0));
+	addParam(createParam<RoundSmallBlackKnob>(    n_s(gx(1+0.22), gy(2+0.22)), module, Scope::TRIG_PARAM,   -10.0,     10.0,   0.0));
+	addParam(createParam<CKSS>(                   tog(gx(3-0.22), gy(2-0.24)), module, Scope::EXTERNAL_PARAM, 0.0,      1.0,   1.0));
 	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(gx(3+0.22), gy(2-0.24)), module, Scope::DISP_PARAM,     0.0, GTX__N+1,   0.0));
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
 		addInput(createInput<PJ301MPort>(prt(px(0, i), py(2, i)), module, Scope::imap(Scope::X_INPUT,    i)));
-		addInput(createInput<PJ301MPort>(prt(px(1, i), py(2, i)), module, Scope::imap(Scope::TRIG_INPUT, i)));
+		addInput(createInput<PJ301MPort>(prt(px(2, i), py(2, i)), module, Scope::imap(Scope::TRIG_INPUT, i)));
 	}
 }
 
