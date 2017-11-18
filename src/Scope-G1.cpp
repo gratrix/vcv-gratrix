@@ -37,8 +37,6 @@ struct Scope : Module {
 		NUM_OUTPUTS
 	};
 	enum LightIds {
-		INTERNAL_LIGHT,
-		EXTERNAL_LIGHT,
 		NUM_LIGHTS
 	};
 
@@ -51,7 +49,6 @@ struct Scope : Module {
 		void step(bool external, int frameCount, const Param &trig_param, const Input &x_input, const Input &trig_input);
 	};
 
-	SchmittTrigger extTrigger;
 	bool external = false;
 	Voice voice[GTX__N+1];
 
@@ -63,32 +60,12 @@ struct Scope : Module {
 	}
 
 	void step() override;
-
-	json_t *toJson() override {
-		json_t *rootJ = json_object();
-		json_object_set_new(rootJ, "external", json_integer((int) external));
-		return rootJ;
-	}
-
-	void fromJson(json_t *rootJ) override {
-		json_t *extJ = json_object_get(rootJ, "external");
-		if (extJ)
-			external = json_integer_value(extJ);
-	}
-
-	void reset() override {
-		external = false;
-	}
 };
 
 
 void Scope::step() {
 	// Modes
-	if (extTrigger.process(params[EXTERNAL_PARAM].value)) {
-		external = !external;
-	}
-	lights[INTERNAL_LIGHT].value = external ? 0.0 : 1.0;
-	lights[EXTERNAL_LIGHT].value = external ? 1.0 : 0.0;
+	external = params[EXTERNAL_PARAM].value <= 0.0;
 
 	// Compute time
 	float deltaTime = powf(2.0, params[TIME_PARAM].value);
@@ -334,8 +311,6 @@ Widget::Widget() {
 	{
 		PanelGen pg(assetPlugin(plugin, "build/res/Scope-G1.svg"), box.size, "SCOPE-G1");
 
-	//	pg.prt_in2(0, 0, "CV 1--2");   pg.nob_big(1, 0, "1--2");
-
 		pg.bus_in(0, 2, "IN");
 		pg.bus_in(1, 2, "EXT");
 
@@ -343,7 +318,7 @@ Widget::Widget() {
 		pg.nob_sml_raw(gx(2-0.22), gy(2+0.22), "X POS");
 		pg.nob_sml_raw(gx(2+0.22), gy(2-0.24), "TIME");
 		pg.nob_sml_raw(gx(2+0.22), gy(2+0.22), "TRIG");
-		pg.nob_sml_raw(gx(3-0.22), gy(2     ), "INT/EXT");
+		pg.tog_raw    (gx(3-0.22), gy(2     ), "INT", "EXT");
 		pg.nob_sml_raw(gx(3+0.22), gy(2-0.24), "DISP");
 
 		pg.rect(screen_pos, screen_size, "fill:#333333;stroke:none");
@@ -374,7 +349,7 @@ Widget::Widget() {
 	addParam(createParam<RoundSmallBlackKnob>(    n_s(gx(2-0.22), gy(2+0.22)), module, Scope::X_POS_PARAM,  -10.0,     10.0,   0.0));
 	addParam(createParam<RoundSmallBlackKnob>(    n_s(gx(2+0.22), gy(2-0.24)), module, Scope::TIME_PARAM,    -6.0,    -16.0, -14.0));
 	addParam(createParam<RoundSmallBlackKnob>(    n_s(gx(2+0.22), gy(2+0.22)), module, Scope::TRIG_PARAM,   -10.0,     10.0,   0.0));
-	addParam(createParam<CKD6>(                   n_s(gx(3-0.22), gy(2     )), module, Scope::EXTERNAL_PARAM, 0.0,      1.0,   0.0));
+	addParam(createParam<CKSS>(                   tog(gx(3-0.22), gy(2     )), module, Scope::EXTERNAL_PARAM, 0.0,      1.0,   1.0));
 	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(gx(3+0.22), gy(2-0.24)), module, Scope::DISP_PARAM,     0.0, GTX__N+1,   0.0));
 
 	for (std::size_t i=0; i<GTX__N; ++i)
@@ -382,9 +357,6 @@ Widget::Widget() {
 		addInput(createInput<PJ301MPort>(prt(px(0, i), py(2, i)), module, Scope::imap(Scope::X_INPUT,    i)));
 		addInput(createInput<PJ301MPort>(prt(px(1, i), py(2, i)), module, Scope::imap(Scope::TRIG_INPUT, i)));
 	}
-
-	addChild(createLight<SmallLight<GreenLight>>(led(gx(3-0.22-0.2), gy(2)-10), module, Scope::INTERNAL_LIGHT));
-	addChild(createLight<SmallLight<GreenLight>>(led(gx(3-0.22+0.2), gy(2)-10), module, Scope::EXTERNAL_LIGHT));
 }
 
 

@@ -134,16 +134,18 @@ public:
 
 	void tog(double x, double y, const std::string &title = "", const std::string &subtitle = "")
 	{
-	//	circle(Vec(fx(x), fy(y)), 14, "fill:#888888;stroke:#440022;stroke-width:1");
-
+		tog_raw(fx(x), fy(y), title, subtitle);
+	}
+	void tog_raw(double x, double y, const std::string &title = "", const std::string &subtitle = "")
+	{
 		if (!title.empty())
 		{
-			text(Vec(fx(x), fy(y) - 15), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
+			text(Vec(x, y - 15), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
 		}
 
 		if (!subtitle.empty())
 		{
-			text(Vec(fx(x), fy(y) + 23), subtitle, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
+			text(Vec(x, y + 23), subtitle, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
 		}
 	}
 
