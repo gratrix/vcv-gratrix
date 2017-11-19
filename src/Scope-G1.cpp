@@ -242,7 +242,7 @@ struct ScopeDisplay : TransparentWidget {
 
 		nvgFillColor(vg, nvgRGBA(0xff, 0xff, 0xff, 0x80));
 		char text[128];
-		snprintf(text, sizeof(text), "%s. %4.1f [%+ 5.1f %+ 5.1f]", title, stats.vpp, stats.vmin, stats.vmax);
+		snprintf(text, sizeof(text), "%s. %4.1f [%+5.1f %+5.1f]", title, stats.vpp, stats.vmin, stats.vmax);
 		nvgText(vg, pos.x + 6, pos.y + 11, text, NULL);
 	}
 
@@ -318,8 +318,8 @@ Widget::Widget() {
 	setModule(module);
 	box.size = Vec(24*15, 380);
 
-	auto screen_pos  = Vec(0, 44);
-	auto screen_size = Vec(box.size.x, 200);
+	auto screen_pos  = Vec(0, 35);
+	auto screen_size = Vec(box.size.x, 220);
 
 	#if GTX__SAVE_SVG
 	{
@@ -335,7 +335,19 @@ Widget::Widget() {
 		pg.tog_raw    (gx(3-0.22), gy(2-0.24), "INT", "EXT");
 		pg.nob_sml_raw(gx(3+0.22), gy(2-0.24), "DISP");
 
-		pg.rect(screen_pos, screen_size, "fill:#333333;stroke:none");
+		pg.rect(screen_pos, screen_size, "fill:#222222;stroke:none");
+
+		for (std::size_t i=0; i<=12; i++)
+		{
+			float x = screen_pos.x + screen_size.x * i / 12.0f;
+			pg.line(Vec(x, screen_pos.y + 15), Vec(x, screen_pos.y + screen_size.y - 15), "fill:none;stroke:#666666;stroke-width:1");
+		}
+
+		for (std::size_t i=0; i<=8; i++)
+		{
+			float y = screen_pos.y + 15 + (screen_size.y - 30) * i /  8.0f;
+			pg.line(Vec(screen_pos.x, y), Vec(screen_pos.x + screen_size.x, y), "fill:none;stroke:#666666;stroke-width:1");
+		}
 	}
 	#endif
 
