@@ -167,7 +167,7 @@ struct ScopeDisplay : TransparentWidget {
 			vpp = vmax - vmin;
 		}
 	};
-	Stats statsX;
+	Stats statsX[GTX__N + 1];
 
 	ScopeDisplay() {
 		font = Font::load(assetPlugin(plugin, "res/fonts/Sudo.ttf"));
@@ -235,18 +235,15 @@ struct ScopeDisplay : TransparentWidget {
 		nvgResetScissor(vg);
 	}
 
-	void drawStats(NVGcontext *vg, Vec pos, const char *title, Stats *stats) {
+	void drawStats(NVGcontext *vg, Vec pos, const char *title, const Stats &stats) {
 		nvgFontSize(vg, 13);
 		nvgFontFaceId(vg, font->handle);
 		nvgTextLetterSpacing(vg, -2);
 
-		nvgFillColor(vg, nvgRGBA(0xff, 0xff, 0xff, 0x40));
-		nvgText(vg, pos.x + 6, pos.y + 11, title, NULL);
-
 		nvgFillColor(vg, nvgRGBA(0xff, 0xff, 0xff, 0x80));
 		char text[128];
-		snprintf(text, sizeof(text), "pp % 06.2f  max % 06.2f  min % 06.2f", stats->vpp, stats->vmax, stats->vmin);
-		nvgText(vg, pos.x + 22, pos.y + 11, text, NULL);
+		snprintf(text, sizeof(text), "%s. %4.1f [%+ 5.1f %+ 5.1f]", title, stats.vpp, stats.vmin, stats.vmax);
+		nvgText(vg, pos.x + 6, pos.y + 11, text, NULL);
 	}
 
 	void draw(NVGcontext *vg) override {
@@ -260,9 +257,12 @@ struct ScopeDisplay : TransparentWidget {
 		else if (disp == GTX__N+1) { k0 = GTX__N; k1 = GTX__N+1; kM = 100; } // sum
 		else                       { k0 = disp-1; k1 =   disp  ; kM = 100; } // individual
 
+		static const char *stats_lab[GTX__N+1] = {"1", "2", "3", "4", "5", "6", "SUM"};
+
 		for (int k=k0; k<k1; ++k)
 		{
-			Rect b = Rect(Vec(0, 15), box.size.minus(Vec(0, 15*2)));
+			Rect a = Rect(Vec(0, 15), box.size.minus(Vec(0, 15*2)));
+			Rect b = a;
 
 			// GTX TODO - imporve
 			if (kM < GTX__N)
@@ -287,14 +287,28 @@ struct ScopeDisplay : TransparentWidget {
 
 			float valueTrig = (module->params[Scope::TRIG_PARAM].value + offsetX) * gainX / 10.0;
 			drawTrig(vg, valueTrig, b);
+
+			// Calculate and draw stats
+			if (frame == 0) {
+				statsX[k].calculate(module->voice[k].bufferX);
+			}
+
+			Vec stats_pos = b.pos;
+			if (k >= 3 && k < GTX__N)
+			{
+				stats_pos.y += b.size.y;
+			}
+			else
+			{
+				stats_pos.y -= 15;
+			}
+			drawStats(vg, stats_pos, stats_lab[k], statsX[k]);
 		}
 
-		// Calculate and draw stats
-		if (++frame >= 4) {
+		if (++frame >= 4)
+		{
 			frame = 0;
-			statsX.calculate(module->voice[0].bufferX);
 		}
-		drawStats(vg, Vec(0, 0), "X", &statsX);
 	}
 };
 
