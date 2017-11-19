@@ -165,9 +165,9 @@ struct Impl : Module
 
 		bool act_prm = false;
 
-		if (params[PROG_PARAM].value <= 1.0f)
+		if (params[PROG_PARAM].value < 12.0f)
 		{
-			prg_prm.step(clampf(params[PROG_PARAM].value, 0.0001f, 0.9999f) - 0.5f/E);
+			prg_prm.step(params[PROG_PARAM].value / 12.0f);
 			act_prm = true;
 		}
 
@@ -295,7 +295,7 @@ Widget::Widget()
 
 		pg.nob_med_raw(x0(),   fy(-0.28), "PROGRAM");
 		pg.prt_in_raw (x0(-1), fy(-0.28), "CV");
-		pg.nob_med_raw(x0(+1), fy(-0.28), "SELECT");
+		pg.prt_in_raw (x0(+1), fy(-0.28), "SELECT");
 		pg.nob_med_raw(x0(),   fy(+0.28), "BASS NOTE");
 		pg.prt_in_raw (x0(-1), fy(+0.28), "V/OCT");
 		pg.prt_in_raw (x0(+1), fy(+0.28), "GATE");
@@ -328,10 +328,10 @@ Widget::Widget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
-	addParam(createParam<RoundBlackKnob>(n_m(x0(+1), fy(-0.28)), module, Impl::PROG_PARAM, 0.0, 1.2, 0.0));
-	addInput(createInput<PJ301MPort>    (prt(x0(-1), fy(-0.28)), module, Impl::PROG_INPUT));
-	addInput(createInput<PJ301MPort>    (prt(x0(+1), fy(+0.28)), module, Impl::GATE_INPUT));
-	addInput(createInput<PJ301MPort>    (prt(x0(-1), fy(+0.28)), module, Impl::VOCT_INPUT));
+	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(x0(+1), fy(-0.28)), module, Impl::PROG_PARAM, 0.0, 12.0, 12.0));
+	addInput(createInput<PJ301MPort>             (prt(x0(-1), fy(-0.28)), module, Impl::PROG_INPUT));
+	addInput(createInput<PJ301MPort>             (prt(x0(+1), fy(+0.28)), module, Impl::GATE_INPUT));
+	addInput(createInput<PJ301MPort>             (prt(x0(-1), fy(+0.28)), module, Impl::VOCT_INPUT));
 
 	for (std::size_t i=0; i<N; ++i)
 	{

@@ -52,7 +52,7 @@ inline int    fy(double i) { return gy(i - 0.1); }
 
 inline int    rad_n_b() { return 54/2; }
 inline int    rad_n_m() { return 36/2; }
-inline int    rad_n_s() { return 27/2; }
+inline int    rad_n_s() { return 28/2; }
 inline int    rad_led() { return  4; }
 inline int    rad_but() { return 10; }
 inline int    rad_scr() { return  8; }
