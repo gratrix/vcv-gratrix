@@ -52,13 +52,18 @@ struct Impl : Module
 		return port + bank *  NUM_INPUTS;
 	}
 
-	static void decode(float *lights, int offset, float input, float gate = 1.0)
+	static void decode(float *lights, int offset, const Input &in_voct, const Input &in_gate)
 	{
-		int note = static_cast<int>(std::floor(input * 12.0f + 0.5f)) + 3*12;
+		bool enable = ((in_gate.active && in_gate.value >= 0.5f) || !in_gate.active) && in_voct.active;
 
-		if (gate >= 0.5f && note >= 0 && note < 6*12)
+		if (enable)
 		{
-			lights[note * 3 + offset] = 1.0f;
+			int note = static_cast<int>(std::floor(in_voct.value * 12.0f + 0.5f)) + 3*12;
+
+			if (note >= 0 && note < 6*12)
+			{
+				lights[note * 3 + offset] = 1.0f;
+			}
 		}
 	}
 
@@ -73,12 +78,12 @@ struct Impl : Module
 
 		for (std::size_t i=0; i<GTX__N; ++i)
 		{
-			decode(&leds[KEY_LIGHT_1], 0, inputs[imap(VOCT_1R_INPUT, i)].value, inputs[imap(GATE_1R_INPUT, i)].value);
-			decode(&leds[KEY_LIGHT_1], 1, inputs[imap(VOCT_1G_INPUT, i)].value, inputs[imap(GATE_1G_INPUT, i)].value);
-			decode(&leds[KEY_LIGHT_1], 2, inputs[imap(VOCT_1B_INPUT, i)].value, inputs[imap(GATE_1B_INPUT, i)].value);
-			decode(&leds[KEY_LIGHT_2], 0, inputs[imap(VOCT_2R_INPUT, i)].value, inputs[imap(GATE_2R_INPUT, i)].value);
-			decode(&leds[KEY_LIGHT_2], 1, inputs[imap(VOCT_2G_INPUT, i)].value, inputs[imap(GATE_2G_INPUT, i)].value);
-			decode(&leds[KEY_LIGHT_2], 2, inputs[imap(VOCT_2B_INPUT, i)].value, inputs[imap(GATE_2B_INPUT, i)].value);
+			decode(&leds[KEY_LIGHT_1], 0, inputs[imap(VOCT_1R_INPUT, i)], inputs[imap(GATE_1R_INPUT, i)]);
+			decode(&leds[KEY_LIGHT_1], 1, inputs[imap(VOCT_1G_INPUT, i)], inputs[imap(GATE_1G_INPUT, i)]);
+			decode(&leds[KEY_LIGHT_1], 2, inputs[imap(VOCT_1B_INPUT, i)], inputs[imap(GATE_1B_INPUT, i)]);
+			decode(&leds[KEY_LIGHT_2], 0, inputs[imap(VOCT_2R_INPUT, i)], inputs[imap(GATE_2R_INPUT, i)]);
+			decode(&leds[KEY_LIGHT_2], 1, inputs[imap(VOCT_2G_INPUT, i)], inputs[imap(GATE_2G_INPUT, i)]);
+			decode(&leds[KEY_LIGHT_2], 2, inputs[imap(VOCT_2B_INPUT, i)], inputs[imap(GATE_2B_INPUT, i)]);
 		}
 
 		// Write output in one go, seems to prevent flicker
