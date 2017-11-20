@@ -23,20 +23,19 @@ struct Impl : Module
 		NUM_PARAMS
 	};
 	enum InputIds {
-		GATE_1R_INPUT,  // N
+		GATE_1R_INPUT,  // N+1
+		GATE_1G_INPUT,  // N+1
+		GATE_1B_INPUT,  // N+1
+		GATE_2R_INPUT,  // N+1
+		GATE_2G_INPUT,  // N+1
+		GATE_2B_INPUT,  // N+1
 		VOCT_1R_INPUT,  // N
-		GATE_1G_INPUT,  // N
 		VOCT_1G_INPUT,  // N
-		GATE_1B_INPUT,  // N
 		VOCT_1B_INPUT,  // N
-		GATE_2R_INPUT,  // N
 		VOCT_2R_INPUT,  // N
-		GATE_2G_INPUT,  // N
 		VOCT_2G_INPUT,  // N
-		GATE_2B_INPUT,  // N
 		VOCT_2B_INPUT,  // N
 		NUM_INPUTS,
-		OFF_INPUTS = GATE_1R_INPUT
 	};
 	enum OutputIds {
 		NUM_OUTPUTS
@@ -49,7 +48,7 @@ struct Impl : Module
 
 	static constexpr std::size_t imap(std::size_t port, std::size_t bank)
 	{
-		return port + bank *  NUM_INPUTS;
+		return port + bank * NUM_INPUTS;
 	}
 
 	static void decode(float *lights, int offset, const Input &in_gate, const Input &in_voct)
@@ -69,7 +68,7 @@ struct Impl : Module
 
 	Impl()
 	:
-		Module(NUM_PARAMS, GTX__N * (NUM_INPUTS - OFF_INPUTS) + OFF_INPUTS, NUM_OUTPUTS, NUM_LIGHTS)
+		Module(NUM_PARAMS, ((GTX__N+1) * NUM_INPUTS/2) + (GTX__N * NUM_INPUTS/2), NUM_OUTPUTS, NUM_LIGHTS)
 	{}
 
 	void step() override
@@ -78,12 +77,18 @@ struct Impl : Module
 
 		for (std::size_t i=0; i<GTX__N; ++i)
 		{
-			decode(&leds[KEY_LIGHT_1], 0, inputs[imap(GATE_1R_INPUT, i)], inputs[imap(VOCT_1R_INPUT, i)]);
-			decode(&leds[KEY_LIGHT_1], 1, inputs[imap(GATE_1G_INPUT, i)], inputs[imap(VOCT_1G_INPUT, i)]);
-			decode(&leds[KEY_LIGHT_1], 2, inputs[imap(GATE_1B_INPUT, i)], inputs[imap(VOCT_1B_INPUT, i)]);
-			decode(&leds[KEY_LIGHT_2], 0, inputs[imap(GATE_2R_INPUT, i)], inputs[imap(VOCT_2R_INPUT, i)]);
-			decode(&leds[KEY_LIGHT_2], 1, inputs[imap(GATE_2G_INPUT, i)], inputs[imap(VOCT_2G_INPUT, i)]);
-			decode(&leds[KEY_LIGHT_2], 2, inputs[imap(GATE_2B_INPUT, i)], inputs[imap(VOCT_2B_INPUT, i)]);
+			if (inputs[imap(GATE_1R_INPUT, i)].active) decode(&leds[KEY_LIGHT_1], 0, inputs[imap(GATE_1R_INPUT,      i)], inputs[imap(VOCT_1R_INPUT, i)]);
+			else                                       decode(&leds[KEY_LIGHT_1], 0, inputs[imap(GATE_1R_INPUT, GTX__N)], inputs[imap(VOCT_1R_INPUT, i)]);
+			if (inputs[imap(GATE_1G_INPUT, i)].active) decode(&leds[KEY_LIGHT_1], 1, inputs[imap(GATE_1G_INPUT,      i)], inputs[imap(VOCT_1G_INPUT, i)]);
+			else                                       decode(&leds[KEY_LIGHT_1], 1, inputs[imap(GATE_1G_INPUT, GTX__N)], inputs[imap(VOCT_1G_INPUT, i)]);
+			if (inputs[imap(GATE_1B_INPUT, i)].active) decode(&leds[KEY_LIGHT_1], 2, inputs[imap(GATE_1B_INPUT,      i)], inputs[imap(VOCT_1B_INPUT, i)]);
+			else                                       decode(&leds[KEY_LIGHT_1], 2, inputs[imap(GATE_1B_INPUT, GTX__N)], inputs[imap(VOCT_1B_INPUT, i)]);
+			if (inputs[imap(GATE_2R_INPUT, i)].active) decode(&leds[KEY_LIGHT_2], 0, inputs[imap(GATE_2R_INPUT,      i)], inputs[imap(VOCT_2R_INPUT, i)]);
+			else                                       decode(&leds[KEY_LIGHT_2], 0, inputs[imap(GATE_2R_INPUT, GTX__N)], inputs[imap(VOCT_2R_INPUT, i)]);
+			if (inputs[imap(GATE_2G_INPUT, i)].active) decode(&leds[KEY_LIGHT_2], 1, inputs[imap(GATE_2G_INPUT,      i)], inputs[imap(VOCT_2G_INPUT, i)]);
+			else                                       decode(&leds[KEY_LIGHT_2], 1, inputs[imap(GATE_2G_INPUT, GTX__N)], inputs[imap(VOCT_2G_INPUT, i)]);
+			if (inputs[imap(GATE_2B_INPUT, i)].active) decode(&leds[KEY_LIGHT_2], 2, inputs[imap(GATE_2B_INPUT,      i)], inputs[imap(VOCT_2B_INPUT, i)]);
+			else                                       decode(&leds[KEY_LIGHT_2], 2, inputs[imap(GATE_2B_INPUT, GTX__N)], inputs[imap(VOCT_2B_INPUT, i)]);
 		}
 
 		// Write output in one go, seems to prevent flicker
@@ -144,19 +149,27 @@ Widget::Widget()
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
-		addInput(createInput<PJ301MPort> (prt(px(0, i), py(2, i)), module, Impl::imap(Impl::GATE_1R_INPUT, i)));
-		addInput(createInput<PJ301MPort> (prt(px(0, i), py(1, i)), module, Impl::imap(Impl::VOCT_1R_INPUT, i)));
-		addInput(createInput<PJ301MPort> (prt(px(1, i), py(2, i)), module, Impl::imap(Impl::GATE_1G_INPUT, i)));
-		addInput(createInput<PJ301MPort> (prt(px(1, i), py(1, i)), module, Impl::imap(Impl::VOCT_1G_INPUT, i)));
-		addInput(createInput<PJ301MPort> (prt(px(2, i), py(2, i)), module, Impl::imap(Impl::GATE_1B_INPUT, i)));
-		addInput(createInput<PJ301MPort> (prt(px(2, i), py(1, i)), module, Impl::imap(Impl::VOCT_1B_INPUT, i)));
-		addInput(createInput<PJ301MPort> (prt(px(3, i), py(2, i)), module, Impl::imap(Impl::GATE_2R_INPUT, i)));
-		addInput(createInput<PJ301MPort> (prt(px(3, i), py(1, i)), module, Impl::imap(Impl::VOCT_2R_INPUT, i)));
-		addInput(createInput<PJ301MPort> (prt(px(4, i), py(2, i)), module, Impl::imap(Impl::GATE_2G_INPUT, i)));
-		addInput(createInput<PJ301MPort> (prt(px(4, i), py(1, i)), module, Impl::imap(Impl::VOCT_2G_INPUT, i)));
-		addInput(createInput<PJ301MPort> (prt(px(5, i), py(2, i)), module, Impl::imap(Impl::GATE_2B_INPUT, i)));
-		addInput(createInput<PJ301MPort> (prt(px(5, i), py(1, i)), module, Impl::imap(Impl::VOCT_2B_INPUT, i)));
+		addInput(createInput<PJ301MPort>(prt(px(0, i), py(1, i)), module, Impl::imap(Impl::GATE_1R_INPUT, i)));
+		addInput(createInput<PJ301MPort>(prt(px(1, i), py(1, i)), module, Impl::imap(Impl::GATE_1G_INPUT, i)));
+		addInput(createInput<PJ301MPort>(prt(px(2, i), py(1, i)), module, Impl::imap(Impl::GATE_1B_INPUT, i)));
+		addInput(createInput<PJ301MPort>(prt(px(3, i), py(1, i)), module, Impl::imap(Impl::GATE_2R_INPUT, i)));
+		addInput(createInput<PJ301MPort>(prt(px(4, i), py(1, i)), module, Impl::imap(Impl::GATE_2G_INPUT, i)));
+		addInput(createInput<PJ301MPort>(prt(px(5, i), py(1, i)), module, Impl::imap(Impl::GATE_2B_INPUT, i)));
+
+		addInput(createInput<PJ301MPort>(prt(px(0, i), py(2, i)), module, Impl::imap(Impl::VOCT_1R_INPUT, i)));
+		addInput(createInput<PJ301MPort>(prt(px(1, i), py(2, i)), module, Impl::imap(Impl::VOCT_1G_INPUT, i)));
+		addInput(createInput<PJ301MPort>(prt(px(2, i), py(2, i)), module, Impl::imap(Impl::VOCT_1B_INPUT, i)));
+		addInput(createInput<PJ301MPort>(prt(px(3, i), py(2, i)), module, Impl::imap(Impl::VOCT_2R_INPUT, i)));
+		addInput(createInput<PJ301MPort>(prt(px(4, i), py(2, i)), module, Impl::imap(Impl::VOCT_2G_INPUT, i)));
+		addInput(createInput<PJ301MPort>(prt(px(5, i), py(2, i)), module, Impl::imap(Impl::VOCT_2B_INPUT, i)));
 	}
+
+	addInput(createInput<PJ301MPort>(prt(gx(0), gy(1)), module, Impl::imap(Impl::GATE_1R_INPUT, GTX__N)));
+	addInput(createInput<PJ301MPort>(prt(gx(1), gy(1)), module, Impl::imap(Impl::GATE_1G_INPUT, GTX__N)));
+	addInput(createInput<PJ301MPort>(prt(gx(2), gy(1)), module, Impl::imap(Impl::GATE_1B_INPUT, GTX__N)));
+	addInput(createInput<PJ301MPort>(prt(gx(3), gy(1)), module, Impl::imap(Impl::GATE_2R_INPUT, GTX__N)));
+	addInput(createInput<PJ301MPort>(prt(gx(4), gy(1)), module, Impl::imap(Impl::GATE_2G_INPUT, GTX__N)));
+	addInput(createInput<PJ301MPort>(prt(gx(5), gy(1)), module, Impl::imap(Impl::GATE_2B_INPUT, GTX__N)));
 
 	for (std::size_t i=0; i<6; ++i)
 	{
