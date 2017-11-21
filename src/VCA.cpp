@@ -1,6 +1,10 @@
 #include "Gratrix.hpp"
 
 
+namespace GTX {
+namespace VCA_F1 {
+
+
 //============================================================================================================
 
 struct VCA : MicroModule {
@@ -94,7 +98,7 @@ struct VCABank : Module
 
 //============================================================================================================
 
-VCAWidget::VCAWidget()
+Widget::Widget()
 {
 	GTX__WIDGET();
 
@@ -148,3 +152,7 @@ VCAWidget::VCAWidget()
 	addInput(createInput<PJ301MPort>(prt(gx(0), gy(1)), module, VCABank::imap(VCA::EXP_INPUT, GTX__N)));
 	addInput(createInput<PJ301MPort>(prt(gx(0), gy(2)), module, VCABank::imap(VCA::IN_INPUT,  GTX__N)));
 }
+
+
+} // VCA_F1
+} // GTX

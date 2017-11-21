@@ -2216,6 +2216,11 @@ os << "</font>" << std::endl;
 namespace GTX {
 namespace MIDI_C1   { struct Widget : ModuleWidget { Widget(); void step() override; }; }
 namespace MIDI_G1   { struct Widget : ModuleWidget { Widget(); void step() override; }; }
+namespace VCO_F1    { struct Widget : ModuleWidget { Widget(); }; }
+namespace VCO_F2    { struct Widget : ModuleWidget { Widget(); }; }
+namespace VCF_F1    { struct Widget : ModuleWidget { Widget(); }; }
+namespace VCA_F1    { struct Widget : ModuleWidget { Widget(); }; }
+namespace Env_F1    { struct Widget : ModuleWidget { Widget(); }; }
 namespace Blank_03  { struct Widget : ModuleWidget { Widget(); }; }
 namespace Blank_06  { struct Widget : ModuleWidget { Widget(); }; }
 namespace Blank_09  { struct Widget : ModuleWidget { Widget(); }; }
@@ -2229,11 +2234,6 @@ namespace Chord_G1  { struct Widget : ModuleWidget { Widget(); }; }
 namespace Octave_G1 { struct Widget : ModuleWidget { Widget(); }; }
 }
 
-struct VCO_F1_Widget   : ModuleWidget { VCO_F1_Widget();   };
-struct VCO_F2_Widget   : ModuleWidget { VCO_F2_Widget();   };
-struct VCF_F1_Widget   : ModuleWidget { VCF_F1_Widget();   };
-struct VCAWidget       : ModuleWidget { VCAWidget();       };
-struct ADSRWidget      : ModuleWidget { ADSRWidget();      };
 struct MuxWidget       : ModuleWidget { MuxWidget();       };
 
 

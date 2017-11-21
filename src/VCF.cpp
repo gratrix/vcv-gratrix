@@ -32,6 +32,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Gratrix.hpp"
 
 
+namespace GTX {
+namespace VCF_F1 {
+
+
 // The clipping function of a transistor pair is approximately tanh(x)
 // TODO: Put this in a lookup table. 5th order approx doesn't seem to cut it
 inline float clip(float x) {
@@ -192,7 +196,7 @@ struct VCFBank : Module
 
 //============================================================================================================
 
-VCF_F1_Widget::VCF_F1_Widget()
+Widget::Widget()
 {
 	GTX__WIDGET();
 
@@ -249,3 +253,7 @@ VCF_F1_Widget::VCF_F1_Widget()
 	addInput(createInput<PJ301MPort>  (prt(gx(1), gy(2)), module, VCFBank::imap(VCF::DRIVE_INPUT, GTX__N)));
 	addInput(createInput<PJ301MPort>  (prt(gx(0), gy(2)), module, VCFBank::imap(VCF::IN_INPUT,    GTX__N)));
 }
+
+
+} // VCF_F1
+} // GTX

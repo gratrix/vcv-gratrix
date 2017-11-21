@@ -2,6 +2,10 @@
 #include "dsp/digital.hpp"
 
 
+namespace GTX {
+namespace Env_F1 {
+
+
 //============================================================================================================
 
 struct ADSR : MicroModule {
@@ -138,7 +142,7 @@ struct ADSRBank : Module
 
 //============================================================================================================
 
-ADSRWidget::ADSRWidget()
+Widget::Widget()
 {
 	GTX__WIDGET();
 
@@ -192,3 +196,7 @@ ADSRWidget::ADSRWidget()
 	addInput(createInput<PJ301MPort> (prt(gx(0), gy(1)), module, ADSRBank::imap(ADSR::GATE_INPUT, GTX__N)));
 	addInput(createInput<PJ301MPort> (prt(gx(0), gy(2)), module, ADSRBank::imap(ADSR::TRIG_INPUT, GTX__N)));
 }
+
+
+} // Env_F1
+} // GTX
