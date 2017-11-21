@@ -54,8 +54,8 @@ struct Impl : Module
 
 	struct Decode
 	{
-		static constexpr float e = static_cast<float>(E);
-		static constexpr float s = 1.0f / e;
+		/*static constexpr*/ float e = static_cast<float>(E);  // Static constexpr gives
+		/*static constexpr*/ float s = 1.0f / e;               // link error on Mac build.
 
 		float in    = 0;
 		float out   = 0;
