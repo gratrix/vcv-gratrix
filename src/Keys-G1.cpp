@@ -53,7 +53,7 @@ struct Impl : Module
 
 	static void decode(float *lights, int offset, const Input &in_gate, const Input &in_voct)
 	{
-		bool enable = ((in_gate.active && in_gate.value >= 0.5f) || !in_gate.active) && in_voct.active;
+		bool enable = ((in_gate.active && in_gate.value >= 1.0f) || !in_gate.active) && in_voct.active;
 
 		if (enable)
 		{
