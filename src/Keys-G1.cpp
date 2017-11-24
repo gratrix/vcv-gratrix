@@ -126,12 +126,12 @@ Widget::Widget()
 		pg.nob_med(4, 0.55, "LOWER"); pg.nob_med(4, 0.7, "GREEN"); pg.nob_med(4, -0.28, "C5-B5");
 		                              pg.nob_med(5, 0.7, "BLUE" ); pg.nob_med(5, -0.28, "C6-B6");
 
-		pg.bus_in(0, 1, "VOCT"); pg.bus_in(0, 2, "V/OCT");
-		pg.bus_in(1, 1, "VOCT"); pg.bus_in(1, 2, "V/OCT");
-		pg.bus_in(2, 1, "VOCT"); pg.bus_in(2, 2, "V/OCT");
-		pg.bus_in(3, 1, "VOCT"); pg.bus_in(3, 2, "V/OCT");
-		pg.bus_in(4, 1, "VOCT"); pg.bus_in(4, 2, "V/OCT");
-		pg.bus_in(5, 1, "VOCT"); pg.bus_in(5, 2, "V/OCT");
+		pg.bus_in(0, 1, "GATE"); pg.bus_in(0, 2, "V/OCT");
+		pg.bus_in(1, 1, "GATE"); pg.bus_in(1, 2, "V/OCT");
+		pg.bus_in(2, 1, "GATE"); pg.bus_in(2, 2, "V/OCT");
+		pg.bus_in(3, 1, "GATE"); pg.bus_in(3, 2, "V/OCT");
+		pg.bus_in(4, 1, "GATE"); pg.bus_in(4, 2, "V/OCT");
+		pg.bus_in(5, 1, "GATE"); pg.bus_in(5, 2, "V/OCT");
 	}
 	#endif
 
