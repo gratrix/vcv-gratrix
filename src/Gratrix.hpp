@@ -50,18 +50,20 @@ inline int    gy(double i) { return static_cast<int>(std::floor(8.5 + ((i+1.0) *
 inline int    fx(double i) { return gx(i); }
 inline int    fy(double i) { return gy(i - 0.1); }
 
-inline int    rad_n_b() { return 54/2; }
-inline int    rad_n_m() { return 36/2; }
-inline int    rad_n_s() { return 28/2; }
-inline int    rad_led() { return  4; }
-inline int    rad_but() { return 10; }
-inline int    rad_scr() { return  8; }
-inline int    rad_prt() { return 13; }
+inline double rad_n_b() { return 27;    }
+inline double rad_n_m() { return 18;    }
+inline double rad_n_s() { return 14;    }
+inline double rad_l_m() { return  4.75; }
+inline double rad_led() { return  3.25; }
+inline double rad_but() { return  9;    }
+inline double rad_scr() { return  8;    }
+inline double rad_prt() { return 12.5;  }
 
 inline Vec    tog(double x, double y) { return Vec(x - 7, y - 10); }
 inline Vec    n_b(double x, double y) { return Vec(x - rad_n_b(), y - rad_n_b()); }
 inline Vec    n_m(double x, double y) { return Vec(x - rad_n_m(), y - rad_n_m()); }
 inline Vec    n_s(double x, double y) { return Vec(x - rad_n_s(), y - rad_n_s()); }
+inline Vec    l_m(double x, double y) { return Vec(x - rad_l_m(), y - rad_l_m()); }
 inline Vec    led(double x, double y) { return Vec(x - rad_led(), y - rad_led()); }
 inline Vec    but(double x, double y) { return Vec(x - rad_but(), y - rad_but()); }
 inline Vec    scr(double x, double y) { return Vec(x - rad_scr(), y - rad_scr()); }
@@ -71,6 +73,7 @@ inline Vec    tog(const Vec &a)       { return tog(a.x, a.y); }
 inline Vec    n_b(const Vec &a)       { return n_b(a.x, a.y); }
 inline Vec    n_m(const Vec &a)       { return n_m(a.x, a.y); }
 inline Vec    n_s(const Vec &a)       { return n_s(a.x, a.y); }
+inline Vec    l_m(const Vec &a)       { return l_m(a.x, a.y); }
 inline Vec    led(const Vec &a)       { return led(a.x, a.y); }
 inline Vec    but(const Vec &a)       { return but(a.x, a.y); }
 inline Vec    scr(const Vec &a)       { return scr(a.x, a.y); }
