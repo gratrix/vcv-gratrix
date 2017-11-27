@@ -166,7 +166,10 @@ struct Impl : Module {
 		{
 			for (int row = 0; row < BUT_ROWS; row++)
 			{
-				gateState[row][col] = (randomf() > 0.5);
+				uint32_t r = randomu32() % (GATE_STATES + 1);
+				if (r >= GATE_STATES) r = GM_CONTINUOUS;
+
+				gateState[row][col] = r;
 			}
 		}
 	}
