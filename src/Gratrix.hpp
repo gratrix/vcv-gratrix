@@ -2235,8 +2235,8 @@ namespace VU_G1     { struct Widget : ModuleWidget { Widget(); }; }
 namespace Scope_G1  { struct Widget : ModuleWidget { Widget(); }; }
 namespace Chord_G1  { struct Widget : ModuleWidget { Widget(); }; }
 namespace Octave_G1 { struct Widget : ModuleWidget { Widget(); }; }
-namespace Seq_G1    { struct Widget : ModuleWidget { Widget(); Menu *createContextMenu() override; }; }
-namespace Seq_G2    { struct Widget : ModuleWidget { Widget(); Menu *createContextMenu() override; }; }
+namespace Seq_G1    { struct Widget : ModuleWidget { Widget(); }; }
+namespace Seq_G2    { struct Widget : ModuleWidget { Widget(); }; }
 }
 
 struct MuxWidget       : ModuleWidget { MuxWidget();       };
