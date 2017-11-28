@@ -60,6 +60,8 @@ struct Impl : Module {
 	static std::size_t led_map(std::size_t row, std::size_t col, std::size_t idx) { return BUT_LIGHT  + 3 * (col * BUT_ROWS + row) + idx; }
 	static std::size_t prt_map(std::size_t row, std::size_t col)                  { return PRT_OUTPUT +      col * PRT_ROWS + row; }
 
+	static bool is_nob_snap(std::size_t row) { return row == 1; }
+
 	bool running = true;
 	SchmittTrigger clockTrigger; // for external clock
 	// For buttons
@@ -287,6 +289,8 @@ void Impl::step()
 	for (std::size_t row = 0; row < NOB_ROWS; ++row)
 	{
 		nob_val[row] = params[nob_map(row, index)].value;
+
+		if (is_nob_snap(row)) nob_val[row] /= 12.0f;
 	}
 	bool but_val[BUT_ROWS];
 	for (std::size_t row = 0; row < BUT_ROWS; ++row)
@@ -404,7 +408,10 @@ Widget::Widget()
 		for (std::size_t row = 0; row < NOB_ROWS; ++row)
 		{
 			pos += rad_n_s() + pad;
-			addParam(createParam<RoundSmallBlackKnob>(n_s(gridX[col], pos), module, Impl::nob_map(row, col), 0.0, 10.0, 0.0));
+			if (Impl::is_nob_snap(row))
+				addParam(createParam<RoundSmallBlackSnapKnob>(n_s(gridX[col], pos), module, Impl::nob_map(row, col), 0.0, 12.0, 12.0));
+			else
+				addParam(createParam<RoundSmallBlackKnob>    (n_s(gridX[col], pos), module, Impl::nob_map(row, col), 0.0, 10.0, 0.0));
 			pos += rad_n_s() + pad;
 		}
 
