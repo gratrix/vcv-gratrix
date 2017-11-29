@@ -327,12 +327,13 @@ Widget::Widget()
 	box.size = Vec(36*15, 380);
 
 	float gridX[SEQ_COLS] = {};
-	float gridXr = 0;
 	for (std::size_t i = 0; i < SEQ_COLS; i++)
 	{
 		float x  = (box.size.x - 10) / (1.5 + static_cast<double>(SEQ_COLS));
 		gridX[i] = 5+x*(i+0.5);
 	}
+
+	float gridXr = 0;
 	{
 		float x = (box.size.x - 10) / (static_cast<double>(SEQ_COLS));
 		gridXr = 5+x*(SEQ_COLS-0.5);
@@ -343,6 +344,33 @@ Widget::Widget()
 	{
 		float x = (3*6*15 - 10) / static_cast<double>(8);
 		portX[i] = 2*6*15 + 5+x*(i+0.5);
+	}
+
+	float gridY[NOB_ROWS + BUT_ROWS + PRT_ROWS] = {};
+	{
+		std::size_t j = 0;
+		int pos = 35, pad = 5;
+
+		for (std::size_t row = 0; row < NOB_ROWS; ++row, ++j)
+		{
+			pos += rad_n_s() + pad;
+			gridY[j] = pos;
+			pos += rad_n_s() + pad;
+		}
+
+		for (std::size_t row = 0; row < BUT_ROWS; ++row, ++j)
+		{
+			pos += rad_but() + pad;
+			gridY[j] = pos;
+			pos += rad_but() + pad;
+		}
+
+		for (std::size_t row = 0; row < PRT_ROWS; ++row, ++j)
+		{
+			pos += rad_prt() + pad;
+			gridY[j] = pos;
+			pos += rad_prt() + pad;
+		}
 	}
 
 	#if GTX__SAVE_SVG
@@ -385,49 +413,39 @@ Widget::Widget()
 	addInput(createInput<PJ301MPort>  (prt(portX[3], gy(2.2)), module, Impl::STEPS_INPUT));
 
 	{
-		int pos = 35, pad = 5;
+		std::size_t j = 0;
 
-		for (std::size_t row = 0; row < NOB_ROWS; ++row)
+		for (std::size_t row = 0; row < NOB_ROWS; ++row, ++j)
 		{
-			pos += rad_n_s() + pad;
-			addOutput(createOutput<PJ301MPort>(prt(gridXr, pos), module, Impl::nob_val_map(row)));
-			pos += rad_n_s() + pad;
+			addOutput(createOutput<PJ301MPort>(prt(gridXr, gridY[j]), module, Impl::nob_val_map(row)));
 		}
-		for (std::size_t row = 0; row < BUT_ROWS; ++row)
+		for (std::size_t row = 0; row < BUT_ROWS; ++row, ++j)
 		{
-			pos += rad_but() + pad;
-			addOutput(createOutput<PJ301MPort>(prt(gridXr, pos), module, Impl::but_val_map(row)));
-			pos += rad_but() + pad;
+			addOutput(createOutput<PJ301MPort>(prt(gridXr, gridY[j]), module, Impl::but_val_map(row)));
 		}
 	}
 
 	for (std::size_t col = 0; col < SEQ_COLS; ++col)
 	{
-		int pos = 35, pad = 5;
+		std::size_t j = 0;
 
-		for (std::size_t row = 0; row < NOB_ROWS; ++row)
+		for (std::size_t row = 0; row < NOB_ROWS; ++row, ++j)
 		{
-			pos += rad_n_s() + pad;
 			if (Impl::is_nob_snap(row))
-				addParam(createParam<RoundSmallBlackSnapKnob>(n_s(gridX[col], pos), module, Impl::nob_map(row, col), 0.0, 12.0, 12.0));
+				addParam(createParam<RoundSmallBlackSnapKnob>(n_s(gridX[col], gridY[j]), module, Impl::nob_map(row, col), 0.0, 12.0, 12.0));
 			else
-				addParam(createParam<RoundSmallBlackKnob>    (n_s(gridX[col], pos), module, Impl::nob_map(row, col), 0.0, 10.0, 0.0));
-			pos += rad_n_s() + pad;
+				addParam(createParam<RoundSmallBlackKnob>    (n_s(gridX[col], gridY[j]), module, Impl::nob_map(row, col), 0.0, 10.0, 0.0));
 		}
 
-		for (std::size_t row = 0; row < BUT_ROWS; ++row)
+		for (std::size_t row = 0; row < BUT_ROWS; ++row, ++j)
 		{
-			pos += rad_but() + pad;
-			addParam(createParam<LEDButton>                     (but(gridX[col], pos), module, Impl::but_map(row, col), 0.0, 1.0, 0.0));
-			addChild(createLight<MediumLight<RedGreenBlueLight>>(l_m(gridX[col], pos), module, Impl::led_map(row, col, 0)));
-			pos += rad_but() + pad;
+			addParam(createParam<LEDButton>                     (but(gridX[col], gridY[j]), module, Impl::but_map(row, col), 0.0, 1.0, 0.0));
+			addChild(createLight<MediumLight<RedGreenBlueLight>>(l_m(gridX[col], gridY[j]), module, Impl::led_map(row, col, 0)));
 		}
 
-		for (std::size_t row = 0; row < PRT_ROWS; ++row)
+		for (std::size_t row = 0; row < PRT_ROWS; ++row, ++j)
 		{
-			pos += rad_prt() + pad;
-			addOutput(createOutput<PJ301MPort>(prt(gridX[col], pos), module, Impl::prt_map(row, col)));
-			pos += rad_prt() + pad;
+			addOutput(createOutput<PJ301MPort>(prt(gridX[col], gridY[j]), module, Impl::prt_map(row, col)));
 		}
 	}
 }
