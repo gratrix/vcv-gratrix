@@ -103,7 +103,8 @@ Widget::Widget()
 	{
 		PanelGen pg(assetPlugin(plugin, "build/res/Fade-G1.svg"), box.size, "FADE-G1");
 
-		pg.prt_in2(0, 0, "CV 1--2");   pg.nob_big(1, 0, "1--2");
+		// ― is a horizontal bar see https://en.wikipedia.org/wiki/Dash#Horizontal_bar
+		pg.prt_in2(0, 0, "CV 1―2");   pg.nob_big(1, 0, "1―2");
 
 		pg.bus_in(0, 1, "IN 1"); pg.bus_out(1, 1, "OUT 1");
 		pg.bus_in(0, 2, "IN 2"); pg.bus_out(1, 2, "OUT 2");
@@ -141,7 +142,7 @@ Widget::Widget()
 	{
 		for (std::size_t y=0; y<2; ++y)
 		{
-			addChild(createLight<SmallLight<GreenRedLight>>(led(gx(x)+28, gy(y+1)-46), module, i)); i+=2;
+			addChild(createLight<SmallLight<GreenRedLight>>(led(gx(x)+28, gy(y+1)-47.5), module, i)); i+=2;
 		}
 	}
 }

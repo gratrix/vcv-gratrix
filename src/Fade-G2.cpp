@@ -136,8 +136,9 @@ Widget::Widget()
 	{
 		PanelGen pg(assetPlugin(plugin, "build/res/Fade-G2.svg"), box.size, "FADE-G2");
 
-		pg.prt_in2(0, -0.28, "CV 1--2");   pg.nob_big(1, 0, "1--2");
-		pg.prt_in2(0, +0.28, "CV A--B");   pg.nob_big(2, 0, "A--B");
+		// ― is a horizontal bar see https://en.wikipedia.org/wiki/Dash#Horizontal_bar
+		pg.prt_in2(0, -0.28, "CV 1―2");   pg.nob_big(1, 0, "1―2");
+		pg.prt_in2(0, +0.28, "CV A―B");   pg.nob_big(2, 0, "A―B");
 
 		pg.bus_in(0, 1, "IN 1A"); pg.bus_out(2, 1, "OUT");
 		pg.bus_in(1, 1, "IN 1B");
@@ -183,8 +184,8 @@ Widget::Widget()
 	{
 		for (std::size_t y=0; y<2; ++y)
 		{
-			addChild(createLight<SmallLight<GreenRedLight>>(led(gx(x)+rad_led()/2+28, gy(y+1)-46-rad_led()), module, i)); i+=2;
-			addChild(createLight<SmallLight<GreenRedLight>>(led(gx(x)+rad_led()/2+28, gy(y+1)-46+rad_led()), module, i)); i+=2;
+			addChild(createLight<SmallLight<GreenRedLight>>(led(gx(x)+rad_led()/2+28, gy(y+1)-47.5-(1+rad_led())), module, i)); i+=2;
+			addChild(createLight<SmallLight<GreenRedLight>>(led(gx(x)+rad_led()/2+28, gy(y+1)-47.5+(1+rad_led())), module, i)); i+=2;
 		}
 	}
 }
