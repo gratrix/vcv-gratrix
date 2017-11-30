@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <array>
 #include <cmath>
@@ -141,15 +142,8 @@ public:
 	}
 	void tog_raw(double x, double y, const std::string &title = "", const std::string &subtitle = "")
 	{
-		if (!title.empty())
-		{
-			text(Vec(x, y - 15), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
-		}
-
-		if (!subtitle.empty())
-		{
-			text(Vec(x, y + 23), subtitle, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
-		}
+		text(Vec(x, y - 15), title, 10);
+		text(Vec(x, y + 23), subtitle, 10);
 	}
 
 	void nob_big(double x, double y, const std::string &title = "")
@@ -158,15 +152,8 @@ public:
 	}
 	void nob_big_raw(double x, double y, const std::string &title = "", const std::string &subtitle = "")
 	{
-		if (!title.empty())
-		{
-			text(Vec(x, y - rad_n_b() - 10), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:11; text-anchor:middle; fill:black;");
-		}
-
-		if (!subtitle.empty())
-		{
-			text(Vec(x, y + rad_n_b() + 7 + 8), subtitle, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
-		}
+		text(Vec(x, y - rad_n_b() - 10), title, 11);
+		text(Vec(x, y + rad_n_b() + 15), subtitle, 10);
 	}
 
 	void nob_med(double x, double y, const std::string &title = "")
@@ -177,7 +164,7 @@ public:
 	{
 		if (!title.empty())
 		{
-			text(Vec(x, y - rad_n_m() - 5), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
+			text(Vec(x, y - rad_n_m() - 5), title, 10);
 		}
 	}
 
@@ -187,24 +174,14 @@ public:
 	}
 	void nob_sml_raw(double x, double y, const std::string &title = "")
 	{
-		if (!title.empty())
-		{
-			text(Vec(x, y - rad_n_s() - 5), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
-		}
+		text(Vec(x, y - rad_n_s() - 5), title, 10);
 	}
 
 	void but2(double x, double y, const std::string &title = "")
 	{
 		int xx = fx(x);
 		int yy = fy(y);
-
-	//	circle(Vec(xx, yy), rad_prt() + 4, "fill:#7092BE;stroke:#7092BE;stroke-width:1");
-	//	circle(Vec(xx, yy), rad_prt() - 3, "fill:#888888;stroke:#440022;stroke-width:1");
-
-		if (!title.empty())
-		{
-			text(Vec(xx + rad_prt() + 4, yy + 2), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:start; fill:black;");
-		}
+		text(Vec(xx + rad_prt() + 4, yy + 2), title, 10, "start");
 	}
 
 	void prt_in(double x, double y, const std::string &title = "", const std::string &subtitle = "")
@@ -214,99 +191,56 @@ public:
 
 	void prt_in_raw(double x, double y, const std::string &title = "", const std::string &subtitle = "")
 	{
-	//	circle(Vec(x, y), rad_prt() + 4, "fill:#7092BE;stroke:#7092BE;stroke-width:1");
-	//	circle(Vec(x, y), rad_prt() - 3, "fill:#888888;stroke:#440022;stroke-width:1");
-
-		if (!title.empty())
-		{
-			text(Vec(x, y - rad_prt() - 7), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
-		}
-
-		if (!subtitle.empty())
-		{
-			text(Vec(x, y + rad_prt() + 7 + 8), subtitle, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
-		}
+		text(Vec(x, y - rad_prt() -  7), title, 10);
+		text(Vec(x, y + rad_prt() + 15), subtitle, 10);
 	}
 
 	void prt_in2(double x, double y, const std::string &title = "", const std::string &subtitle = "")
 	{
 		int xx = fx(x);
 		int yy = fy(y);
-
-	//	circle(Vec(xx, yy), rad_prt() + 4, "fill:#7092BE;stroke:#7092BE;stroke-width:1");
-	//	circle(Vec(xx, yy), rad_prt() - 3, "fill:#888888;stroke:#440022;stroke-width:1");
-
-		if (!title.empty())
-		{
-			text(Vec(xx, yy - rad_prt() - 7), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
-		}
-
-		if (!subtitle.empty())
-		{
-			text(Vec(xx, yy + rad_prt() + 7 + 8), subtitle, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
-		}
+		text(Vec(xx, yy - rad_prt() - 7), title, 10);
+		text(Vec(xx, yy + rad_prt() + 7 + 8), subtitle, 10);
 	}
 
 	void prt_out(double x, double y, const std::string &title = "", const std::string &subtitle = "")
 	{
 		int xx = (y == 0.0) ? fx(x) : gx(x);
 		int yy = (y == 0.0) ? fy(y) : gy(y);
-
-	//	circle(Vec(xx, yy), rad_prt() + 4, "fill:#7092BE;stroke:#7092BE;stroke-width:1");
-	//	circle(Vec(xx, yy), rad_prt() - 3, "fill:#888888;stroke:#440022;stroke-width:1");
-
-		if (!title.empty())
-		{
-			text(Vec(xx, yy - rad_prt() - 7), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
-		}
-
-		if (!subtitle.empty())
-		{
-			text(Vec(xx, yy + rad_prt() + 7 + 8), subtitle, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
-		}
+		text(Vec(xx, yy - rad_prt() -  7), title, 10);
+		text(Vec(xx, yy + rad_prt() + 15), subtitle, 10);
 	}
 
 	void bus_inx(double x, double y, const std::string &title = "")
 	{
-		if (!title.empty())
-		{
-			text(Vec(gx(x), gy(y) - 44), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
-		}
+		text(Vec(gx(x), gy(y) - 44), title, 10);
 	}
 
 	void bus_in(double x, double y, const std::string &title = "")
 	{
 		circle(Vec(gx(x), gy(y)), 40, "fill:#BED7FC;stroke:#7092BE;stroke-width:1");
-
-	//	for (std::size_t b=0; b<GTX__N; ++b)
-	//	{
-	//		circle(Vec(px(x, b), py(y, b)), rad_prt() - 3, "fill:#888888;stroke:#440022;stroke-width:1");
-	//	}
-
-		if (!title.empty())
-		{
-			text(Vec(gx(x), gy(y) - 44), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
-		}
+		text(Vec(gx(x), gy(y) - 44), title, 10);
 	}
 
 	void bus_out(double x, double y, const std::string &title = "")
 	{
 		circle(Vec(gx(x), gy(y)), 40, "fill:#7092BE;stroke:#7092BE;stroke-width:1");
+		text(Vec(gx(x), gy(y) - 44), title, 10);
+	}
 
-	//	for (std::size_t b=0; b<GTX__N; ++b)
-	//	{
-	//		circle(Vec(px(x, b), py(y, b)), rad_prt() - 3, "fill:#888888;stroke:#440022;stroke-width:1");
-	//	}
-
-		if (!title.empty())
-		{
-			text(Vec(gx(x), gy(y) - 44), title, "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:10; text-anchor:middle; fill:black;");
-		}
+	void text(const Vec &p1, const std::string &t, double size, const std::string &anchor = "middle")
+	{
+		std::ostringstream oss;
+		oss << "font-family: '01 DigitGraphics'; font-weight: bold; font-style: normal; font-size:" << size << "; text-anchor:" << anchor << "; fill:black;";
+		text(p1, t, oss.str());
 	}
 
 	void text(const Vec &p1, const std::string &t, const std::string &style)
 	{
-		os << "<text x=\"" << p1.x << "\" y=\"" << p1.y << "\" style=\"" << style << "\">" << t << "</text>" << std::endl;
+		if (!t.empty())
+		{
+			os << "<text x=\"" << p1.x << "\" y=\"" << p1.y << "\" style=\"" << style << "\">" << t << "</text>" << std::endl;
+		}
 	}
 
 	void line(const Vec &p1, const Vec &p2, const std::string &style)
