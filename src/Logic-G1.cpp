@@ -41,6 +41,16 @@ struct Impl : Module
 		OFF_OUTPUTS = OUT_1_OUTPUT
 	};
 	enum LightIds {
+		FUNCTION_0_AB_1_LIGHT,
+		FUNCTION_1_AB_1_LIGHT,
+		FUNCTION_2_AB_1_LIGHT,
+		FUNCTION_3_AB_1_LIGHT,
+		FUNCTION_4_AB_1_LIGHT,
+		FUNCTION_0_AB_2_LIGHT,
+		FUNCTION_1_AB_2_LIGHT,
+		FUNCTION_2_AB_2_LIGHT,
+		FUNCTION_3_AB_2_LIGHT,
+		FUNCTION_4_AB_2_LIGHT,
 		NUM_LIGHTS
 	};
 
@@ -65,8 +75,13 @@ struct Impl : Module
 
 	void step() override
 	{
-	//	float fn1 = params[FUNCTION_AB_1_PARAM].value;   // a, b, a and b, a or b, a xor b
-	//	float fn2 = params[FUNCTION_AB_2_PARAM].value;
+		float leds[NUM_LIGHTS] = {};
+
+		int fn1 = FUNCTION_0_AB_1_LIGHT + static_cast<int>(params[FUNCTION_AB_1_PARAM].value + 0.5f);
+		int fn2 = FUNCTION_0_AB_2_LIGHT + static_cast<int>(params[FUNCTION_AB_2_PARAM].value + 0.5f);
+
+		if (fn1 >= FUNCTION_0_AB_1_LIGHT && fn1 <= FUNCTION_4_AB_1_LIGHT) leds[fn1] = 1.0;
+		if (fn2 >= FUNCTION_0_AB_2_LIGHT && fn2 <= FUNCTION_4_AB_2_LIGHT) leds[fn2] = 1.0;
 
 		for (std::size_t i=0; i<GTX__N; ++i)
 		{
@@ -84,6 +99,11 @@ struct Impl : Module
 
 			outputs[omap(OUT_1_OUTPUT, i)].value = out1 ? 10.0f : 0.0f;
 			outputs[omap(OUT_2_OUTPUT, i)].value = out2 ? 10.0f : 0.0f;
+		}
+
+		for (std::size_t i=0; i<NUM_LIGHTS; ++i)
+		{
+			lights[i].value = leds[i];
 		}
 	}
 };
@@ -104,8 +124,20 @@ Widget::Widget()
 	{
 		PanelGen pg(assetPlugin(plugin, "build/res/Logic-G1.svg"), box.size, "LOGIC-G1");
 
-		pg.nob_med(1 - 0.75, -0.28, "OP 1");  pg.tog(1 - 1.27, -0.28, "A", "INV A");  pg.tog(1.27, -0.28, "1", "INV 1");
-		pg.nob_med(1 - 0.75, +0.28, "OP 2");  pg.tog(1 - 1.27, +0.28, "B", "INV B");  pg.tog(1.27, +0.28, "2", "INV 2");
+		pg.nob_sml(1 - 0.75, -0.28, "OP 1");  pg.tog(1 - 1.27, -0.28, "A", "INV A");  pg.tog(1.27, -0.28, "1", "INV 1");
+		pg.nob_sml(1 - 0.75, +0.28, "OP 2");  pg.tog(1 - 1.27, +0.28, "B", "INV B");  pg.tog(1.27, +0.28, "2", "INV 2");
+
+		pg.text(Vec(fx(0.72), fy(-0.28) - 6 * rad_led() + 3), "A",   10, "start");
+		pg.text(Vec(fx(0.72), fy(-0.28) - 3 * rad_led() + 3), "B",   10, "start");
+		pg.text(Vec(fx(0.72), fy(-0.28) - 0 * rad_led() + 3), "AND", 10, "start");
+		pg.text(Vec(fx(0.72), fy(-0.28) + 3 * rad_led() + 3), "OR",  10, "start");
+		pg.text(Vec(fx(0.72), fy(-0.28) + 6 * rad_led() + 3), "XOR", 10, "start");
+
+		pg.text(Vec(fx(0.72), fy(+0.28) - 6 * rad_led() + 3), "A",   10, "start");
+		pg.text(Vec(fx(0.72), fy(+0.28) - 3 * rad_led() + 3), "B",   10, "start");
+		pg.text(Vec(fx(0.72), fy(+0.28) - 0 * rad_led() + 3), "AND", 10, "start");
+		pg.text(Vec(fx(0.72), fy(+0.28) + 3 * rad_led() + 3), "OR",  10, "start");
+		pg.text(Vec(fx(0.72), fy(+0.28) + 6 * rad_led() + 3), "XOR", 10, "start");
 
 		pg.bus_in(0, 1, "IN A"); pg.bus_out(1, 1, "OUT 1");
 		pg.bus_in(0, 2, "IN B"); pg.bus_out(1, 2, "OUT 2");
@@ -124,12 +156,12 @@ Widget::Widget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
-	addParam(createParam<CKSS>(                   tog(fx(1 - 1.27), fy(-0.28)), module, Impl::INVERT_A_PARAM,      0.0,  1.0,  1.0));
-	addParam(createParam<CKSS>(                   tog(fx(1 - 1.27), fy(+0.28)), module, Impl::INVERT_B_PARAM,      0.0,  1.0,  1.0));
-	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(fx(1 - 0.75), fy(-0.28)), module, Impl::FUNCTION_AB_1_PARAM, 0.0, 12.0, 12.0));
-	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(fx(1 - 0.75), fy(+0.28)), module, Impl::FUNCTION_AB_2_PARAM, 0.0, 12.0, 12.0));
-	addParam(createParam<CKSS>(                   tog(fx(    1.27), fy(-0.28)), module, Impl::INVERT_1_PARAM,      0.0,  1.0,  1.0));
-	addParam(createParam<CKSS>(                   tog(fx(    1.27), fy(+0.28)), module, Impl::INVERT_2_PARAM,      0.0,  1.0,  1.0));
+	addParam(createParam<CKSS>(                   tog(fx(1 - 1.27), fy(-0.28)), module, Impl::INVERT_A_PARAM,      0.0, 1.0, 1.0));
+	addParam(createParam<CKSS>(                   tog(fx(1 - 1.27), fy(+0.28)), module, Impl::INVERT_B_PARAM,      0.0, 1.0, 1.0));
+	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(fx(1 - 0.75), fy(-0.28)), module, Impl::FUNCTION_AB_1_PARAM, 0.0, 4.0, 2.0));
+	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(fx(1 - 0.75), fy(+0.28)), module, Impl::FUNCTION_AB_2_PARAM, 0.0, 4.0, 2.0));
+	addParam(createParam<CKSS>(                   tog(fx(    1.27), fy(-0.28)), module, Impl::INVERT_1_PARAM,      0.0, 1.0, 1.0));
+	addParam(createParam<CKSS>(                   tog(fx(    1.27), fy(+0.28)), module, Impl::INVERT_2_PARAM,      0.0, 1.0, 1.0));
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
@@ -141,6 +173,18 @@ Widget::Widget()
 
 	addInput(createInput<PJ301MPort>(prt(gx(0), gy(1)), module, Impl::imap(Impl::IN_A_INPUT, GTX__N)));
 	addInput(createInput<PJ301MPort>(prt(gx(0), gy(2)), module, Impl::imap(Impl::IN_B_INPUT, GTX__N)));
+
+	addChild(createLight<SmallLight<GreenLight>>(led(fx(0.72) - 2.5 * rad_led(), fy(-0.28) - 6 * rad_led()), module, Impl::FUNCTION_0_AB_1_LIGHT));
+	addChild(createLight<SmallLight<GreenLight>>(led(fx(0.72) - 2.5 * rad_led(), fy(-0.28) - 3 * rad_led()), module, Impl::FUNCTION_1_AB_1_LIGHT));
+	addChild(createLight<SmallLight<GreenLight>>(led(fx(0.72) - 2.5 * rad_led(), fy(-0.28) - 0 * rad_led()), module, Impl::FUNCTION_2_AB_1_LIGHT));
+	addChild(createLight<SmallLight<GreenLight>>(led(fx(0.72) - 2.5 * rad_led(), fy(-0.28) + 3 * rad_led()), module, Impl::FUNCTION_3_AB_1_LIGHT));
+	addChild(createLight<SmallLight<GreenLight>>(led(fx(0.72) - 2.5 * rad_led(), fy(-0.28) + 6 * rad_led()), module, Impl::FUNCTION_4_AB_1_LIGHT));
+
+	addChild(createLight<SmallLight<GreenLight>>(led(fx(0.72) - 2.5 * rad_led(), fy(+0.28) - 6 * rad_led()), module, Impl::FUNCTION_0_AB_2_LIGHT));
+	addChild(createLight<SmallLight<GreenLight>>(led(fx(0.72) - 2.5 * rad_led(), fy(+0.28) - 3 * rad_led()), module, Impl::FUNCTION_1_AB_2_LIGHT));
+	addChild(createLight<SmallLight<GreenLight>>(led(fx(0.72) - 2.5 * rad_led(), fy(+0.28) - 0 * rad_led()), module, Impl::FUNCTION_2_AB_2_LIGHT));
+	addChild(createLight<SmallLight<GreenLight>>(led(fx(0.72) - 2.5 * rad_led(), fy(+0.28) + 3 * rad_led()), module, Impl::FUNCTION_3_AB_2_LIGHT));
+	addChild(createLight<SmallLight<GreenLight>>(led(fx(0.72) - 2.5 * rad_led(), fy(+0.28) + 6 * rad_led()), module, Impl::FUNCTION_4_AB_2_LIGHT));
 }
 
 
