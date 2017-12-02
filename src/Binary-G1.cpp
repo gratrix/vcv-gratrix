@@ -103,7 +103,7 @@ struct Impl : Module
 				default                    : out1 = false;
 			}
 
-			switch (fn1)
+			switch (fn2)
 			{
 				case FUNCTION_0_AB_2_LIGHT : out2 = inA      ; break;
 				case FUNCTION_1_AB_2_LIGHT : out2 =       inB; break;
