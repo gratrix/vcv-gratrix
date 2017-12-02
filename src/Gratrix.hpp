@@ -2164,7 +2164,7 @@ namespace Blank_09  { struct Widget : ModuleWidget { Widget(); }; }
 namespace Blank_12  { struct Widget : ModuleWidget { Widget(); }; }
 namespace Fade_G1   { struct Widget : ModuleWidget { Widget(); }; }
 namespace Fade_G2   { struct Widget : ModuleWidget { Widget(); }; }
-namespace Logic_G1  { struct Widget : ModuleWidget { Widget(); }; }
+namespace Binary_G1 { struct Widget : ModuleWidget { Widget(); }; }
 namespace Keys_G1   { struct Widget : ModuleWidget { Widget(); }; }
 namespace VU_G1     { struct Widget : ModuleWidget { Widget(); }; }
 namespace Scope_G1  { struct Widget : ModuleWidget { Widget(); }; }

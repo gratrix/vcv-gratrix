@@ -1,8 +1,8 @@
 //============================================================================================================
 //!
-//! \file Logic-G1.cpp
+//! \file Binary-G1.cpp
 //!
-//! \brief Logic-G1 provides some simple logic gates.
+//! \brief Binary-G1 provides some simple logic gates.
 //!
 //============================================================================================================
 
@@ -11,7 +11,7 @@
 
 
 namespace GTX {
-namespace Logic_G1 {
+namespace Binary_G1 {
 
 
 //============================================================================================================
@@ -141,7 +141,7 @@ Widget::Widget()
 
 	#if GTX__SAVE_SVG
 	{
-		PanelGen pg(assetPlugin(plugin, "build/res/Logic-G1.svg"), box.size, "LOGIC-G1");
+		PanelGen pg(assetPlugin(plugin, "build/res/Binary-G1.svg"), box.size, "BINARY-G1");
 
 		pg.nob_sml_raw(fx(1 - 0.75) - 3, fy(-0.28), "OP 1");
 		pg.nob_sml_raw(fx(1 - 0.75) - 3, fy(+0.28), "OP 2");
@@ -169,7 +169,7 @@ Widget::Widget()
 	{
 		SVGPanel *panel = new SVGPanel();
 		panel->box.size = box.size;
-		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Logic-G1.svg")));
+		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Binary-G1.svg")));
 		addChild(panel);
 	}
 
@@ -210,5 +210,5 @@ Widget::Widget()
 }
 
 
-} // Logic_G1
+} // Binary_G1
 } // GTX
