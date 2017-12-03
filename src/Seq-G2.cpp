@@ -370,10 +370,10 @@ Widget::Widget()
 {
 	Impl *module = new Impl();
 	setModule(module);
-	box.size = Vec(48*15, 380);
+	box.size = Vec(54*15, 380);
 
-	float grid_left  = 40;
-	float grid_right = 40;
+	float grid_left  = 3*15;
+	float grid_right = 3*15;
 	float grid_size  = box.size.x - grid_left - grid_right;
 
 	float g_nobX[NOB_COLS] = {};
@@ -397,7 +397,7 @@ Widget::Widget()
 	for (std::size_t i = 0; i < 4; i++)
 	{
 		float x = 4*6*15 / static_cast<double>(8);
-		portX[i] = 3*6*15 + x * (i + 0.5);
+		portX[i] = 3*7*15 + x * (i + 0.5);
 	}
 
 	float gridY[NOB_ROWS + BUT_ROWS] = {};
@@ -447,10 +447,10 @@ Widget::Widget()
 
 		pg.nob_sml_raw(portX[1], gy(2.2), "EXT CLK");
 
-		pg.bus_in (0, 2, "GATE IN");
-		pg.bus_in (1, 2, "V/OCT IN");
-		pg.bus_out(6, 2, "GATE OUT");
-		pg.bus_out(7, 2, "V/OCT OUT");
+		pg.bus_in (0.5, 2, "GATE IN");
+		pg.bus_in (1.5, 2, "V/OCT IN");
+		pg.bus_out(6.5, 2, "GATE OUT");
+		pg.bus_out(7.5, 2, "V/OCT OUT");
 	}
 	#endif
 
@@ -520,15 +520,15 @@ Widget::Widget()
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
-		addInput(createInput<PJ301MPort>  (prt(px(0, i), py(2, i)), module, Impl::imap(Impl::GATE_INPUT, i)));
-		addInput(createInput<PJ301MPort>  (prt(px(1, i), py(2, i)), module, Impl::imap(Impl::VOCT_INPUT, i)));
+		addInput(createInput<PJ301MPort>  (prt(px(0.5, i), py(2, i)), module, Impl::imap(Impl::GATE_INPUT, i)));
+		addInput(createInput<PJ301MPort>  (prt(px(1.5, i), py(2, i)), module, Impl::imap(Impl::VOCT_INPUT, i)));
 
-		addOutput(createOutput<PJ301MPort>(prt(px(6, i), py(2, i)), module, Impl::omap(Impl::GATE_OUTPUT, i)));
-		addOutput(createOutput<PJ301MPort>(prt(px(7, i), py(2, i)), module, Impl::omap(Impl::VOCT_OUTPUT, i)));
+		addOutput(createOutput<PJ301MPort>(prt(px(6.5, i), py(2, i)), module, Impl::omap(Impl::GATE_OUTPUT, i)));
+		addOutput(createOutput<PJ301MPort>(prt(px(7.5, i), py(2, i)), module, Impl::omap(Impl::VOCT_OUTPUT, i)));
 	}
 
-	addInput(createInput<PJ301MPort>(prt(gx(0), gy(2)), module, Impl::imap(Impl::GATE_INPUT, GTX__N)));
-	addInput(createInput<PJ301MPort>(prt(gx(1), gy(2)), module, Impl::imap(Impl::VOCT_INPUT, GTX__N)));
+	addInput(createInput<PJ301MPort>(prt(gx(0.5), gy(2)), module, Impl::imap(Impl::GATE_INPUT, GTX__N)));
+	addInput(createInput<PJ301MPort>(prt(gx(1.5), gy(2)), module, Impl::imap(Impl::VOCT_INPUT, GTX__N)));
 }
 
 
