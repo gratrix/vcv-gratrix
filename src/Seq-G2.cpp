@@ -15,10 +15,12 @@ namespace GTX {
 namespace Seq_G2 {
 
 
-#define SEQ_COLS 16
-#define NOB_ROWS 1
+#define RATIO    2
+#define NOB_ROWS 2
+#define NOB_COLS 16
 #define BUT_ROWS 6
-#define PRT_ROWS 0
+#define BUT_COLS (NOB_COLS*RATIO)
+
 #define GATE_STATES 4
 
 
@@ -29,8 +31,8 @@ struct Impl : Module {
 		RESET_PARAM,
 		STEPS_PARAM,
 		NOB_PARAM,
-		BUT_PARAM  = NOB_PARAM + (SEQ_COLS * NOB_ROWS),
-		NUM_PARAMS = BUT_PARAM + (SEQ_COLS * BUT_ROWS)
+		BUT_PARAM  = NOB_PARAM + (NOB_COLS * NOB_ROWS),
+		NUM_PARAMS = BUT_PARAM + (BUT_COLS * BUT_ROWS)
 	};
 	enum InputIds {
 		CLOCK_INPUT,
@@ -42,14 +44,13 @@ struct Impl : Module {
 	enum OutputIds {
 		NOB_OUTPUT,
 		BUT_OUTPUT  = NOB_OUTPUT + NOB_ROWS,
-		PRT_OUTPUT  = BUT_OUTPUT + BUT_ROWS,
-		NUM_OUTPUTS = PRT_OUTPUT + (SEQ_COLS * PRT_ROWS)
+		NUM_OUTPUTS = BUT_OUTPUT + BUT_ROWS,
 	};
 	enum LightIds {
 		RUNNING_LIGHT,
 		RESET_LIGHT,
 		BUT_LIGHT  = RESET_LIGHT + 3,
-		NUM_LIGHTS = BUT_LIGHT   + (SEQ_COLS * BUT_ROWS) * 3
+		NUM_LIGHTS = BUT_LIGHT   + (BUT_COLS * BUT_ROWS) * 3
 	};
 
 	static std::size_t nob_val_map(std::size_t row) { return NOB_OUTPUT + row; }
@@ -58,7 +59,6 @@ struct Impl : Module {
 	static std::size_t nob_map(std::size_t row, std::size_t col)                  { return NOB_PARAM  +      col * NOB_ROWS + row; }
 	static std::size_t but_map(std::size_t row, std::size_t col)                  { return BUT_PARAM  +      col * BUT_ROWS + row; }
 	static std::size_t led_map(std::size_t row, std::size_t col, std::size_t idx) { return BUT_LIGHT  + 3 * (col * BUT_ROWS + row) + idx; }
-	static std::size_t prt_map(std::size_t row, std::size_t col)                  { return PRT_OUTPUT +      col * PRT_ROWS + row; }
 
 	static bool is_nob_snap(std::size_t row) { return row == 1; }
 
@@ -67,12 +67,13 @@ struct Impl : Module {
 	// For buttons
 	SchmittTrigger runningTrigger;
 	SchmittTrigger resetTrigger;
-	SchmittTrigger gateTriggers[BUT_ROWS][SEQ_COLS];
+	SchmittTrigger gateTriggers[BUT_ROWS][BUT_COLS];
 	float phase = 0.0;
 	int index = 0;
-	uint8_t gateState[BUT_ROWS][SEQ_COLS] = {};
+	int numSteps = 0;
+	uint8_t gateState[BUT_ROWS][BUT_COLS] = {};
 	float resetLight = 0.0;
-	float stepLights[BUT_ROWS][SEQ_COLS] = {};
+	float stepLights[BUT_ROWS][BUT_COLS] = {};
 
 	enum GateMode
 	{
@@ -101,7 +102,7 @@ struct Impl : Module {
 		// Gates
 		if (json_t *gatesJ = json_array())
 		{
-			for (int col = 0; col < SEQ_COLS; col++)
+			for (int col = 0; col < BUT_COLS; col++)
 			{
 				for (int row = 0; row < BUT_ROWS; row++)
 				{
@@ -129,7 +130,7 @@ struct Impl : Module {
 		// Gates
 		if (json_t *gatesJ = json_object_get(rootJ, "gates"))
 		{
-			for (int col = 0, i = 0; col < SEQ_COLS; col++)
+			for (int col = 0, i = 0; col < BUT_COLS; col++)
 			{
 				for (int row = 0; row < BUT_ROWS; row++, i++)
 				{
@@ -153,7 +154,7 @@ struct Impl : Module {
 
 	void reset() override
 	{
-		for (int col = 0; col < SEQ_COLS; col++)
+		for (int col = 0; col < BUT_COLS; col++)
 		{
 			for (int row = 0; row < BUT_ROWS; row++)
 			{
@@ -164,7 +165,7 @@ struct Impl : Module {
 
 	void randomize() override
 	{
-		for (int col = 0; col < SEQ_COLS; col++)
+		for (int col = 0; col < BUT_COLS; col++)
 		{
 			for (int row = 0; row < BUT_ROWS; row++)
 			{
@@ -220,15 +221,16 @@ void Impl::step()
 	if (resetTrigger.process(params[RESET_PARAM].value + inputs[RESET_INPUT].value))
 	{
 		phase = 0.0;
-		index = SEQ_COLS;
+		index = BUT_COLS;
 		nextStep = true;
 		resetLight = 1.0;
 	}
 
+	numSteps = RATIO * clampi(roundf(params[STEPS_PARAM].value + inputs[STEPS_INPUT].value), 1, NOB_COLS);
+
 	if (nextStep)
 	{
 		// Advance step
-		int numSteps = clampi(roundf(params[STEPS_PARAM].value + inputs[STEPS_INPUT].value), 1, SEQ_COLS);
 		index += 1;
 
 		if (index >= numSteps)
@@ -249,7 +251,8 @@ void Impl::step()
 	bool pulse = gatePulse.process(1.0 / engineGetSampleRate());
 
 	// Gate buttons
-	for (int col = 0; col < SEQ_COLS; ++col)
+
+	for (int col = 0; col < BUT_COLS; ++col)
 	{
 		for (int row = 0; row < BUT_ROWS; ++row)
 		{
@@ -271,27 +274,35 @@ void Impl::step()
 				default            : break;
 			}
 
-			if (row < PRT_ROWS)
-			{
-				outputs[prt_map(row, col)].value = gateOn ? 10.0 : 0.0;
-			}
-
 			stepLights[row][col] -= stepLights[row][col] / lightLambda / engineGetSampleRate();
 
-			lights[led_map(row, col, 1)].value = gateState[row][col] == GM_CONTINUOUS ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Green
-			lights[led_map(row, col, 2)].value = gateState[row][col] == GM_RETRIGGER  ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Blue
-			lights[led_map(row, col, 0)].value = gateState[row][col] == GM_TRIGGER    ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Red
+			if (col < numSteps)
+			{
+				lights[led_map(row, col, 1)].value = gateState[row][col] == GM_CONTINUOUS ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Green
+				lights[led_map(row, col, 2)].value = gateState[row][col] == GM_RETRIGGER  ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Blue
+				lights[led_map(row, col, 0)].value = gateState[row][col] == GM_TRIGGER    ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Red
+			}
+			else
+			{
+				lights[led_map(row, col, 1)].value = 0.01;  // Green
+				lights[led_map(row, col, 2)].value = 0.01;  // Blue
+				lights[led_map(row, col, 0)].value = 0.01;  // Red
+			}
 		}
 	}
 
 	// Rows
+
+	int nob_index = index / RATIO;
+
 	float nob_val[NOB_ROWS];
 	for (std::size_t row = 0; row < NOB_ROWS; ++row)
 	{
-		nob_val[row] = params[nob_map(row, index)].value;
+		nob_val[row] = params[nob_map(row, nob_index)].value;
 
 		if (is_nob_snap(row)) nob_val[row] /= 12.0f;
 	}
+
 	bool but_val[BUT_ROWS];
 	for (std::size_t row = 0; row < BUT_ROWS; ++row)
 	{
@@ -307,10 +318,12 @@ void Impl::step()
 	}
 
 	// Outputs
+
 	for (std::size_t row = 0; row < NOB_ROWS; ++row)
 	{
 		outputs[nob_val_map(row)].value = nob_val[row];
 	}
+
 	for (std::size_t row = 0; row < BUT_ROWS; ++row)
 	{
 		outputs[but_val_map(row)].value = but_val[row] ? 10.0 : 0.0;
@@ -324,20 +337,27 @@ Widget::Widget()
 {
 	Impl *module = new Impl();
 	setModule(module);
-	box.size = Vec(36*15, 380);
+	box.size = Vec(42*15, 380);
 
-	float gridX[SEQ_COLS] = {};
-	for (std::size_t i = 0; i < SEQ_COLS; i++)
+	float grid_left  =  5;
+	float grid_right = 40;
+	float grid_size  = box.size.x - grid_left - grid_right;
+
+	float g_nobX[NOB_COLS] = {};
+	for (std::size_t i = 0; i < NOB_COLS; i++)
 	{
-		float x  = (box.size.x - 10) / (1.5 + static_cast<double>(SEQ_COLS));
-		gridX[i] = 5+x*(i+0.5);
+		float x  = grid_size / static_cast<double>(NOB_COLS);
+		g_nobX[i] = grid_left + x * (i + 0.5);
 	}
 
-	float gridXr = 0;
+	float g_butX[BUT_COLS] = {};
+	for (std::size_t i = 0; i < BUT_COLS; i++)
 	{
-		float x = (box.size.x - 10) / (static_cast<double>(SEQ_COLS));
-		gridXr = 5+x*(SEQ_COLS-0.5);
+		float x  = grid_size / static_cast<double>(BUT_COLS);
+		g_butX[i] = grid_left + x * (i + 0.5);
 	}
+
+	float gridXr = box.size.x - grid_right/2;
 
 	float portX[8] = {};
 	for (std::size_t i = 0; i < 8; i++)
@@ -346,30 +366,23 @@ Widget::Widget()
 		portX[i] = 2*6*15 + 5+x*(i+0.5);
 	}
 
-	float gridY[NOB_ROWS + BUT_ROWS + PRT_ROWS] = {};
+	float gridY[NOB_ROWS + BUT_ROWS] = {};
 	{
 		std::size_t j = 0;
-		int pos = 35, pad = 5;
+		int pos = 35;
 
 		for (std::size_t row = 0; row < NOB_ROWS; ++row, ++j)
 		{
-			pos += rad_n_s() + pad;
+			pos += rad_n_s() + 5;
 			gridY[j] = pos;
-			pos += rad_n_s() + pad;
+			pos += rad_n_s() + 5;
 		}
 
 		for (std::size_t row = 0; row < BUT_ROWS; ++row, ++j)
 		{
-			pos += rad_but() + pad;
+			pos += rad_but() + 3;
 			gridY[j] = pos;
-			pos += rad_but() + pad;
-		}
-
-		for (std::size_t row = 0; row < PRT_ROWS; ++row, ++j)
-		{
-			pos += rad_prt() + pad;
-			gridY[j] = pos;
-			pos += rad_prt() + pad;
+			pos += rad_but() + 3;
 		}
 	}
 
@@ -377,14 +390,21 @@ Widget::Widget()
 	{
 		PanelGen pg(assetPlugin(plugin, "build/res/Seq-G2.svg"), box.size, "SEQ-G2");
 
-		for (std::size_t i=0; i<SEQ_COLS; i++)
+		for (std::size_t i=0; i<NOB_COLS-1; i++)
 		{
-			pg.line(Vec(gridX[i], 50), Vec(gridX[i], 250), "fill:none;stroke:#666666;stroke-width:1");
+			double x  = 0.5 * (g_nobX[i] + g_nobX[i+1]);
+			double y0 = gridY[0];
+			double y1 = gridY[NOB_ROWS + BUT_ROWS - 1];
+
+			if (i % 4 == 3)
+				pg.line(Vec(x, y0), Vec(x, y1), "fill:none;stroke:#7092BE;stroke-width:3");
+			else
+				pg.line(Vec(x, y0), Vec(x, y1), "fill:none;stroke:#7092BE;stroke-width:1");
 		}
 
-		pg.bus_in(0, 2, "GATE IN");
-		pg.bus_in(1, 2, "V/OCT IN");
-		pg.bus_in(5, 2, "GATE OUT");
+		pg.bus_in (0, 2, "GATE IN");
+		pg.bus_in (1, 2, "V/OCT IN");
+		pg.bus_out(5, 2, "GATE OUT");
 	}
 	#endif
 
@@ -405,7 +425,7 @@ Widget::Widget()
 	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[1], gy(1.8)), module, Impl::RUNNING_LIGHT));
 	addParam(createParam<LEDButton>              (but(portX[2], gy(1.8)), module, Impl::RESET_PARAM, 0.0, 1.0, 0.0));
 	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[2], gy(1.8)), module, Impl::RESET_LIGHT));
-	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[3], gy(1.8)), module, Impl::STEPS_PARAM, 1.0, SEQ_COLS, SEQ_COLS));
+	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[3], gy(1.8)), module, Impl::STEPS_PARAM, 1.0, NOB_COLS, NOB_COLS));
 
 	addInput(createInput<PJ301MPort>  (prt(portX[0], gy(2.2)), module, Impl::CLOCK_INPUT));
 	addInput(createInput<PJ301MPort>  (prt(portX[1], gy(2.2)), module, Impl::EXT_CLOCK_INPUT));
@@ -419,33 +439,34 @@ Widget::Widget()
 		{
 			addOutput(createOutput<PJ301MPort>(prt(gridXr, gridY[j]), module, Impl::nob_val_map(row)));
 		}
+
 		for (std::size_t row = 0; row < BUT_ROWS; ++row, ++j)
 		{
 			addOutput(createOutput<PJ301MPort>(prt(gridXr, gridY[j]), module, Impl::but_val_map(row)));
 		}
 	}
 
-	for (std::size_t col = 0; col < SEQ_COLS; ++col)
 	{
 		std::size_t j = 0;
 
 		for (std::size_t row = 0; row < NOB_ROWS; ++row, ++j)
 		{
-			if (Impl::is_nob_snap(row))
-				addParam(createParam<RoundSmallBlackSnapKnob>(n_s(gridX[col], gridY[j]), module, Impl::nob_map(row, col), 0.0, 12.0, 12.0));
-			else
-				addParam(createParam<RoundSmallBlackKnob>    (n_s(gridX[col], gridY[j]), module, Impl::nob_map(row, col), 0.0, 10.0, 0.0));
+			for (std::size_t col = 0; col < NOB_COLS; ++col)
+			{
+				if (Impl::is_nob_snap(row))
+					addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_nobX[col], gridY[j]), module, Impl::nob_map(row, col), 0.0, 12.0, 12.0));
+				else
+					addParam(createParam<RoundSmallBlackKnob>    (n_s(g_nobX[col], gridY[j]), module, Impl::nob_map(row, col), 0.0, 10.0, 0.0));
+			}
 		}
 
 		for (std::size_t row = 0; row < BUT_ROWS; ++row, ++j)
 		{
-			addParam(createParam<LEDButton>                     (but(gridX[col], gridY[j]), module, Impl::but_map(row, col), 0.0, 1.0, 0.0));
-			addChild(createLight<MediumLight<RedGreenBlueLight>>(l_m(gridX[col], gridY[j]), module, Impl::led_map(row, col, 0)));
-		}
-
-		for (std::size_t row = 0; row < PRT_ROWS; ++row, ++j)
-		{
-			addOutput(createOutput<PJ301MPort>(prt(gridX[col], gridY[j]), module, Impl::prt_map(row, col)));
+			for (std::size_t col = 0; col < BUT_COLS; ++col)
+			{
+				addParam(createParam<LEDButton>                     (but(g_butX[col], gridY[j]), module, Impl::but_map(row, col), 0.0, 1.0, 0.0));
+				addChild(createLight<MediumLight<RedGreenBlueLight>>(l_m(g_butX[col], gridY[j]), module, Impl::led_map(row, col, 0)));
+			}
 		}
 	}
 }
