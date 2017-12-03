@@ -46,9 +46,9 @@ struct Impl : Module {
 	};
 	enum OutputIds {
 		NOB_OUTPUT,
-		BUT_OUTPUT  = NOB_OUTPUT + NOB_ROWS,
-		GATE_OUTPUT = BUT_OUTPUT + BUT_ROWS,  // N
-		VOCT_OUTPUT,                          // N
+		BUT_OUTPUT  = NOB_OUTPUT + NOB_ROWS * 2,
+		GATE_OUTPUT = BUT_OUTPUT + BUT_ROWS * 2,  // N
+		VOCT_OUTPUT,                              // N
 		NUM_OUTPUTS,
 		OFF_OUTPUTS = GATE_OUTPUT
 	};
@@ -61,8 +61,8 @@ struct Impl : Module {
 
 	static constexpr bool is_nob_snap(std::size_t row) { return true; }
 
-	static constexpr std::size_t nob_val_map(std::size_t row) { return NOB_OUTPUT + row; }
-	static constexpr std::size_t but_val_map(std::size_t row) { return BUT_OUTPUT + row; }
+	static constexpr std::size_t nob_val_map(std::size_t row, std::size_t col) { return NOB_OUTPUT + 2 * row + col; }
+	static constexpr std::size_t but_val_map(std::size_t row, std::size_t col) { return BUT_OUTPUT + 2 * row + col; }
 
 	static constexpr std::size_t nob_map(std::size_t row, std::size_t col)                  { return NOB_PARAM  +      col * NOB_ROWS + row; }
 	static constexpr std::size_t but_map(std::size_t row, std::size_t col)                  { return BUT_PARAM  +      col * BUT_ROWS + row; }
@@ -341,12 +341,14 @@ void Impl::step()
 
 	for (std::size_t row = 0; row < NOB_ROWS; ++row)
 	{
-		outputs[nob_val_map(row)].value = nob_val[row];
+		outputs[nob_val_map(row, 0)].value = nob_val[row];
+		outputs[nob_val_map(row, 1)].value = nob_val[row];
 	}
 
 	for (std::size_t row = 0; row < BUT_ROWS; ++row)
 	{
-		outputs[but_val_map(row)].value = but_val[row] ? 10.0f : 0.0f;
+		outputs[but_val_map(row, 0)].value = but_val[row] ? 10.0f : 0.0f;
+		outputs[but_val_map(row, 1)].value = but_val[row] ? 10.0f : 0.0f;
 	}
 
 	for (std::size_t i=0; i<GTX__N && i<BUT_ROWS; ++i)
@@ -388,7 +390,8 @@ Widget::Widget()
 		g_butX[i] = grid_left + x * (i + 0.5);
 	}
 
-	float gridXr = box.size.x - grid_right/2;
+	float gridXl =              grid_left  / 2;
+	float gridXr = box.size.x - grid_right / 2;
 
 	float portX[4] = {};
 	for (std::size_t i = 0; i < 4; i++)
@@ -469,12 +472,14 @@ Widget::Widget()
 
 		for (std::size_t row = 0; row < NOB_ROWS; ++row, ++j)
 		{
-			addOutput(createOutput<PJ301MPort>(prt(gridXr, gridY[j]), module, Impl::nob_val_map(row)));
+			addOutput(createOutput<PJ301MPort>(prt(gridXl, gridY[j]), module, Impl::nob_val_map(row, 0)));
+			addOutput(createOutput<PJ301MPort>(prt(gridXr, gridY[j]), module, Impl::nob_val_map(row, 1)));
 		}
 
 		for (std::size_t row = 0; row < BUT_ROWS; ++row, ++j)
 		{
-			addOutput(createOutput<PJ301MPort>(prt(gridXr, gridY[j]), module, Impl::but_val_map(row)));
+			addOutput(createOutput<PJ301MPort>(prt(gridXl, gridY[j]), module, Impl::but_val_map(row, 0)));
+			addOutput(createOutput<PJ301MPort>(prt(gridXr, gridY[j]), module, Impl::but_val_map(row, 1)));
 		}
 	}
 
