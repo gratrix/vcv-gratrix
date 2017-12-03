@@ -342,7 +342,7 @@ Widget::Widget()
 	for (std::size_t i=0; i<T; ++i)
 	{
 		addParam(createParam<LEDButton>(but(xd(i), yd(i)), module, i + Impl::NOTE_PARAM, 0.0, 1.0, 0.0));
-		addChild(createLight<SmallLight<GreenRedLight>>(l_s(xd(i), yd(i)), module, Impl::NOTE_LIGHT + i*2));
+		addChild(createLight<MediumLight<GreenRedLight>>(l_m(xd(i), yd(i)), module, Impl::NOTE_LIGHT + i*2));
 	}
 
 	addChild(createLight<SmallLight<GreenRedLight>>(l_s(x0() - 30, fy(-0.28) + 5), module, Impl::PROG_LIGHT +  0*2));  // C
