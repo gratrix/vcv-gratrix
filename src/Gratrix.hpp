@@ -115,7 +115,7 @@ public:
 
 		rect(Vec(-5,       -5), Vec(box.x+10, box.y+10), "fill:#CEE1FD;stroke:black;stroke-width:1");
 		rect(Vec(-5,       -5), Vec(box.x+10, 30   + 5), "fill:#BED7FC;stroke:black;stroke-width:1");
-		rect(Vec(-5, box.y-20), Vec(box.x+10, box.y+ 5), "fill:#BED7FC;stroke:black;stroke-width:1");
+		rect(Vec(-5, box.y-20), Vec(box.x+10, 20   + 5), "fill:#BED7FC;stroke:black;stroke-width:1");
 
 		if (!title.empty())
 		{
