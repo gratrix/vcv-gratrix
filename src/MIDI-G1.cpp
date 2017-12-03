@@ -343,7 +343,7 @@ Widget::Widget()
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x - 30, 365)));
 
 	addParam(createParam<LEDButton>(           but(fx(-0.3), fy(0.4)), module, Interface::RESET_PARAM, 0.0, 1.0, 0.0));
-	addChild(createLight<SmallLight<RedLight>>(led(fx(-0.3), fy(0.4)), module, Interface::RESET_LIGHT));
+	addChild(createLight<SmallLight<RedLight>>(l_s(fx(-0.3), fy(0.4)), module, Interface::RESET_LIGHT));
 
 	{
 		float margin =  8;

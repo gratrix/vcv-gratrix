@@ -108,10 +108,10 @@ Widget::Widget()
 		{
 			switch (j)
 			{
-				case 0  : addChild(createLight<SmallLight<   RedLight>>(led(gx(0)+(i-2.5f)*13.0f, gy(0.5)+(j-4.5f)*11.0f), module, k)); break;
+				case 0  : addChild(createLight<SmallLight<   RedLight>>(l_s(gx(0)+(i-2.5f)*13.0f, gy(0.5)+(j-4.5f)*11.0f), module, k)); break;
 				case 1  :
-				case 2  : addChild(createLight<SmallLight<YellowLight>>(led(gx(0)+(i-2.5f)*13.0f, gy(0.5)+(j-4.5f)*11.0f), module, k)); break;
-				default : addChild(createLight<SmallLight< GreenLight>>(led(gx(0)+(i-2.5f)*13.0f, gy(0.5)+(j-4.5f)*11.0f), module, k)); break;
+				case 2  : addChild(createLight<SmallLight<YellowLight>>(l_s(gx(0)+(i-2.5f)*13.0f, gy(0.5)+(j-4.5f)*11.0f), module, k)); break;
+				default : addChild(createLight<SmallLight< GreenLight>>(l_s(gx(0)+(i-2.5f)*13.0f, gy(0.5)+(j-4.5f)*11.0f), module, k)); break;
 			}
 		}
 	}

@@ -149,17 +149,17 @@ Widget::Widget()
 		pg.tog(1 - 1.27, -0.28, "A", "INV A");  pg.tog(1.27, -0.28, "1", "INV 1");
 		pg.tog(1 - 1.27, +0.28, "B", "INV B");  pg.tog(1.27, +0.28, "2", "INV 2");
 
-		pg.text(Vec(fx(0.72) - 5, fy(-0.28) - 6 * rad_led() + 3), "A",   10, "start");
-		pg.text(Vec(fx(0.72) - 5, fy(-0.28) - 3 * rad_led() + 3), "B",   10, "start");
-		pg.text(Vec(fx(0.72) - 5, fy(-0.28) - 0 * rad_led() + 3), "AND", 10, "start");
-		pg.text(Vec(fx(0.72) - 5, fy(-0.28) + 3 * rad_led() + 3), "OR",  10, "start");
-		pg.text(Vec(fx(0.72) - 5, fy(-0.28) + 6 * rad_led() + 3), "XOR", 10, "start");
+		pg.text(Vec(fx(0.72) - 5, fy(-0.28) - 6 * rad_l_s() + 3), "A",   10, "start");
+		pg.text(Vec(fx(0.72) - 5, fy(-0.28) - 3 * rad_l_s() + 3), "B",   10, "start");
+		pg.text(Vec(fx(0.72) - 5, fy(-0.28) - 0 * rad_l_s() + 3), "AND", 10, "start");
+		pg.text(Vec(fx(0.72) - 5, fy(-0.28) + 3 * rad_l_s() + 3), "OR",  10, "start");
+		pg.text(Vec(fx(0.72) - 5, fy(-0.28) + 6 * rad_l_s() + 3), "XOR", 10, "start");
 
-		pg.text(Vec(fx(0.72) - 5, fy(+0.28) - 6 * rad_led() + 3), "A",   10, "start");
-		pg.text(Vec(fx(0.72) - 5, fy(+0.28) - 3 * rad_led() + 3), "B",   10, "start");
-		pg.text(Vec(fx(0.72) - 5, fy(+0.28) - 0 * rad_led() + 3), "AND", 10, "start");
-		pg.text(Vec(fx(0.72) - 5, fy(+0.28) + 3 * rad_led() + 3), "OR",  10, "start");
-		pg.text(Vec(fx(0.72) - 5, fy(+0.28) + 6 * rad_led() + 3), "XOR", 10, "start");
+		pg.text(Vec(fx(0.72) - 5, fy(+0.28) - 6 * rad_l_s() + 3), "A",   10, "start");
+		pg.text(Vec(fx(0.72) - 5, fy(+0.28) - 3 * rad_l_s() + 3), "B",   10, "start");
+		pg.text(Vec(fx(0.72) - 5, fy(+0.28) - 0 * rad_l_s() + 3), "AND", 10, "start");
+		pg.text(Vec(fx(0.72) - 5, fy(+0.28) + 3 * rad_l_s() + 3), "OR",  10, "start");
+		pg.text(Vec(fx(0.72) - 5, fy(+0.28) + 6 * rad_l_s() + 3), "XOR", 10, "start");
 
 		pg.bus_in(0, 1, "IN A"); pg.bus_out(1, 1, "OUT 1");
 		pg.bus_in(0, 2, "IN B"); pg.bus_out(1, 2, "OUT 2");
@@ -196,17 +196,17 @@ Widget::Widget()
 	addInput(createInput<PJ301MPort>(prt(gx(0), gy(1)), module, Impl::imap(Impl::IN_A_INPUT, GTX__N)));
 	addInput(createInput<PJ301MPort>(prt(gx(0), gy(2)), module, Impl::imap(Impl::IN_B_INPUT, GTX__N)));
 
-	addChild(createLight<SmallLight<GreenLight>>(led(fx(0.72) - 2.5 * rad_led() - 5, fy(-0.28) - 6 * rad_led()), module, Impl::FUNCTION_0_AB_1_LIGHT));
-	addChild(createLight<SmallLight<GreenLight>>(led(fx(0.72) - 2.5 * rad_led() - 5, fy(-0.28) - 3 * rad_led()), module, Impl::FUNCTION_1_AB_1_LIGHT));
-	addChild(createLight<SmallLight<GreenLight>>(led(fx(0.72) - 2.5 * rad_led() - 5, fy(-0.28) - 0 * rad_led()), module, Impl::FUNCTION_2_AB_1_LIGHT));
-	addChild(createLight<SmallLight<GreenLight>>(led(fx(0.72) - 2.5 * rad_led() - 5, fy(-0.28) + 3 * rad_led()), module, Impl::FUNCTION_3_AB_1_LIGHT));
-	addChild(createLight<SmallLight<GreenLight>>(led(fx(0.72) - 2.5 * rad_led() - 5, fy(-0.28) + 6 * rad_led()), module, Impl::FUNCTION_4_AB_1_LIGHT));
+	addChild(createLight<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(-0.28) - 6 * rad_l_s()), module, Impl::FUNCTION_0_AB_1_LIGHT));
+	addChild(createLight<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(-0.28) - 3 * rad_l_s()), module, Impl::FUNCTION_1_AB_1_LIGHT));
+	addChild(createLight<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(-0.28) - 0 * rad_l_s()), module, Impl::FUNCTION_2_AB_1_LIGHT));
+	addChild(createLight<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(-0.28) + 3 * rad_l_s()), module, Impl::FUNCTION_3_AB_1_LIGHT));
+	addChild(createLight<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(-0.28) + 6 * rad_l_s()), module, Impl::FUNCTION_4_AB_1_LIGHT));
 
-	addChild(createLight<SmallLight<GreenLight>>(led(fx(0.72) - 2.5 * rad_led() - 5, fy(+0.28) - 6 * rad_led()), module, Impl::FUNCTION_0_AB_2_LIGHT));
-	addChild(createLight<SmallLight<GreenLight>>(led(fx(0.72) - 2.5 * rad_led() - 5, fy(+0.28) - 3 * rad_led()), module, Impl::FUNCTION_1_AB_2_LIGHT));
-	addChild(createLight<SmallLight<GreenLight>>(led(fx(0.72) - 2.5 * rad_led() - 5, fy(+0.28) - 0 * rad_led()), module, Impl::FUNCTION_2_AB_2_LIGHT));
-	addChild(createLight<SmallLight<GreenLight>>(led(fx(0.72) - 2.5 * rad_led() - 5, fy(+0.28) + 3 * rad_led()), module, Impl::FUNCTION_3_AB_2_LIGHT));
-	addChild(createLight<SmallLight<GreenLight>>(led(fx(0.72) - 2.5 * rad_led() - 5, fy(+0.28) + 6 * rad_led()), module, Impl::FUNCTION_4_AB_2_LIGHT));
+	addChild(createLight<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(+0.28) - 6 * rad_l_s()), module, Impl::FUNCTION_0_AB_2_LIGHT));
+	addChild(createLight<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(+0.28) - 3 * rad_l_s()), module, Impl::FUNCTION_1_AB_2_LIGHT));
+	addChild(createLight<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(+0.28) - 0 * rad_l_s()), module, Impl::FUNCTION_2_AB_2_LIGHT));
+	addChild(createLight<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(+0.28) + 3 * rad_l_s()), module, Impl::FUNCTION_3_AB_2_LIGHT));
+	addChild(createLight<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(+0.28) + 6 * rad_l_s()), module, Impl::FUNCTION_4_AB_2_LIGHT));
 }
 
 

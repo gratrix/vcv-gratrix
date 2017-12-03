@@ -342,34 +342,34 @@ Widget::Widget()
 	for (std::size_t i=0; i<T; ++i)
 	{
 		addParam(createParam<LEDButton>(but(xd(i), yd(i)), module, i + Impl::NOTE_PARAM, 0.0, 1.0, 0.0));
-		addChild(createLight<SmallLight<GreenRedLight>>(led(xd(i), yd(i)), module, Impl::NOTE_LIGHT + i*2));
+		addChild(createLight<SmallLight<GreenRedLight>>(l_s(xd(i), yd(i)), module, Impl::NOTE_LIGHT + i*2));
 	}
 
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() - 30, fy(-0.28) + 5), module, Impl::PROG_LIGHT +  0*2));  // C
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() - 25, fy(-0.28) - 5), module, Impl::PROG_LIGHT +  1*2));  // C#
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() - 20, fy(-0.28) + 5), module, Impl::PROG_LIGHT +  2*2));  // D
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() - 15, fy(-0.28) - 5), module, Impl::PROG_LIGHT +  3*2));  // Eb
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() - 10, fy(-0.28) + 5), module, Impl::PROG_LIGHT +  4*2));  // E
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0()     , fy(-0.28) + 5), module, Impl::PROG_LIGHT +  5*2));  // F
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() +  5, fy(-0.28) - 5), module, Impl::PROG_LIGHT +  6*2));  // Fs
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() + 10, fy(-0.28) + 5), module, Impl::PROG_LIGHT +  7*2));  // G
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() + 15, fy(-0.28) - 5), module, Impl::PROG_LIGHT +  8*2));  // Ab
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() + 20, fy(-0.28) + 5), module, Impl::PROG_LIGHT +  9*2));  // A
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() + 25, fy(-0.28) - 5), module, Impl::PROG_LIGHT + 10*2));  // Bb
-	addChild(createLight<SmallLight<GreenRedLight>>(led(x0() + 30, fy(-0.28) + 5), module, Impl::PROG_LIGHT + 11*2));  // B
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(x0() - 30, fy(-0.28) + 5), module, Impl::PROG_LIGHT +  0*2));  // C
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(x0() - 25, fy(-0.28) - 5), module, Impl::PROG_LIGHT +  1*2));  // C#
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(x0() - 20, fy(-0.28) + 5), module, Impl::PROG_LIGHT +  2*2));  // D
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(x0() - 15, fy(-0.28) - 5), module, Impl::PROG_LIGHT +  3*2));  // Eb
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(x0() - 10, fy(-0.28) + 5), module, Impl::PROG_LIGHT +  4*2));  // E
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(x0()     , fy(-0.28) + 5), module, Impl::PROG_LIGHT +  5*2));  // F
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(x0() +  5, fy(-0.28) - 5), module, Impl::PROG_LIGHT +  6*2));  // Fs
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(x0() + 10, fy(-0.28) + 5), module, Impl::PROG_LIGHT +  7*2));  // G
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(x0() + 15, fy(-0.28) - 5), module, Impl::PROG_LIGHT +  8*2));  // Ab
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(x0() + 20, fy(-0.28) + 5), module, Impl::PROG_LIGHT +  9*2));  // A
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(x0() + 25, fy(-0.28) - 5), module, Impl::PROG_LIGHT + 10*2));  // Bb
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(x0() + 30, fy(-0.28) + 5), module, Impl::PROG_LIGHT + 11*2));  // B
 
-	addChild(createLight<SmallLight<     RedLight>>(led(x0() - 30, fy(+0.28) + 5), module, Impl::FUND_LIGHT +  0));  // C
-	addChild(createLight<SmallLight<     RedLight>>(led(x0() - 25, fy(+0.28) - 5), module, Impl::FUND_LIGHT +  1));  // C#
-	addChild(createLight<SmallLight<     RedLight>>(led(x0() - 20, fy(+0.28) + 5), module, Impl::FUND_LIGHT +  2));  // D
-	addChild(createLight<SmallLight<     RedLight>>(led(x0() - 15, fy(+0.28) - 5), module, Impl::FUND_LIGHT +  3));  // Eb
-	addChild(createLight<SmallLight<     RedLight>>(led(x0() - 10, fy(+0.28) + 5), module, Impl::FUND_LIGHT +  4));  // E
-	addChild(createLight<SmallLight<     RedLight>>(led(x0()     , fy(+0.28) + 5), module, Impl::FUND_LIGHT +  5));  // F
-	addChild(createLight<SmallLight<     RedLight>>(led(x0() +  5, fy(+0.28) - 5), module, Impl::FUND_LIGHT +  6));  // Fs
-	addChild(createLight<SmallLight<     RedLight>>(led(x0() + 10, fy(+0.28) + 5), module, Impl::FUND_LIGHT +  7));  // G
-	addChild(createLight<SmallLight<     RedLight>>(led(x0() + 15, fy(+0.28) - 5), module, Impl::FUND_LIGHT +  8));  // Ab
-	addChild(createLight<SmallLight<     RedLight>>(led(x0() + 20, fy(+0.28) + 5), module, Impl::FUND_LIGHT +  9));  // A
-	addChild(createLight<SmallLight<     RedLight>>(led(x0() + 25, fy(+0.28) - 5), module, Impl::FUND_LIGHT + 10));  // Bb
-	addChild(createLight<SmallLight<     RedLight>>(led(x0() + 30, fy(+0.28) + 5), module, Impl::FUND_LIGHT + 11));  // B
+	addChild(createLight<SmallLight<     RedLight>>(l_s(x0() - 30, fy(+0.28) + 5), module, Impl::FUND_LIGHT +  0));  // C
+	addChild(createLight<SmallLight<     RedLight>>(l_s(x0() - 25, fy(+0.28) - 5), module, Impl::FUND_LIGHT +  1));  // C#
+	addChild(createLight<SmallLight<     RedLight>>(l_s(x0() - 20, fy(+0.28) + 5), module, Impl::FUND_LIGHT +  2));  // D
+	addChild(createLight<SmallLight<     RedLight>>(l_s(x0() - 15, fy(+0.28) - 5), module, Impl::FUND_LIGHT +  3));  // Eb
+	addChild(createLight<SmallLight<     RedLight>>(l_s(x0() - 10, fy(+0.28) + 5), module, Impl::FUND_LIGHT +  4));  // E
+	addChild(createLight<SmallLight<     RedLight>>(l_s(x0()     , fy(+0.28) + 5), module, Impl::FUND_LIGHT +  5));  // F
+	addChild(createLight<SmallLight<     RedLight>>(l_s(x0() +  5, fy(+0.28) - 5), module, Impl::FUND_LIGHT +  6));  // Fs
+	addChild(createLight<SmallLight<     RedLight>>(l_s(x0() + 10, fy(+0.28) + 5), module, Impl::FUND_LIGHT +  7));  // G
+	addChild(createLight<SmallLight<     RedLight>>(l_s(x0() + 15, fy(+0.28) - 5), module, Impl::FUND_LIGHT +  8));  // Ab
+	addChild(createLight<SmallLight<     RedLight>>(l_s(x0() + 20, fy(+0.28) + 5), module, Impl::FUND_LIGHT +  9));  // A
+	addChild(createLight<SmallLight<     RedLight>>(l_s(x0() + 25, fy(+0.28) - 5), module, Impl::FUND_LIGHT + 10));  // Bb
+	addChild(createLight<SmallLight<     RedLight>>(l_s(x0() + 30, fy(+0.28) + 5), module, Impl::FUND_LIGHT + 11));  // B
 }
 
 

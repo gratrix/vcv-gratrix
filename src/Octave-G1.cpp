@@ -199,22 +199,22 @@ Widget::Widget()
 	addOutput(createOutput<PJ301MPort>(prt(gx( 0.85), gy(2)), module, 3 + Impl::OCT_OUTPUT));
 	addOutput(createOutput<PJ301MPort>(prt(gx( 1.20), gy(2)), module, 4 + Impl::OCT_OUTPUT));
 
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) - 30, fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  0));  // C
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) - 25, fy(0-0.28) - 5), module, Impl::KEY_LIGHT +  1));  // C#
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) - 20, fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  2));  // D
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) - 15, fy(0-0.28) - 5), module, Impl::KEY_LIGHT +  3));  // Eb
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) - 10, fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  4));  // E
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5)     , fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  5));  // F
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) +  5, fy(0-0.28) - 5), module, Impl::KEY_LIGHT +  6));  // Fs
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + 10, fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  7));  // G
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + 15, fy(0-0.28) - 5), module, Impl::KEY_LIGHT +  8));  // Ab
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + 20, fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  9));  // A
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + 25, fy(0-0.28) - 5), module, Impl::KEY_LIGHT + 10));  // Bb
-	addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + 30, fy(0-0.28) + 5), module, Impl::KEY_LIGHT + 11));  // B
+	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) - 30, fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  0));  // C
+	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) - 25, fy(0-0.28) - 5), module, Impl::KEY_LIGHT +  1));  // C#
+	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) - 20, fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  2));  // D
+	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) - 15, fy(0-0.28) - 5), module, Impl::KEY_LIGHT +  3));  // Eb
+	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) - 10, fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  4));  // E
+	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5)     , fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  5));  // F
+	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) +  5, fy(0-0.28) - 5), module, Impl::KEY_LIGHT +  6));  // Fs
+	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) + 10, fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  7));  // G
+	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) + 15, fy(0-0.28) - 5), module, Impl::KEY_LIGHT +  8));  // Ab
+	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) + 20, fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  9));  // A
+	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) + 25, fy(0-0.28) - 5), module, Impl::KEY_LIGHT + 10));  // Bb
+	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) + 30, fy(0-0.28) + 5), module, Impl::KEY_LIGHT + 11));  // B
 
 	for (std::size_t i=0; i<LO_SIZE; ++i)
 	{
-		addChild(createLight<SmallLight<RedLight>>(led(gx(0.5) + (i - LO_SIZE/2) * 10, fy(0-0.28) + 20), module, Impl::OCT_LIGHT + i));
+		addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) + (i - LO_SIZE/2) * 10, fy(0-0.28) + 20), module, Impl::OCT_LIGHT + i));
 	}
 }
 

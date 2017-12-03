@@ -184,8 +184,8 @@ Widget::Widget()
 	{
 		for (std::size_t y=0; y<2; ++y)
 		{
-			addChild(createLight<SmallLight<GreenRedLight>>(led(gx(x)+rad_led()/2+28, gy(y+1)-47.5-(1+rad_led())), module, i)); i+=2;
-			addChild(createLight<SmallLight<GreenRedLight>>(led(gx(x)+rad_led()/2+28, gy(y+1)-47.5+(1+rad_led())), module, i)); i+=2;
+			addChild(createLight<SmallLight<GreenRedLight>>(l_s(gx(x)+rad_l_s()/2+28, gy(y+1)-47.5-(1+rad_l_s())), module, i)); i+=2;
+			addChild(createLight<SmallLight<GreenRedLight>>(l_s(gx(x)+rad_l_s()/2+28, gy(y+1)-47.5+(1+rad_l_s())), module, i)); i+=2;
 		}
 	}
 }
