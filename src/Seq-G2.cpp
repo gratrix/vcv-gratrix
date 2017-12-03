@@ -436,6 +436,17 @@ Widget::Widget()
 				pg.line(Vec(x, y0), Vec(x, y1), "fill:none;stroke:#7092BE;stroke-width:1");
 		}
 
+		pg.line(Vec(portX[0], gy(1.80)), Vec(portX[0], gy(2.2)), "fill:none;stroke:#7092BE;stroke-width:1");
+		pg.line(Vec(portX[2], gy(1.75)), Vec(portX[2], gy(2.2)), "fill:none;stroke:#7092BE;stroke-width:1");
+		pg.line(Vec(portX[3], gy(1.80)), Vec(portX[3], gy(2.2)), "fill:none;stroke:#7092BE;stroke-width:1");
+
+		pg.nob_sml_raw(portX[0], gy(1.8), "CLOCK");
+		pg.nob_sml_raw(portX[1], gy(1.8), "RUN");
+		pg.nob_sml_raw(portX[2], gy(1.8), "RESET");
+		pg.nob_sml_raw(portX[3], gy(1.8), "STEPS");
+
+		pg.nob_sml_raw(portX[1], gy(2.2), "EXT CLK");
+
 		pg.bus_in (0, 2, "GATE IN");
 		pg.bus_in (1, 2, "V/OCT IN");
 		pg.bus_out(6, 2, "GATE OUT");
@@ -455,12 +466,12 @@ Widget::Widget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
-	addParam(createParam<RoundSmallBlackKnob>    (n_s(portX[0], gy(1.8)), module, Impl::CLOCK_PARAM, -2.0, 6.0, 2.0));
-	addParam(createParam<LEDButton>              (but(portX[1], gy(1.8)), module, Impl::RUN_PARAM, 0.0, 1.0, 0.0));
-	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[1], gy(1.8)), module, Impl::RUNNING_LIGHT));
-	addParam(createParam<LEDButton>              (but(portX[2], gy(1.8)), module, Impl::RESET_PARAM, 0.0, 1.0, 0.0));
-	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[2], gy(1.8)), module, Impl::RESET_LIGHT));
-	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[3], gy(1.8)), module, Impl::STEPS_PARAM, 1.0, NOB_COLS, NOB_COLS));
+	addParam(createParam<RoundSmallBlackKnob>    (n_s(portX[0], gy(1.80)), module, Impl::CLOCK_PARAM, -2.0, 6.0, 2.0));
+	addParam(createParam<LEDButton>              (but(portX[1], gy(1.75)), module, Impl::RUN_PARAM, 0.0, 1.0, 0.0));
+	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[1], gy(1.75)), module, Impl::RUNNING_LIGHT));
+	addParam(createParam<LEDButton>              (but(portX[2], gy(1.75)), module, Impl::RESET_PARAM, 0.0, 1.0, 0.0));
+	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[2], gy(1.75)), module, Impl::RESET_LIGHT));
+	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[3], gy(1.80)), module, Impl::STEPS_PARAM, 1.0, NOB_COLS, NOB_COLS));
 
 	addInput(createInput<PJ301MPort>  (prt(portX[0], gy(2.2)), module, Impl::CLOCK_INPUT));
 	addInput(createInput<PJ301MPort>  (prt(portX[1], gy(2.2)), module, Impl::EXT_CLOCK_INPUT));
