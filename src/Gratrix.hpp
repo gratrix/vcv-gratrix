@@ -2170,7 +2170,8 @@ namespace VU_G1     { struct Widget : ModuleWidget { Widget(); }; }
 namespace Scope_G1  { struct Widget : ModuleWidget { Widget(); }; }
 namespace Chord_G1  { struct Widget : ModuleWidget { Widget(); }; }
 namespace Octave_G1 { struct Widget : ModuleWidget { Widget(); }; }
-namespace Seq_G1    { struct Widget : ModuleWidget { Widget(); }; }
+namespace Seq_G1L   { struct Widget : ModuleWidget { Widget(); }; }
+namespace Seq_G1R   { struct Widget : ModuleWidget { Widget(); }; }
 namespace Seq_G2    { struct Widget : ModuleWidget { Widget(); }; }
 }
 

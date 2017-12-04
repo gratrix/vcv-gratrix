@@ -23,7 +23,8 @@ void init(rack::Plugin *p) {
 	p->addModel(createModel<GTX::Fade_G1::Widget>  ("Gratrix", "Fade-G1",   "Fade-G1",   MIXER_TAG));        // right tag?
 	p->addModel(createModel<GTX::Fade_G2::Widget>  ("Gratrix", "Fade-G2",   "Fade-G2",   MIXER_TAG));        // right tag?
 	p->addModel(createModel<GTX::Binary_G1::Widget>("Gratrix", "Binary-G1", "Binary-G1", LOGIC_TAG));
-	p->addModel(createModel<GTX::Seq_G1::Widget>   ("Gratrix", "Seq-G1",    "Seq-G1",    SEQUENCER_TAG));
+	p->addModel(createModel<GTX::Seq_G1L::Widget>  ("Gratrix", "Seq-G1L",   "Seq-G1L",   SEQUENCER_TAG));
+	p->addModel(createModel<GTX::Seq_G1R::Widget>  ("Gratrix", "Seq-G1R",   "Seq-G1R",   SEQUENCER_TAG));
 	p->addModel(createModel<GTX::Seq_G2::Widget>   ("Gratrix", "Seq-G2",    "Seq-G2",    SEQUENCER_TAG));
 	p->addModel(createModel<GTX::Keys_G1::Widget>  ("Gratrix", "Keys-G1",   "Keys-G1",   VISUAL_TAG));
 	p->addModel(createModel<GTX::VU_G1::Widget>    ("Gratrix", "VU-G1",     "VU-G1",     VISUAL_TAG));
