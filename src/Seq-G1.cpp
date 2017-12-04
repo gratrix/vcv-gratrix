@@ -21,7 +21,7 @@ namespace Seq_G1 {
 #define BUT_ROWS  3
 #define BUT_COLS  (NOB_COLS*RATIO)
 #define OUT_LEFT  1
-#define OUT_RIGHT 0
+#define OUT_RIGHT 1
 
 #define GATE_STATES 4
 
