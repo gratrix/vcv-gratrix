@@ -15,11 +15,13 @@ namespace GTX {
 namespace Seq_G2 {
 
 
-#define RATIO    2
-#define NOB_ROWS 2
-#define NOB_COLS 16
-#define BUT_ROWS 6
-#define BUT_COLS (NOB_COLS*RATIO)
+#define RATIO     2
+#define NOB_ROWS  2
+#define NOB_COLS  16
+#define BUT_ROWS  6
+#define BUT_COLS  (NOB_COLS*RATIO)
+#define OUT_LEFT  1
+#define OUT_RIGHT 1
 
 #define GATE_STATES 4
 
@@ -46,9 +48,9 @@ struct Impl : Module {
 	};
 	enum OutputIds {
 		NOB_OUTPUT,
-		BUT_OUTPUT  = NOB_OUTPUT + NOB_ROWS * 2,
-		GATE_OUTPUT = BUT_OUTPUT + BUT_ROWS * 2,  // N
-		VOCT_OUTPUT,                              // N
+		BUT_OUTPUT  = NOB_OUTPUT + NOB_ROWS * (OUT_LEFT + OUT_RIGHT),
+		GATE_OUTPUT = BUT_OUTPUT + BUT_ROWS * (OUT_LEFT + OUT_RIGHT),  // N
+		VOCT_OUTPUT,                                                   // N
 		NUM_OUTPUTS,
 		OFF_OUTPUTS = GATE_OUTPUT
 	};
@@ -61,12 +63,12 @@ struct Impl : Module {
 
 	static constexpr bool is_nob_snap(std::size_t row) { return true; }
 
-	static constexpr std::size_t nob_val_map(std::size_t row, std::size_t col) { return NOB_OUTPUT + 2 * row + col; }
-	static constexpr std::size_t but_val_map(std::size_t row, std::size_t col) { return BUT_OUTPUT + 2 * row + col; }
+	static constexpr std::size_t nob_val_map(std::size_t row, std::size_t col)     { return NOB_OUTPUT + (OUT_LEFT + OUT_RIGHT) * row + col; }
+	static constexpr std::size_t but_val_map(std::size_t row, std::size_t col)     { return BUT_OUTPUT + (OUT_LEFT + OUT_RIGHT) * row + col; }
 
-	static constexpr std::size_t nob_map(std::size_t row, std::size_t col)                  { return NOB_PARAM  +      col * NOB_ROWS + row; }
-	static constexpr std::size_t but_map(std::size_t row, std::size_t col)                  { return BUT_PARAM  +      col * BUT_ROWS + row; }
-	static constexpr std::size_t led_map(std::size_t row, std::size_t col, std::size_t idx) { return BUT_LIGHT  + 3 * (col * BUT_ROWS + row) + idx; }
+	static constexpr std::size_t nob_map(std::size_t row, std::size_t col)                  { return NOB_PARAM  +      NOB_COLS * row + col; }
+	static constexpr std::size_t but_map(std::size_t row, std::size_t col)                  { return BUT_PARAM  +      BUT_COLS * row + col; }
+	static constexpr std::size_t led_map(std::size_t row, std::size_t col, std::size_t idx) { return BUT_LIGHT  + 3 * (BUT_COLS * row + col) + idx; }
 
 	static constexpr std::size_t imap(std::size_t port, std::size_t bank)
 	{
@@ -122,9 +124,9 @@ struct Impl : Module {
 		// Gates
 		if (json_t *gatesJ = json_array())
 		{
-			for (int col = 0; col < BUT_COLS; col++)
+			for (int row = 0; row < BUT_ROWS; ++row)
 			{
-				for (int row = 0; row < BUT_ROWS; row++)
+				for (int col = 0; col < BUT_COLS; ++col)
 				{
 					if (json_t *gateJ = json_integer((int) gateState[row][col]))
 					{
@@ -150,9 +152,9 @@ struct Impl : Module {
 		// Gates
 		if (json_t *gatesJ = json_object_get(rootJ, "gates"))
 		{
-			for (int col = 0, i = 0; col < BUT_COLS; col++)
+			for (int row = 0, i = 0; row < BUT_ROWS; ++row)
 			{
-				for (int row = 0; row < BUT_ROWS; row++, i++)
+				for (int col = 0; col < BUT_COLS; ++col, ++i)
 				{
 					if (json_t *gateJ = json_array_get(gatesJ, i))
 					{
@@ -341,14 +343,14 @@ void Impl::step()
 
 	for (std::size_t row = 0; row < NOB_ROWS; ++row)
 	{
-		outputs[nob_val_map(row, 0)].value = nob_val[row];
-		outputs[nob_val_map(row, 1)].value = nob_val[row];
+		if (OUT_LEFT || OUT_RIGHT) outputs[nob_val_map(row, 0)].value = nob_val[row];
+		if (OUT_LEFT && OUT_RIGHT) outputs[nob_val_map(row, 1)].value = nob_val[row];
 	}
 
 	for (std::size_t row = 0; row < BUT_ROWS; ++row)
 	{
-		outputs[but_val_map(row, 0)].value = but_val[row] ? 10.0f : 0.0f;
-		outputs[but_val_map(row, 1)].value = but_val[row] ? 10.0f : 0.0f;
+		if (OUT_LEFT || OUT_RIGHT) outputs[but_val_map(row, 0)].value = but_val[row] ? 10.0f : 0.0f;
+		if (OUT_LEFT && OUT_RIGHT) outputs[but_val_map(row, 1)].value = but_val[row] ? 10.0f : 0.0f;
 	}
 
 	for (std::size_t i=0; i<GTX__N && i<BUT_ROWS; ++i)
@@ -370,10 +372,10 @@ Widget::Widget()
 {
 	Impl *module = new Impl();
 	setModule(module);
-	box.size = Vec((1+NOB_COLS+1)*3*15, 380);
+	box.size = Vec((OUT_LEFT+NOB_COLS+OUT_RIGHT)*3*15, 380);
 
-	float grid_left  = 3*15;
-	float grid_right = 3*15;
+	float grid_left  = 3*15*OUT_LEFT;
+	float grid_right = 3*15*OUT_RIGHT;
 	float grid_size  = box.size.x - grid_left - grid_right;
 
 	float g_nobX[NOB_COLS] = {};
@@ -483,14 +485,14 @@ Widget::Widget()
 
 		for (std::size_t row = 0; row < NOB_ROWS; ++row, ++j)
 		{
-			addOutput(createOutput<PJ301MPort>(prt(gridXl, gridY[j]), module, Impl::nob_val_map(row, 0)));
-			addOutput(createOutput<PJ301MPort>(prt(gridXr, gridY[j]), module, Impl::nob_val_map(row, 1)));
+			if (OUT_LEFT ) addOutput(createOutput<PJ301MPort>(prt(gridXl, gridY[j]), module, Impl::nob_val_map(row, 0)));
+			if (OUT_RIGHT) addOutput(createOutput<PJ301MPort>(prt(gridXr, gridY[j]), module, Impl::nob_val_map(row, 1)));
 		}
 
 		for (std::size_t row = 0; row < BUT_ROWS; ++row, ++j)
 		{
-			addOutput(createOutput<PJ301MPort>(prt(gridXl, gridY[j]), module, Impl::but_val_map(row, 0)));
-			addOutput(createOutput<PJ301MPort>(prt(gridXr, gridY[j]), module, Impl::but_val_map(row, 1)));
+			if (OUT_LEFT ) addOutput(createOutput<PJ301MPort>(prt(gridXl, gridY[j]), module, Impl::but_val_map(row, 0)));
+			if (OUT_RIGHT) addOutput(createOutput<PJ301MPort>(prt(gridXr, gridY[j]), module, Impl::but_val_map(row, 1)));
 		}
 	}
 
