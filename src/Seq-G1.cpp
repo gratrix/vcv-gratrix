@@ -1,8 +1,8 @@
 //============================================================================================================
 //!
-//! \file Seq-G1L.cpp
+//! \file Seq-G1.cpp
 //!
-//! \brief Seq-G1L is a thing.
+//! \brief Seq-G1 is a thing.
 //!
 //============================================================================================================
 
@@ -12,7 +12,7 @@
 
 
 namespace GTX {
-namespace Seq_G1L {
+namespace Seq_G1 {
 
 
 #define RATIO     2
@@ -397,7 +397,7 @@ Widget::Widget()
 
 	#if GTX__SAVE_SVG
 	{
-		PanelGen pg(assetPlugin(plugin, "build/res/Seq-G1L.svg"), box.size, "SEQ-G1L");
+		PanelGen pg(assetPlugin(plugin, "build/res/Seq-G1.svg"), box.size, "SEQ-G1");
 
 		for (std::size_t i=0; i<NOB_COLS-1; i++)
 		{
@@ -427,7 +427,7 @@ Widget::Widget()
 	{
 		SVGPanel *panel = new SVGPanel();
 		panel->box.size = box.size;
-		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Seq-G1L.svg")));
+		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Seq-G1.svg")));
 		addChild(panel);
 	}
 
@@ -491,5 +491,5 @@ Widget::Widget()
 
 
 
-} // Seq_G1L
+} // Seq_G1
 } // GTX
