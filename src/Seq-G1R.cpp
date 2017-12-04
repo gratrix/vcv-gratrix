@@ -41,18 +41,12 @@ struct Impl : Module {
 		EXT_CLOCK_INPUT,
 		RESET_INPUT,
 		STEPS_INPUT,
-		GATE_INPUT,      // N+1
-		VOCT_INPUT,      // N+1
-		NUM_INPUTS,
-		OFF_INPUTS = GATE_INPUT
+		NUM_INPUTS
 	};
 	enum OutputIds {
 		NOB_OUTPUT,
 		BUT_OUTPUT  = NOB_OUTPUT + NOB_ROWS * (OUT_LEFT + OUT_RIGHT),
-		GATE_OUTPUT = BUT_OUTPUT + BUT_ROWS * (OUT_LEFT + OUT_RIGHT),  // N
-		VOCT_OUTPUT,                                                   // N
-		NUM_OUTPUTS,
-		OFF_OUTPUTS = GATE_OUTPUT
+		NUM_OUTPUTS = BUT_OUTPUT + BUT_ROWS * (OUT_LEFT + OUT_RIGHT)
 	};
 	enum LightIds {
 		RUNNING_LIGHT,
@@ -69,16 +63,6 @@ struct Impl : Module {
 	static constexpr std::size_t nob_map(std::size_t row, std::size_t col)                  { return NOB_PARAM  +      NOB_COLS * row + col; }
 	static constexpr std::size_t but_map(std::size_t row, std::size_t col)                  { return BUT_PARAM  +      BUT_COLS * row + col; }
 	static constexpr std::size_t led_map(std::size_t row, std::size_t col, std::size_t idx) { return BUT_LIGHT  + 3 * (BUT_COLS * row + col) + idx; }
-
-	static constexpr std::size_t imap(std::size_t port, std::size_t bank)
-	{
-		return (port < OFF_INPUTS)  ? port : port + bank * (NUM_INPUTS  - OFF_INPUTS);
-	}
-
-	static constexpr std::size_t omap(std::size_t port, std::size_t bank)
-	{
-		return (port < OFF_OUTPUTS) ? port : port + bank * (NUM_OUTPUTS - OFF_OUTPUTS);
-	}
 
 	bool running = true;
 	SchmittTrigger clockTrigger; // for external clock
@@ -105,8 +89,8 @@ struct Impl : Module {
 
 	Impl() : Module(
 		NUM_PARAMS,
-		(GTX__N+1) * (NUM_INPUTS  - OFF_INPUTS ) + OFF_INPUTS,
-		(GTX__N  ) * (NUM_OUTPUTS - OFF_OUTPUTS) + OFF_OUTPUTS,
+		NUM_INPUTS,
+		NUM_OUTPUTS,
 		NUM_LIGHTS)
 	{
 		reset();
@@ -353,17 +337,6 @@ void Impl::step()
 		if (OUT_LEFT && OUT_RIGHT) outputs[but_val_map(row, 1)].value = but_val[row] ? 10.0f : 0.0f;
 	}
 
-	for (std::size_t i=0; i<GTX__N && i<BUT_ROWS; ++i)
-	{
-		// Pass V/OCT trough (for now)
-		outputs[omap(VOCT_OUTPUT, i)].value = inputs[imap(VOCT_INPUT, i)].active ? inputs[imap(VOCT_INPUT, i)].value : inputs[imap(VOCT_INPUT, GTX__N)].value;
-
-		// Generate gate out
-		float gate_in  = inputs[imap(GATE_INPUT, i)].active ? inputs[imap(GATE_INPUT, i)].value : inputs[imap(GATE_INPUT, GTX__N)].value;
-
-		outputs[omap(GATE_OUTPUT, i)].value = (but_val[i] && gate_in >= 1.0f) ? 10.0f : 0.0f;
-	}
-
 	lights[RESET_LIGHT].value = resetLight;
 }
 
@@ -399,7 +372,7 @@ Widget::Widget()
 	for (std::size_t i = 0; i < 4; i++)
 	{
 		float x = 4*6*15 / static_cast<double>(8);
-		portX[i] = 3*7*15 + x * (i + 0.5);
+		portX[i] = 3*2*15 + x * (i + 0.5);
 	}
 
 	float gridY[NOB_ROWS + BUT_ROWS] = {};
@@ -448,11 +421,6 @@ Widget::Widget()
 		pg.nob_sml_raw(portX[3], gy(1.8), "STEPS");
 
 		pg.nob_sml_raw(portX[1], gy(2.2), "EXT CLK");
-
-		pg.bus_in (0.5, 2, "GATE IN");
-		pg.bus_in (1.5, 2, "V/OCT IN");
-		pg.bus_out(6.5, 2, "GATE OUT");
-		pg.bus_out(7.5, 2, "V/OCT OUT");
 	}
 	#endif
 
@@ -519,18 +487,6 @@ Widget::Widget()
 			}
 		}
 	}
-
-	for (std::size_t i=0; i<GTX__N; ++i)
-	{
-		addInput(createInput<PJ301MPort>  (prt(px(0.5, i), py(2, i)), module, Impl::imap(Impl::GATE_INPUT, i)));
-		addInput(createInput<PJ301MPort>  (prt(px(1.5, i), py(2, i)), module, Impl::imap(Impl::VOCT_INPUT, i)));
-
-		addOutput(createOutput<PJ301MPort>(prt(px(6.5, i), py(2, i)), module, Impl::omap(Impl::GATE_OUTPUT, i)));
-		addOutput(createOutput<PJ301MPort>(prt(px(7.5, i), py(2, i)), module, Impl::omap(Impl::VOCT_OUTPUT, i)));
-	}
-
-	addInput(createInput<PJ301MPort>(prt(gx(0.5), gy(2)), module, Impl::imap(Impl::GATE_INPUT, GTX__N)));
-	addInput(createInput<PJ301MPort>(prt(gx(1.5), gy(2)), module, Impl::imap(Impl::VOCT_INPUT, GTX__N)));
 }
 
 
