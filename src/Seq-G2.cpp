@@ -449,10 +449,10 @@ Widget::Widget()
 
 		pg.nob_sml_raw(portX[1], gy(2.2), "EXT CLK");
 
-		pg.bus_in (0.5, 2, "GATE IN");
-		pg.bus_in (1.5, 2, "V/OCT IN");
-		pg.bus_out(6.5, 2, "GATE OUT");
-		pg.bus_out(7.5, 2, "V/OCT OUT");
+		pg.bus_in (0.5, 2, "GATE");
+		pg.bus_in (1.5, 2, "V/OCT");
+		pg.bus_out(7.5, 2, "GATE");
+		pg.bus_out(6.5, 2, "V/OCT");
 	}
 	#endif
 
@@ -525,8 +525,8 @@ Widget::Widget()
 		addInput(createInput<PJ301MPort>  (prt(px(0.5, i), py(2, i)), module, Impl::imap(Impl::GATE_INPUT, i)));
 		addInput(createInput<PJ301MPort>  (prt(px(1.5, i), py(2, i)), module, Impl::imap(Impl::VOCT_INPUT, i)));
 
-		addOutput(createOutput<PJ301MPort>(prt(px(6.5, i), py(2, i)), module, Impl::omap(Impl::GATE_OUTPUT, i)));
-		addOutput(createOutput<PJ301MPort>(prt(px(7.5, i), py(2, i)), module, Impl::omap(Impl::VOCT_OUTPUT, i)));
+		addOutput(createOutput<PJ301MPort>(prt(px(7.5, i), py(2, i)), module, Impl::omap(Impl::GATE_OUTPUT, i)));
+		addOutput(createOutput<PJ301MPort>(prt(px(6.5, i), py(2, i)), module, Impl::omap(Impl::VOCT_OUTPUT, i)));
 	}
 
 	addInput(createInput<PJ301MPort>(prt(gx(0.5), gy(2)), module, Impl::imap(Impl::GATE_INPUT, GTX__N)));
