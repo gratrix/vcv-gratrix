@@ -15,6 +15,7 @@ namespace GTX {
 namespace Seq_G2 {
 
 
+#define PROGRAMS  12
 #define RATIO     2
 #define NOB_ROWS  2
 #define NOB_COLS  16
@@ -32,6 +33,7 @@ struct Impl : Module {
 		RUN_PARAM,
 		RESET_PARAM,
 		STEPS_PARAM,
+		PROG_PARAM,
 		NOB_PARAM,
 		BUT_PARAM  = NOB_PARAM + (NOB_COLS * NOB_ROWS),
 		NUM_PARAMS = BUT_PARAM + (BUT_COLS * BUT_ROWS)
@@ -41,6 +43,7 @@ struct Impl : Module {
 		EXT_CLOCK_INPUT,
 		RESET_INPUT,
 		STEPS_INPUT,
+		PROG_INPUT,
 		GATE_INPUT,      // N+1
 		VOCT_INPUT,      // N+1
 		NUM_INPUTS,
@@ -60,6 +63,34 @@ struct Impl : Module {
 		BUT_LIGHT  = RESET_LIGHT + 3,
 		NUM_LIGHTS = BUT_LIGHT   + (BUT_COLS * BUT_ROWS) * 3
 	};
+
+	struct Decode
+	{
+		/*static constexpr*/ float e = static_cast<float>(PROGRAMS);  // Static constexpr gives
+		/*static constexpr*/ float s = 1.0f / e;                      // link error on Mac build.
+
+		float in    = 0;
+		float out   = 0;
+		int   note  = 0;
+		int   key   = 0;
+		int   oct   = 0;
+
+		void step(float input)
+		{
+			int safe, fnote;
+
+			in    = input;
+			fnote = std::floor(in * PROGRAMS + 0.5f);
+			out   = fnote * s;
+			note  = static_cast<int>(fnote);
+			safe  = note + (PROGRAMS * 1000);  // push away from negative numbers
+			key   = safe % PROGRAMS;
+			oct   = (safe / PROGRAMS) - 1000;
+		}
+	};
+
+	Decode prg_prm;
+	Decode prg_cv;
 
 	static constexpr bool is_nob_snap(std::size_t row) { return true; }
 
@@ -89,7 +120,7 @@ struct Impl : Module {
 	float phase = 0.0;
 	int index = 0;
 	int numSteps = 0;
-	uint8_t gateState[BUT_ROWS][BUT_COLS] = {};
+	uint8_t gateState[PROGRAMS][BUT_ROWS][BUT_COLS] = {};
 	float resetLight = 0.0;
 	float stepLights[BUT_ROWS][BUT_COLS] = {};
 
@@ -103,6 +134,9 @@ struct Impl : Module {
 
 	PulseGenerator gatePulse;
 
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief Constructor.
+
 	Impl() : Module(
 		NUM_PARAMS,
 		(GTX__N+1) * (NUM_INPUTS  - OFF_INPUTS ) + OFF_INPUTS,
@@ -112,34 +146,239 @@ struct Impl : Module {
 		reset();
 	}
 
-	void step() override;
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief Step function.
 
-	json_t *toJson() override
+	void step() override
 	{
-		json_t *rootJ = json_object();
+		const float lightLambda = 0.075;
 
-		// Running
-		json_object_set_new(rootJ, "running", json_boolean(running));
+		// Decode program info
 
-		// Gates
-		if (json_t *gatesJ = json_array())
+		bool act_prm = false;
+		int  prog    = 0;
+
+		if (params[PROG_PARAM].value < 12.0f)
+		{
+			prg_prm.step(params[PROG_PARAM].value / 12.0f);
+			act_prm = true;
+		}
+
+		prg_cv.step(inputs[PROG_INPUT].value);
+
+		// Input leds
+
+		if (act_prm)
+		{
+			prog = prg_prm.key;
+		//	leds[PROG_LIGHT + prg_prm.key*2] = 1.0f;  // Green
+		}
+		else
+		{
+			prog = prg_cv.key;
+		//	leds[PROG_LIGHT + prg_cv.key*2+1] = 1.0f;  // Red
+		}
+
+		// Run
+		if (runningTrigger.process(params[RUN_PARAM].value))
+		{
+			running = !running;
+		}
+		lights[RUNNING_LIGHT].value = running ? 1.0 : 0.0;
+
+		bool nextStep = false;
+
+		if (running)
+		{
+			if (inputs[EXT_CLOCK_INPUT].active)
+			{
+				// External clock
+				if (clockTrigger.process(inputs[EXT_CLOCK_INPUT].value))
+				{
+					phase = 0.0;
+					nextStep = true;
+				}
+			}
+			else
+			{
+				// Internal clock
+				float clockTime = powf(2.0, params[CLOCK_PARAM].value + inputs[CLOCK_INPUT].value);
+				phase += clockTime / engineGetSampleRate();
+
+				if (phase >= 1.0)
+				{
+					phase -= 1.0;
+					nextStep = true;
+				}
+			}
+		}
+
+		// Reset
+		if (resetTrigger.process(params[RESET_PARAM].value + inputs[RESET_INPUT].value))
+		{
+			phase = 0.0;
+			index = BUT_COLS;
+			nextStep = true;
+			resetLight = 1.0;
+		}
+
+		numSteps = RATIO * clampi(roundf(params[STEPS_PARAM].value + inputs[STEPS_INPUT].value), 1, NOB_COLS);
+
+		if (nextStep)
+		{
+			// Advance step
+			index += 1;
+
+			if (index >= numSteps)
+			{
+				index = 0;
+			}
+
+			for (int row = 0; row < BUT_ROWS; row++)
+			{
+				stepLights[row][index] = 1.0;
+			}
+
+			gatePulse.trigger(1e-3);
+		}
+
+		resetLight -= resetLight / lightLambda / engineGetSampleRate();
+
+		bool pulse = gatePulse.process(1.0 / engineGetSampleRate());
+
+		// Gate buttons
+
+		for (int col = 0; col < BUT_COLS; ++col)
 		{
 			for (int row = 0; row < BUT_ROWS; ++row)
 			{
-				for (int col = 0; col < BUT_COLS; ++col)
+				if (gateTriggers[row][col].process(params[but_map(row, col)].value))
 				{
-					if (json_t *gateJ = json_integer((int) gateState[row][col]))
+					if (++gateState[prog][row][col] >= GATE_STATES)
 					{
-						json_array_append_new(gatesJ, gateJ);
+						gateState[prog][row][col] = 0;
 					}
 				}
-			}
 
-			json_object_set_new(rootJ, "gates", gatesJ);
+				bool gateOn = (running && (col == index) && (gateState[prog][row][col] > 0));
+
+				switch (gateState[prog][row][col])
+				{
+					case GM_CONTINUOUS :                            break;
+					case GM_RETRIGGER  : gateOn = gateOn && !pulse; break;
+					case GM_TRIGGER    : gateOn = gateOn &&  pulse; break;
+					default            : break;
+				}
+
+				stepLights[row][col] -= stepLights[row][col] / lightLambda / engineGetSampleRate();
+
+				if (col < numSteps)
+				{
+					lights[led_map(row, col, 1)].value = gateState[prog][row][col] == GM_CONTINUOUS ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Green
+					lights[led_map(row, col, 2)].value = gateState[prog][row][col] == GM_RETRIGGER  ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Blue
+					lights[led_map(row, col, 0)].value = gateState[prog][row][col] == GM_TRIGGER    ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Red
+				}
+				else
+				{
+					lights[led_map(row, col, 1)].value = 0.01;  // Green
+					lights[led_map(row, col, 2)].value = 0.01;  // Blue
+					lights[led_map(row, col, 0)].value = 0.01;  // Red
+				}
+			}
 		}
 
-		return rootJ;
+		// Rows
+
+		int nob_index = index / RATIO;
+
+		float nob_val[NOB_ROWS];
+		for (std::size_t row = 0; row < NOB_ROWS; ++row)
+		{
+			nob_val[row] = params[nob_map(row, nob_index)].value;
+
+			if (is_nob_snap(row)) nob_val[row] /= 12.0f;
+		}
+
+		bool but_val[BUT_ROWS];
+		for (std::size_t row = 0; row < BUT_ROWS; ++row)
+		{
+			but_val[row] = running && (gateState[prog][row][index] > 0);
+
+			switch (gateState[prog][row][index])
+			{
+				case GM_CONTINUOUS :                                        break;
+				case GM_RETRIGGER  : but_val[row] = but_val[row] && !pulse; break;
+				case GM_TRIGGER    : but_val[row] = but_val[row] &&  pulse; break;
+				default            : break;
+			}
+		}
+
+		// Outputs
+
+		for (std::size_t row = 0; row < NOB_ROWS; ++row)
+		{
+			if (OUT_LEFT || OUT_RIGHT) outputs[nob_val_map(row, 0)].value = nob_val[row];
+			if (OUT_LEFT && OUT_RIGHT) outputs[nob_val_map(row, 1)].value = nob_val[row];
+		}
+
+		for (std::size_t row = 0; row < BUT_ROWS; ++row)
+		{
+			if (OUT_LEFT || OUT_RIGHT) outputs[but_val_map(row, 0)].value = but_val[row] ? 10.0f : 0.0f;
+			if (OUT_LEFT && OUT_RIGHT) outputs[but_val_map(row, 1)].value = but_val[row] ? 10.0f : 0.0f;
+		}
+
+		for (std::size_t i=0; i<GTX__N && i<BUT_ROWS; ++i)
+		{
+			// Pass V/OCT trough (for now)
+			outputs[omap(VOCT_OUTPUT, i)].value = inputs[imap(VOCT_INPUT, i)].active ? inputs[imap(VOCT_INPUT, i)].value : inputs[imap(VOCT_INPUT, GTX__N)].value;
+
+			// Generate gate out
+			float gate_in  = inputs[imap(GATE_INPUT, i)].active ? inputs[imap(GATE_INPUT, i)].value : inputs[imap(GATE_INPUT, GTX__N)].value;
+
+			outputs[omap(GATE_OUTPUT, i)].value = (but_val[i] && gate_in >= 1.0f) ? 10.0f : 0.0f;
+		}
+
+		lights[RESET_LIGHT].value = resetLight;
 	}
+
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief Save state.
+
+	json_t *toJson() override
+	{
+		if (json_t *rootJ = json_object())
+		{
+			// Running
+			json_object_set_new(rootJ, "running", json_boolean(running));
+
+			// Gates
+			if (json_t *gatesJ = json_array())
+			{
+				for (int prog = 0; prog < PROGRAMS; ++prog)
+				{
+					for (int row = 0; row < BUT_ROWS; ++row)
+					{
+						for (int col = 0; col < BUT_COLS; ++col)
+						{
+							if (json_t *gateJ = json_integer((int) gateState[prog][row][col]))
+							{
+								json_array_append_new(gatesJ, gateJ);
+							}
+						}
+					}
+				}
+
+				json_object_set_new(rootJ, "gates", gatesJ);
+			}
+
+			return rootJ;
+		}
+
+		return nullptr;
+	}
+
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief Load state.
 
 	void fromJson(json_t *rootJ) override
 	{
@@ -152,21 +391,24 @@ struct Impl : Module {
 		// Gates
 		if (json_t *gatesJ = json_object_get(rootJ, "gates"))
 		{
-			for (int row = 0, i = 0; row < BUT_ROWS; ++row)
+			for (int prog = 0; prog < PROGRAMS; ++prog)
 			{
-				for (int col = 0; col < BUT_COLS; ++col, ++i)
+				for (int row = 0, i = 0; row < BUT_ROWS; ++row)
 				{
-					if (json_t *gateJ = json_array_get(gatesJ, i))
+					for (int col = 0; col < BUT_COLS; ++col, ++i)
 					{
-						int value = json_integer_value(gateJ);
+						if (json_t *gateJ = json_array_get(gatesJ, i))
+						{
+							int value = json_integer_value(gateJ);
 
-						if (value < 0 || value >= GATE_STATES)
-						{
-							gateState[row][col] = 0;
-						}
-						else
-						{
-							gateState[row][col] = static_cast<uint8_t>(value);
+							if (value < 0 || value >= GATE_STATES)
+							{
+								gateState[prog][row][col] = 0;
+							}
+							else
+							{
+								gateState[prog][row][col] = static_cast<uint8_t>(value);
+							}
 						}
 					}
 				}
@@ -174,199 +416,47 @@ struct Impl : Module {
 		}
 	}
 
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief Reset state.
+
 	void reset() override
 	{
-		for (int col = 0; col < BUT_COLS; col++)
+		for (int prog = 0; prog < PROGRAMS; ++prog)
 		{
-			for (int row = 0; row < BUT_ROWS; row++)
+			for (int col = 0; col < BUT_COLS; col++)
 			{
-				gateState[row][col] = GM_OFF;
+				for (int row = 0; row < BUT_ROWS; row++)
+				{
+					gateState[prog][row][col] = GM_OFF;
+				}
 			}
 		}
 	}
 
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief Random state.
+
 	void randomize() override
 	{
-		for (int col = 0; col < BUT_COLS; col++)
+		for (int prog = 0; prog < PROGRAMS; ++prog)
 		{
-			for (int row = 0; row < BUT_ROWS; row++)
+			for (int col = 0; col < BUT_COLS; col++)
 			{
-				uint32_t r = randomu32() % (GATE_STATES + 1);
-				if (r >= GATE_STATES) r = GM_CONTINUOUS;
+				for (int row = 0; row < BUT_ROWS; row++)
+				{
+					uint32_t r = randomu32() % (GATE_STATES + 1);
+					if (r >= GATE_STATES) r = GM_CONTINUOUS;
 
-				gateState[row][col] = r;
+					gateState[prog][row][col] = r;
+				}
 			}
 		}
 	}
 };
 
 
-void Impl::step()
-{
-	const float lightLambda = 0.075;
-
-	// Run
-	if (runningTrigger.process(params[RUN_PARAM].value))
-	{
-		running = !running;
-	}
-	lights[RUNNING_LIGHT].value = running ? 1.0 : 0.0;
-
-	bool nextStep = false;
-
-	if (running)
-	{
-		if (inputs[EXT_CLOCK_INPUT].active)
-		{
-			// External clock
-			if (clockTrigger.process(inputs[EXT_CLOCK_INPUT].value))
-			{
-				phase = 0.0;
-				nextStep = true;
-			}
-		}
-		else
-		{
-			// Internal clock
-			float clockTime = powf(2.0, params[CLOCK_PARAM].value + inputs[CLOCK_INPUT].value);
-			phase += clockTime / engineGetSampleRate();
-
-			if (phase >= 1.0)
-			{
-				phase -= 1.0;
-				nextStep = true;
-			}
-		}
-	}
-
-	// Reset
-	if (resetTrigger.process(params[RESET_PARAM].value + inputs[RESET_INPUT].value))
-	{
-		phase = 0.0;
-		index = BUT_COLS;
-		nextStep = true;
-		resetLight = 1.0;
-	}
-
-	numSteps = RATIO * clampi(roundf(params[STEPS_PARAM].value + inputs[STEPS_INPUT].value), 1, NOB_COLS);
-
-	if (nextStep)
-	{
-		// Advance step
-		index += 1;
-
-		if (index >= numSteps)
-		{
-			index = 0;
-		}
-
-		for (int row = 0; row < BUT_ROWS; row++)
-		{
-			stepLights[row][index] = 1.0;
-		}
-
-		gatePulse.trigger(1e-3);
-	}
-
-	resetLight -= resetLight / lightLambda / engineGetSampleRate();
-
-	bool pulse = gatePulse.process(1.0 / engineGetSampleRate());
-
-	// Gate buttons
-
-	for (int col = 0; col < BUT_COLS; ++col)
-	{
-		for (int row = 0; row < BUT_ROWS; ++row)
-		{
-			if (gateTriggers[row][col].process(params[but_map(row, col)].value))
-			{
-				if (++gateState[row][col] >= GATE_STATES)
-				{
-					gateState[row][col] = 0;
-				}
-			}
-
-			bool gateOn = (running && (col == index) && (gateState[row][col] > 0));
-
-			switch (gateState[row][col])
-			{
-				case GM_CONTINUOUS :                            break;
-				case GM_RETRIGGER  : gateOn = gateOn && !pulse; break;
-				case GM_TRIGGER    : gateOn = gateOn &&  pulse; break;
-				default            : break;
-			}
-
-			stepLights[row][col] -= stepLights[row][col] / lightLambda / engineGetSampleRate();
-
-			if (col < numSteps)
-			{
-				lights[led_map(row, col, 1)].value = gateState[row][col] == GM_CONTINUOUS ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Green
-				lights[led_map(row, col, 2)].value = gateState[row][col] == GM_RETRIGGER  ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Blue
-				lights[led_map(row, col, 0)].value = gateState[row][col] == GM_TRIGGER    ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Red
-			}
-			else
-			{
-				lights[led_map(row, col, 1)].value = 0.01;  // Green
-				lights[led_map(row, col, 2)].value = 0.01;  // Blue
-				lights[led_map(row, col, 0)].value = 0.01;  // Red
-			}
-		}
-	}
-
-	// Rows
-
-	int nob_index = index / RATIO;
-
-	float nob_val[NOB_ROWS];
-	for (std::size_t row = 0; row < NOB_ROWS; ++row)
-	{
-		nob_val[row] = params[nob_map(row, nob_index)].value;
-
-		if (is_nob_snap(row)) nob_val[row] /= 12.0f;
-	}
-
-	bool but_val[BUT_ROWS];
-	for (std::size_t row = 0; row < BUT_ROWS; ++row)
-	{
-		but_val[row] = running && (gateState[row][index] > 0);
-
-		switch (gateState[row][index])
-		{
-			case GM_CONTINUOUS :                                        break;
-			case GM_RETRIGGER  : but_val[row] = but_val[row] && !pulse; break;
-			case GM_TRIGGER    : but_val[row] = but_val[row] &&  pulse; break;
-			default            : break;
-		}
-	}
-
-	// Outputs
-
-	for (std::size_t row = 0; row < NOB_ROWS; ++row)
-	{
-		if (OUT_LEFT || OUT_RIGHT) outputs[nob_val_map(row, 0)].value = nob_val[row];
-		if (OUT_LEFT && OUT_RIGHT) outputs[nob_val_map(row, 1)].value = nob_val[row];
-	}
-
-	for (std::size_t row = 0; row < BUT_ROWS; ++row)
-	{
-		if (OUT_LEFT || OUT_RIGHT) outputs[but_val_map(row, 0)].value = but_val[row] ? 10.0f : 0.0f;
-		if (OUT_LEFT && OUT_RIGHT) outputs[but_val_map(row, 1)].value = but_val[row] ? 10.0f : 0.0f;
-	}
-
-	for (std::size_t i=0; i<GTX__N && i<BUT_ROWS; ++i)
-	{
-		// Pass V/OCT trough (for now)
-		outputs[omap(VOCT_OUTPUT, i)].value = inputs[imap(VOCT_INPUT, i)].active ? inputs[imap(VOCT_INPUT, i)].value : inputs[imap(VOCT_INPUT, GTX__N)].value;
-
-		// Generate gate out
-		float gate_in  = inputs[imap(GATE_INPUT, i)].active ? inputs[imap(GATE_INPUT, i)].value : inputs[imap(GATE_INPUT, GTX__N)].value;
-
-		outputs[omap(GATE_OUTPUT, i)].value = (but_val[i] && gate_in >= 1.0f) ? 10.0f : 0.0f;
-	}
-
-	lights[RESET_LIGHT].value = resetLight;
-}
-
+//============================================================================================================
+//! \brief The Widget.
 
 Widget::Widget()
 {
@@ -395,8 +485,8 @@ Widget::Widget()
 	float gridXl =              grid_left  / 2;
 	float gridXr = box.size.x - grid_right / 2;
 
-	float portX[4] = {};
-	for (std::size_t i = 0; i < 4; i++)
+	float portX[5] = {};
+	for (std::size_t i = 0; i < 5; i++)
 	{
 		float x = 4*6*15 / static_cast<double>(8);
 		portX[i] = 3*7*15 + x * (i + 0.5);
@@ -441,11 +531,13 @@ Widget::Widget()
 		pg.line(Vec(portX[0], gy(1.80)), Vec(portX[0], gy(2.2)), "fill:none;stroke:#7092BE;stroke-width:1");
 		pg.line(Vec(portX[2], gy(1.75)), Vec(portX[2], gy(2.2)), "fill:none;stroke:#7092BE;stroke-width:1");
 		pg.line(Vec(portX[3], gy(1.80)), Vec(portX[3], gy(2.2)), "fill:none;stroke:#7092BE;stroke-width:1");
+		pg.line(Vec(portX[4], gy(1.80)), Vec(portX[4], gy(2.2)), "fill:none;stroke:#7092BE;stroke-width:1");
 
 		pg.nob_sml_raw(portX[0], gy(1.8), "CLOCK");
 		pg.nob_sml_raw(portX[1], gy(1.8), "RUN");
 		pg.nob_sml_raw(portX[2], gy(1.8), "RESET");
 		pg.nob_sml_raw(portX[3], gy(1.8), "STEPS");
+		pg.nob_sml_raw(portX[4], gy(1.8), "PROG");
 
 		pg.nob_sml_raw(portX[1], gy(2.2), "EXT CLK");
 
@@ -474,11 +566,13 @@ Widget::Widget()
 	addParam(createParam<LEDButton>              (but(portX[2], gy(1.75)), module, Impl::RESET_PARAM, 0.0, 1.0, 0.0));
 	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[2], gy(1.75)), module, Impl::RESET_LIGHT));
 	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[3], gy(1.80)), module, Impl::STEPS_PARAM, 1.0, NOB_COLS, NOB_COLS));
+	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[4], gy(1.80)), module, Impl::PROG_PARAM, 0.0, 12.0, 12.0));
 
 	addInput(createInput<PJ301MPort>  (prt(portX[0], gy(2.2)), module, Impl::CLOCK_INPUT));
 	addInput(createInput<PJ301MPort>  (prt(portX[1], gy(2.2)), module, Impl::EXT_CLOCK_INPUT));
 	addInput(createInput<PJ301MPort>  (prt(portX[2], gy(2.2)), module, Impl::RESET_INPUT));
 	addInput(createInput<PJ301MPort>  (prt(portX[3], gy(2.2)), module, Impl::STEPS_INPUT));
+	addInput(createInput<PJ301MPort>  (prt(portX[4], gy(2.2)), module, Impl::PROG_INPUT));
 
 	{
 		std::size_t j = 0;
