@@ -123,7 +123,7 @@ struct Impl : Module {
 
 
 	Widget *widget;
-	Decode prg_prm;
+	Decode prg_nob;
 	Decode prg_cv;
 	bool running = true;
 	SchmittTrigger clockTrigger; // for external clock
@@ -138,7 +138,8 @@ struct Impl : Module {
 	float phase = 0.0;
 	int index = 0;
 	int numSteps = 0;
-	std::size_t this_prog = 0;
+	std::size_t play_prog = 0;
+	std::size_t edit_prog = 0;
 	std::size_t prev_prog = 0;
 	bool        masterState = false;
 
@@ -188,18 +189,25 @@ struct Impl : Module {
 
 		// Decode program info
 
-		prg_prm.step(params[PROG_PARAM].value / 12.0f);
+		prg_nob.step(params[PROG_PARAM].value / 12.0f);
 		prg_cv .step(inputs[PROG_INPUT].value);
-
-		this_prog = prg_prm.key;
 
 		// Input leds
 
 		float prog_leds[PROGRAMS * 2]  = {};
-		prog_leds[prg_prm.key * 2    ] = 1.0f;  // Green
+		prog_leds[prg_nob.key * 2    ] = 1.0f;  // Green
 		prog_leds[prg_cv .key * 2 + 1] = 1.0f;  // Red
 
+		// Determine what is playing and what is editing
+
+		bool play_is_cv = (params[PLAY_PARAM].value < 0.5f);
+		bool edit_is_cv = (params[EDIT_PARAM].value < 0.5f);
+
+		play_prog = play_is_cv ? prg_cv.key : prg_nob.key;
+		edit_prog = edit_is_cv ? prg_cv.key : prg_nob.key;
+
 		// Run
+
 		if (runningTrigger.process(params[RUN_PARAM].value))
 		{
 			running = !running;
@@ -233,21 +241,21 @@ struct Impl : Module {
 			}
 		}
 
-		// Update knobs
+		// Update knobs BUGGY
 
 		if (masterState)
 		{
-			knob_push(this_prog);
+			knob_push(edit_prog);
 			masterState = false;
 		}
-		else if (prev_prog == this_prog)
+		else if (prev_prog == edit_prog)
 		{
-			knob_pull(this_prog);
+			knob_pull(edit_prog);
 		}
 		else
 		{
 			knob_pull(prev_prog);
-			knob_push(this_prog);
+			knob_push(edit_prog);
 		}
 
 		// Trigger buttons
@@ -268,7 +276,7 @@ struct Impl : Module {
 			// Clear current program
 			if (clearTrigger.process(params[CLEAR_PARAM].value))
 			{
-				clear_prog(this_prog);
+				clear_prog(edit_prog);
 				clearLight = 1.0;
 			}
 			clearLight -= clearLight * dim;
@@ -276,7 +284,7 @@ struct Impl : Module {
 			// Randomise current program
 			if (randomTrigger.process(params[RANDOM_PARAM].value))
 			{
-				randomize_prog(this_prog);
+				randomize_prog(edit_prog);
 				randomLight = 1.0;
 			}
 			randomLight -= randomLight * dim;
@@ -284,7 +292,7 @@ struct Impl : Module {
 			// Copy current program
 			if (copyTrigger.process(params[COPY_PARAM].value))
 			{
-				copy_prog(this_prog);
+				copy_prog(edit_prog);
 				copyLight = 1.0;
 			}
 			copyLight -= copyLight * dim;
@@ -292,7 +300,7 @@ struct Impl : Module {
 			// Paste current program
 			if (pasteTrigger.process(params[PASTE_PARAM].value))
 			{
-				paste_prog(this_prog);
+				paste_prog(edit_prog);
 				pasteLight = 1.0;
 			}
 			pasteLight -= pasteLight * dim;
@@ -326,9 +334,11 @@ struct Impl : Module {
 		{
 			for (int row = 0; row < BUT_ROWS; ++row)
 			{
+				// User input to alter state of buttons
+
 				if (gateTriggers[row][col].process(params[but_map(row, col)].value))
 				{
-					auto state = gateState[this_prog][row][col];
+					auto state = gateState[edit_prog][row][col];
 
 					if (++state >= GATE_STATES)
 					{
@@ -342,46 +352,50 @@ struct Impl : Module {
 					{
 						for (std::size_t c = col; c < col + span_c && c < BUT_COLS; ++c)
 						{
-							gateState[this_prog][r][c] = state;
+							gateState[edit_prog][r][c] = state;
 						}
 					}
 				}
 
-				bool gateOn = (running && (col == index) && (gateState[this_prog][row][col] > 0));
+				// Get state of buttons for lights
 
-				switch (gateState[this_prog][row][col])
 				{
-					case GM_CONTINUOUS :                            break;
-					case GM_RETRIGGER  : gateOn = gateOn && !pulse; break;
-					case GM_TRIGGER    : gateOn = gateOn &&  pulse; break;
-					default            : break;
-				}
+					bool gateOn = (running && (col == index) && (gateState[edit_prog][row][col] > 0));
 
-				stepLights[row][col] -= stepLights[row][col] / lightLambda / engineGetSampleRate();
+					switch (gateState[edit_prog][row][col])
+					{
+						case GM_CONTINUOUS :                            break;
+						case GM_RETRIGGER  : gateOn = gateOn && !pulse; break;
+						case GM_TRIGGER    : gateOn = gateOn &&  pulse; break;
+						default            : break;
+					}
 
-				if (col < numSteps)
-				{
-					lights[led_map(row, col, 1)].value = gateState[this_prog][row][col] == GM_CONTINUOUS ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Green
-					lights[led_map(row, col, 2)].value = gateState[this_prog][row][col] == GM_RETRIGGER  ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Blue
-					lights[led_map(row, col, 0)].value = gateState[this_prog][row][col] == GM_TRIGGER    ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Red
-				}
-				else
-				{
-					lights[led_map(row, col, 1)].value = 0.01;  // Green
-					lights[led_map(row, col, 2)].value = 0.01;  // Blue
-					lights[led_map(row, col, 0)].value = 0.01;  // Red
+					stepLights[row][col] -= stepLights[row][col] / lightLambda / engineGetSampleRate();
+
+					if (col < numSteps)
+					{
+						lights[led_map(row, col, 1)].value = gateState[edit_prog][row][col] == GM_CONTINUOUS ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Green
+						lights[led_map(row, col, 2)].value = gateState[edit_prog][row][col] == GM_RETRIGGER  ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Blue
+						lights[led_map(row, col, 0)].value = gateState[edit_prog][row][col] == GM_TRIGGER    ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Red
+					}
+					else
+					{
+						lights[led_map(row, col, 1)].value = 0.01;  // Green
+						lights[led_map(row, col, 2)].value = 0.01;  // Blue
+						lights[led_map(row, col, 0)].value = 0.01;  // Red
+					}
 				}
 			}
 		}
 
-		// Rows
+		// Compute row output
 
 		int nob_index = index / RATIO;
 
 		float nob_val[NOB_ROWS];
 		for (std::size_t row = 0; row < NOB_ROWS; ++row)
 		{
-			nob_val[row] = knobState[this_prog][row][nob_index];
+			nob_val[row] = knobState[play_prog][row][nob_index];
 
 			if (is_nob_snap(row)) nob_val[row] /= 12.0f;
 		}
@@ -389,9 +403,9 @@ struct Impl : Module {
 		bool but_val[BUT_ROWS];
 		for (std::size_t row = 0; row < BUT_ROWS; ++row)
 		{
-			but_val[row] = running && (gateState[this_prog][row][index] > 0);
+			but_val[row] = running && (gateState[play_prog][row][index] > 0);
 
-			switch (gateState[this_prog][row][index])
+			switch (gateState[play_prog][row][index])
 			{
 				case GM_CONTINUOUS :                                        break;
 				case GM_RETRIGGER  : but_val[row] = but_val[row] && !pulse; break;
@@ -400,7 +414,7 @@ struct Impl : Module {
 			}
 		}
 
-		// Outputs
+		// Write row outputs
 
 		for (std::size_t row = 0; row < NOB_ROWS; ++row)
 		{
@@ -413,6 +427,8 @@ struct Impl : Module {
 			if (OUT_LEFT || OUT_RIGHT) outputs[but_val_map(row, 0)].value = but_val[row] ? 10.0f : 0.0f;
 			if (OUT_LEFT && OUT_RIGHT) outputs[but_val_map(row, 1)].value = but_val[row] ? 10.0f : 0.0f;
 		}
+
+		// Detemine ploy outputs
 
 		for (std::size_t i=0; i<GTX__N && i<BUT_ROWS; ++i)
 		{
@@ -439,7 +455,7 @@ struct Impl : Module {
 			lights[PROG_LIGHT + i * 2 + 1].value = prog_leds[i * 2 + 1];
 		}
 
-		prev_prog = this_prog;
+		prev_prog = edit_prog;
 	}
 
 	//--------------------------------------------------------------------------------------------------------
