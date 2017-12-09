@@ -34,6 +34,12 @@ struct Impl : Module {
 		RESET_PARAM,
 		STEPS_PARAM,
 		PROG_PARAM,
+		SPAN_R_PARAM,
+		SPAN_C_PARAM,
+		CLEAR_PARAM,
+		RANDOM_PARAM,
+		COPY_PARAM,
+		PASTE_PARAM,
 		NOB_PARAM,
 		BUT_PARAM  = NOB_PARAM + (NOB_COLS * NOB_ROWS),
 		NUM_PARAMS = BUT_PARAM + (BUT_COLS * BUT_ROWS)
@@ -60,7 +66,11 @@ struct Impl : Module {
 	enum LightIds {
 		RUNNING_LIGHT,
 		RESET_LIGHT,
-		BUT_LIGHT  = RESET_LIGHT + 3,
+		CLEAR_LIGHT,
+		RANDOM_LIGHT,
+		COPY_LIGHT,
+		PASTE_LIGHT,
+		BUT_LIGHT  = PASTE_LIGHT + 3,
 		NUM_LIGHTS = BUT_LIGHT   + (BUT_COLS * BUT_ROWS) * 3
 	};
 
@@ -89,9 +99,6 @@ struct Impl : Module {
 		}
 	};
 
-	Decode prg_prm;
-	Decode prg_cv;
-
 	static constexpr bool is_nob_snap(std::size_t row) { return true; }
 
 	static constexpr std::size_t nob_val_map(std::size_t row, std::size_t col)     { return NOB_OUTPUT + (OUT_LEFT + OUT_RIGHT) * row + col; }
@@ -111,17 +118,37 @@ struct Impl : Module {
 		return (port < OFF_OUTPUTS) ? port : port + bank * (NUM_OUTPUTS - OFF_OUTPUTS);
 	}
 
+
+	Widget *widget;
+	Decode prg_prm;
+	Decode prg_cv;
 	bool running = true;
 	SchmittTrigger clockTrigger; // for external clock
 	// For buttons
 	SchmittTrigger runningTrigger;
 	SchmittTrigger resetTrigger;
+	SchmittTrigger clearTrigger;
+	SchmittTrigger randomTrigger;
+	SchmittTrigger copyTrigger;
+	SchmittTrigger pasteTrigger;
 	SchmittTrigger gateTriggers[BUT_ROWS][BUT_COLS];
 	float phase = 0.0;
 	int index = 0;
 	int numSteps = 0;
+	std::size_t this_prog = 0;
+	std::size_t prev_prog = 0;
+	bool        masterState = false;
+
+	uint8_t knobState[PROGRAMS][NOB_ROWS][NOB_COLS] = {};
 	uint8_t gateState[PROGRAMS][BUT_ROWS][BUT_COLS] = {};
+	uint8_t knobCopy[NOB_ROWS][NOB_COLS] = {};
+	uint8_t gateCopy[BUT_ROWS][BUT_COLS] = {};
+
 	float resetLight = 0.0;
+	float clearLight = 0.0;
+	float randomLight = 0.0;
+	float copyLight = 0.0;
+	float pasteLight = 0.0;
 	float stepLights[BUT_ROWS][BUT_COLS] = {};
 
 	enum GateMode
@@ -137,11 +164,14 @@ struct Impl : Module {
 	//--------------------------------------------------------------------------------------------------------
 	//! \brief Constructor.
 
-	Impl() : Module(
-		NUM_PARAMS,
-		(GTX__N+1) * (NUM_INPUTS  - OFF_INPUTS ) + OFF_INPUTS,
-		(GTX__N  ) * (NUM_OUTPUTS - OFF_OUTPUTS) + OFF_OUTPUTS,
-		NUM_LIGHTS)
+	Impl(Widget *widget_)
+	:
+		Module(
+			NUM_PARAMS,
+			(GTX__N+1) * (NUM_INPUTS  - OFF_INPUTS ) + OFF_INPUTS,
+			(GTX__N  ) * (NUM_OUTPUTS - OFF_OUTPUTS) + OFF_OUTPUTS,
+			NUM_LIGHTS),
+		widget(widget_)
 	{
 		reset();
 	}
@@ -156,7 +186,6 @@ struct Impl : Module {
 		// Decode program info
 
 		bool act_prm = false;
-		int  prog    = 0;
 
 		if (params[PROG_PARAM].value < 12.0f)
 		{
@@ -170,12 +199,12 @@ struct Impl : Module {
 
 		if (act_prm)
 		{
-			prog = prg_prm.key;
+			this_prog = prg_prm.key;
 		//	leds[PROG_LIGHT + prg_prm.key*2] = 1.0f;  // Green
 		}
 		else
 		{
-			prog = prg_cv.key;
+			this_prog = prg_cv.key;
 		//	leds[PROG_LIGHT + prg_cv.key*2+1] = 1.0f;  // Red
 		}
 
@@ -213,13 +242,69 @@ struct Impl : Module {
 			}
 		}
 
-		// Reset
-		if (resetTrigger.process(params[RESET_PARAM].value + inputs[RESET_INPUT].value))
+		// Update knobs
+
+		if (masterState)
 		{
-			phase = 0.0;
-			index = BUT_COLS;
-			nextStep = true;
-			resetLight = 1.0;
+			knob_push(this_prog);
+			masterState = false;
+		}
+		else if (prev_prog == this_prog)
+		{
+			knob_pull(this_prog);
+		}
+		else
+		{
+			knob_pull(prev_prog);
+			knob_push(this_prog);
+		}
+
+		// Trigger buttons
+
+		{
+			const float dim = 1.0f / lightLambda / engineGetSampleRate();
+
+			// Reset
+			if (resetTrigger.process(params[RESET_PARAM].value + inputs[RESET_INPUT].value))
+			{
+				phase = 0.0;
+				index = BUT_COLS;
+				nextStep = true;
+				resetLight = 1.0;
+			}
+			resetLight -= resetLight * dim;
+
+			// Clear current program
+			if (clearTrigger.process(params[CLEAR_PARAM].value))
+			{
+				clear_prog(this_prog);
+				clearLight = 1.0;
+			}
+			clearLight -= clearLight * dim;
+
+			// Randomise current program
+			if (randomTrigger.process(params[RANDOM_PARAM].value))
+			{
+				randomize_prog(this_prog);
+				randomLight = 1.0;
+			}
+			randomLight -= randomLight * dim;
+
+			// Copy current program
+			if (copyTrigger.process(params[COPY_PARAM].value))
+			{
+				copy_prog(this_prog);
+				copyLight = 1.0;
+			}
+			copyLight -= copyLight * dim;
+
+			// Paste current program
+			if (pasteTrigger.process(params[PASTE_PARAM].value))
+			{
+				paste_prog(this_prog);
+				pasteLight = 1.0;
+			}
+			pasteLight -= pasteLight * dim;
 		}
 
 		numSteps = RATIO * clampi(roundf(params[STEPS_PARAM].value + inputs[STEPS_INPUT].value), 1, NOB_COLS);
@@ -242,8 +327,6 @@ struct Impl : Module {
 			gatePulse.trigger(1e-3);
 		}
 
-		resetLight -= resetLight / lightLambda / engineGetSampleRate();
-
 		bool pulse = gatePulse.process(1.0 / engineGetSampleRate());
 
 		// Gate buttons
@@ -254,15 +337,28 @@ struct Impl : Module {
 			{
 				if (gateTriggers[row][col].process(params[but_map(row, col)].value))
 				{
-					if (++gateState[prog][row][col] >= GATE_STATES)
+					auto state = gateState[this_prog][row][col];
+
+					if (++state >= GATE_STATES)
 					{
-						gateState[prog][row][col] = 0;
+						state = GM_OFF;
+					}
+
+					std::size_t span_r = static_cast<std::size_t>(params[SPAN_R_PARAM].value + 0.5);
+					std::size_t span_c = static_cast<std::size_t>(params[SPAN_C_PARAM].value + 0.5);
+
+					for (std::size_t r = row; r < row + span_r && r < BUT_ROWS; ++r)
+					{
+						for (std::size_t c = col; c < col + span_c && c < BUT_COLS; ++c)
+						{
+							gateState[this_prog][r][c] = state;
+						}
 					}
 				}
 
-				bool gateOn = (running && (col == index) && (gateState[prog][row][col] > 0));
+				bool gateOn = (running && (col == index) && (gateState[this_prog][row][col] > 0));
 
-				switch (gateState[prog][row][col])
+				switch (gateState[this_prog][row][col])
 				{
 					case GM_CONTINUOUS :                            break;
 					case GM_RETRIGGER  : gateOn = gateOn && !pulse; break;
@@ -274,9 +370,9 @@ struct Impl : Module {
 
 				if (col < numSteps)
 				{
-					lights[led_map(row, col, 1)].value = gateState[prog][row][col] == GM_CONTINUOUS ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Green
-					lights[led_map(row, col, 2)].value = gateState[prog][row][col] == GM_RETRIGGER  ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Blue
-					lights[led_map(row, col, 0)].value = gateState[prog][row][col] == GM_TRIGGER    ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Red
+					lights[led_map(row, col, 1)].value = gateState[this_prog][row][col] == GM_CONTINUOUS ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Green
+					lights[led_map(row, col, 2)].value = gateState[this_prog][row][col] == GM_RETRIGGER  ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Blue
+					lights[led_map(row, col, 0)].value = gateState[this_prog][row][col] == GM_TRIGGER    ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Red
 				}
 				else
 				{
@@ -294,7 +390,7 @@ struct Impl : Module {
 		float nob_val[NOB_ROWS];
 		for (std::size_t row = 0; row < NOB_ROWS; ++row)
 		{
-			nob_val[row] = params[nob_map(row, nob_index)].value;
+			nob_val[row] = knobState[this_prog][row][nob_index];
 
 			if (is_nob_snap(row)) nob_val[row] /= 12.0f;
 		}
@@ -302,9 +398,9 @@ struct Impl : Module {
 		bool but_val[BUT_ROWS];
 		for (std::size_t row = 0; row < BUT_ROWS; ++row)
 		{
-			but_val[row] = running && (gateState[prog][row][index] > 0);
+			but_val[row] = running && (gateState[this_prog][row][index] > 0);
 
-			switch (gateState[prog][row][index])
+			switch (gateState[this_prog][row][index])
 			{
 				case GM_CONTINUOUS :                                        break;
 				case GM_RETRIGGER  : but_val[row] = but_val[row] && !pulse; break;
@@ -338,7 +434,13 @@ struct Impl : Module {
 			outputs[omap(GATE_OUTPUT, i)].value = (but_val[i] && gate_in >= 1.0f) ? 10.0f : 0.0f;
 		}
 
-		lights[RESET_LIGHT].value = resetLight;
+		lights[RESET_LIGHT] .value = resetLight;
+		lights[CLEAR_LIGHT] .value = clearLight;
+		lights[RANDOM_LIGHT].value = randomLight;
+		lights[COPY_LIGHT]  .value = copyLight;
+		lights[PASTE_LIGHT] .value = pasteLight;
+
+		prev_prog = this_prog;
 	}
 
 	//--------------------------------------------------------------------------------------------------------
@@ -351,24 +453,44 @@ struct Impl : Module {
 			// Running
 			json_object_set_new(rootJ, "running", json_boolean(running));
 
-			// Gates
-			if (json_t *gatesJ = json_array())
+			// Knobs
+			if (json_t *ja = json_array())
 			{
-				for (int prog = 0; prog < PROGRAMS; ++prog)
+				for (std::size_t prog = 0; prog < PROGRAMS; ++prog)
 				{
-					for (int row = 0; row < BUT_ROWS; ++row)
+					for (std::size_t row = 0; row < NOB_ROWS; ++row)
 					{
-						for (int col = 0; col < BUT_COLS; ++col)
+						for (std::size_t col = 0; col < NOB_COLS; ++col)
 						{
-							if (json_t *gateJ = json_integer((int) gateState[prog][row][col]))
+							if (json_t *ji = json_integer(static_cast<int>(knobState[prog][row][col])))
 							{
-								json_array_append_new(gatesJ, gateJ);
+								json_array_append_new(ja, ji);
 							}
 						}
 					}
 				}
 
-				json_object_set_new(rootJ, "gates", gatesJ);
+				json_object_set_new(rootJ, "knobs", ja);
+			}
+
+			// Gates
+			if (json_t *ja = json_array())
+			{
+				for (std::size_t prog = 0; prog < PROGRAMS; ++prog)
+				{
+					for (std::size_t row = 0; row < BUT_ROWS; ++row)
+					{
+						for (std::size_t col = 0; col < BUT_COLS; ++col)
+						{
+							if (json_t *ji = json_integer(static_cast<int>(gateState[prog][row][col])))
+							{
+								json_array_append_new(ja, ji);
+							}
+						}
+					}
+				}
+
+				json_object_set_new(rootJ, "gates", ja);
 			}
 
 			return rootJ;
@@ -383,27 +505,46 @@ struct Impl : Module {
 	void fromJson(json_t *rootJ) override
 	{
 		// Running
-		if (json_t *runningJ = json_object_get(rootJ, "running"))
+		if (json_t *jb = json_object_get(rootJ, "running"))
 		{
-			running = json_is_true(runningJ);
+			running = json_is_true(jb);
+		}
+
+		// Knobs
+		if (json_t *ja = json_object_get(rootJ, "knobs"))
+		{
+			for (std::size_t i = 0, prog = 0; prog < PROGRAMS; ++prog)
+			{
+				for (std::size_t row = 0; row < NOB_ROWS; ++row)
+				{
+					for (std::size_t col = 0; col < NOB_COLS; ++col, ++i)
+					{
+						if (json_t *ji = json_array_get(ja, i))
+						{
+							//! \todo Range check
+							knobState[prog][row][col] = json_integer_value(ji);
+						}
+					}
+				}
+			}
 		}
 
 		// Gates
-		if (json_t *gatesJ = json_object_get(rootJ, "gates"))
+		if (json_t *ja = json_object_get(rootJ, "gates"))
 		{
-			for (int prog = 0; prog < PROGRAMS; ++prog)
+			for (std::size_t i = 0, prog = 0; prog < PROGRAMS; ++prog)
 			{
-				for (int row = 0, i = 0; row < BUT_ROWS; ++row)
+				for (std::size_t row = 0; row < BUT_ROWS; ++row)
 				{
-					for (int col = 0; col < BUT_COLS; ++col, ++i)
+					for (std::size_t col = 0; col < BUT_COLS; ++col, ++i)
 					{
-						if (json_t *gateJ = json_array_get(gatesJ, i))
+						if (json_t *ji = json_array_get(ja, i))
 						{
-							int value = json_integer_value(gateJ);
+							int value = json_integer_value(ji);
 
 							if (value < 0 || value >= GATE_STATES)
 							{
-								gateState[prog][row][col] = 0;
+								gateState[prog][row][col] = GM_OFF;
 							}
 							else
 							{
@@ -414,6 +555,8 @@ struct Impl : Module {
 				}
 			}
 		}
+
+		masterState = true;
 	}
 
 	//--------------------------------------------------------------------------------------------------------
@@ -421,11 +564,11 @@ struct Impl : Module {
 
 	void reset() override
 	{
-		for (int prog = 0; prog < PROGRAMS; ++prog)
+		for (std::size_t prog = 0; prog < PROGRAMS; ++prog)
 		{
-			for (int col = 0; col < BUT_COLS; col++)
+			for (std::size_t col = 0; col < BUT_COLS; col++)
 			{
-				for (int row = 0; row < BUT_ROWS; row++)
+				for (std::size_t row = 0; row < BUT_ROWS; row++)
 				{
 					gateState[prog][row][col] = GM_OFF;
 				}
@@ -438,17 +581,134 @@ struct Impl : Module {
 
 	void randomize() override
 	{
-		for (int prog = 0; prog < PROGRAMS; ++prog)
+		for (std::size_t prog = 0; prog < PROGRAMS; ++prog)
 		{
-			for (int col = 0; col < BUT_COLS; col++)
+			for (std::size_t col = 0; col < BUT_COLS; col++)
 			{
-				for (int row = 0; row < BUT_ROWS; row++)
+				for (std::size_t row = 0; row < BUT_ROWS; row++)
 				{
 					uint32_t r = randomu32() % (GATE_STATES + 1);
+
 					if (r >= GATE_STATES) r = GM_CONTINUOUS;
 
 					gateState[prog][row][col] = r;
 				}
+			}
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief Knob params to state.
+
+	void knob_pull(std::size_t prog)
+	{
+		for (std::size_t col = 0; col < NOB_COLS; col++)
+		{
+			for (std::size_t row = 0; row < NOB_ROWS; ++row)
+			{
+				knobState[prog][row][col] = params[nob_map(row, col)].value;
+			}
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief Knob state to params.
+
+	void knob_push(std::size_t prog)
+	{
+		for (std::size_t col = 0; col < NOB_COLS; col++)
+		{
+			for (std::size_t row = 0; row < NOB_ROWS; ++row)
+			{
+				widget->params[nob_map(row, col)]->setValue(knobState[prog][row][col]);
+			}
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief Clear a program.
+
+	void clear_prog(std::size_t prog)
+	{
+		for (std::size_t col = 0; col < NOB_COLS; col++)
+		{
+			for (std::size_t row = 0; row < NOB_ROWS; ++row)
+			{
+				knobState[prog][row][col] = 0;
+
+				widget->params[nob_map(row, col)]->setValue(0);
+			}
+		}
+
+		for (std::size_t col = 0; col < BUT_COLS; col++)
+		{
+			for (std::size_t row = 0; row < BUT_ROWS; row++)
+			{
+				gateState[prog][row][col] = GM_OFF;
+			}
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief Randomize a program.
+
+	void randomize_prog(std::size_t prog)
+	{
+		for (std::size_t col = 0; col < BUT_COLS; col++)
+		{
+			for (std::size_t row = 0; row < BUT_ROWS; row++)
+			{
+				uint32_t r = randomu32() % (GATE_STATES + 1);
+
+				if (r >= GATE_STATES) r = GM_CONTINUOUS;
+
+				gateState[prog][row][col] = r;
+			}
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief Copy a program.
+
+	void copy_prog(std::size_t prog)
+	{
+		for (std::size_t col = 0; col < NOB_COLS; col++)
+		{
+			for (std::size_t row = 0; row < NOB_ROWS; ++row)
+			{
+				knobCopy[row][col] = knobState[prog][row][col];
+			}
+		}
+
+		for (std::size_t col = 0; col < BUT_COLS; col++)
+		{
+			for (std::size_t row = 0; row < BUT_ROWS; row++)
+			{
+				gateCopy[row][col] = gateState[prog][row][col];
+			}
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief Paste a program.
+
+	void paste_prog(std::size_t prog)
+	{
+		for (std::size_t col = 0; col < NOB_COLS; col++)
+		{
+			for (std::size_t row = 0; row < NOB_ROWS; ++row)
+			{
+				knobState[prog][row][col] = knobCopy[row][col];
+
+				widget->params[nob_map(row, col)]->setValue(knobCopy[row][col]);
+			}
+		}
+
+		for (std::size_t col = 0; col < BUT_COLS; col++)
+		{
+			for (std::size_t row = 0; row < BUT_ROWS; row++)
+			{
+				gateState[prog][row][col] = gateCopy[row][col];
 			}
 		}
 	}
@@ -460,7 +720,7 @@ struct Impl : Module {
 
 Widget::Widget()
 {
-	Impl *module = new Impl();
+	Impl *module = new Impl(this);
 	setModule(module);
 	box.size = Vec((OUT_LEFT+NOB_COLS+OUT_RIGHT)*3*15, 380);
 
@@ -485,12 +745,16 @@ Widget::Widget()
 	float gridXl =              grid_left  / 2;
 	float gridXr = box.size.x - grid_right / 2;
 
-	float portX[5] = {};
-	for (std::size_t i = 0; i < 5; i++)
+	float portX[8] = {};
+	for (std::size_t i = 0; i < 8; i++)
 	{
 		float x = 4*6*15 / static_cast<double>(8);
-		portX[i] = 3*7*15 + x * (i + 0.5);
+		portX[i] = 3*5*15 + x * (i + 0.5);
 	}
+
+	float portY[2] = {};
+	portY[0] = gy(2-0.24);
+	portY[1] = gy(2+0.22);
 
 	float gridY[NOB_ROWS + BUT_ROWS] = {};
 	{
@@ -528,23 +792,29 @@ Widget::Widget()
 				pg.line(Vec(x, y0), Vec(x, y1), "fill:none;stroke:#7092BE;stroke-width:1");
 		}
 
-		pg.line(Vec(portX[0], gy(1.80)), Vec(portX[0], gy(2.2)), "fill:none;stroke:#7092BE;stroke-width:1");
-		pg.line(Vec(portX[2], gy(1.75)), Vec(portX[2], gy(2.2)), "fill:none;stroke:#7092BE;stroke-width:1");
-		pg.line(Vec(portX[3], gy(1.80)), Vec(portX[3], gy(2.2)), "fill:none;stroke:#7092BE;stroke-width:1");
-		pg.line(Vec(portX[4], gy(1.80)), Vec(portX[4], gy(2.2)), "fill:none;stroke:#7092BE;stroke-width:1");
+		pg.line(Vec(portX[0], portY[0]), Vec(portX[0], portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
+		pg.line(Vec(portX[2], portY[0]), Vec(portX[2], portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
+		pg.line(Vec(portX[3], portY[0]), Vec(portX[3], portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
+		pg.line(Vec(portX[4], portY[0]), Vec(portX[4], portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
 
-		pg.nob_sml_raw(portX[0], gy(1.8), "CLOCK");
-		pg.nob_sml_raw(portX[1], gy(1.8), "RUN");
-		pg.nob_sml_raw(portX[2], gy(1.8), "RESET");
-		pg.nob_sml_raw(portX[3], gy(1.8), "STEPS");
-		pg.nob_sml_raw(portX[4], gy(1.8), "PROG");
+		pg.nob_sml_raw(portX[0], portY[0], "CLOCK");
+		pg.nob_sml_raw(portX[1], portY[0], "RUN");
+		pg.nob_sml_raw(portX[2], portY[0], "RESET");
+		pg.nob_sml_raw(portX[3], portY[0], "STEPS");
+		pg.nob_sml_raw(portX[4], portY[0], "PROG");
+		pg.nob_sml_raw(portX[5], portY[0], "ROWS");
+		pg.nob_sml_raw(portX[6], portY[0], "CLEAR");
+		pg.nob_sml_raw(portX[7], portY[0], "RAND");
 
-		pg.nob_sml_raw(portX[1], gy(2.2), "EXT CLK");
+		pg.nob_sml_raw(portX[1], portY[1], "EXT CLK");
+		pg.nob_sml_raw(portX[5], portY[1], "COLS");
+		pg.nob_sml_raw(portX[6], portY[1], "COPY");
+		pg.nob_sml_raw(portX[7], portY[1], "PASTE");
 
-		pg.bus_in (0.5, 2, "GATE");
-		pg.bus_in (1.5, 2, "V/OCT");
-		pg.bus_out(7.5, 2, "GATE");
-		pg.bus_out(6.5, 2, "V/OCT");
+		pg.bus_in (0, 2, "GATE");
+		pg.bus_in (1, 2, "V/OCT");
+		pg.bus_out(8, 2, "GATE");
+		pg.bus_out(7, 2, "V/OCT");
 	}
 	#endif
 
@@ -560,19 +830,29 @@ Widget::Widget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
-	addParam(createParam<RoundSmallBlackKnob>    (n_s(portX[0], gy(1.80)), module, Impl::CLOCK_PARAM, -2.0, 6.0, 2.0));
-	addParam(createParam<LEDButton>              (but(portX[1], gy(1.75)), module, Impl::RUN_PARAM, 0.0, 1.0, 0.0));
-	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[1], gy(1.75)), module, Impl::RUNNING_LIGHT));
-	addParam(createParam<LEDButton>              (but(portX[2], gy(1.75)), module, Impl::RESET_PARAM, 0.0, 1.0, 0.0));
-	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[2], gy(1.75)), module, Impl::RESET_LIGHT));
-	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[3], gy(1.80)), module, Impl::STEPS_PARAM, 1.0, NOB_COLS, NOB_COLS));
-	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[4], gy(1.80)), module, Impl::PROG_PARAM, 0.0, 12.0, 12.0));
+	addParam(createParam<RoundSmallBlackKnob>    (n_s(portX[0], portY[0]), module, Impl::CLOCK_PARAM, -2.0, 6.0, 2.0));
+	addParam(createParam<LEDButton>              (but(portX[1], portY[0]), module, Impl::RUN_PARAM, 0.0, 1.0, 0.0));
+	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[1], portY[0]), module, Impl::RUNNING_LIGHT));
+	addParam(createParam<LEDButton>              (but(portX[2], portY[0]), module, Impl::RESET_PARAM, 0.0, 1.0, 0.0));
+	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[2], portY[0]), module, Impl::RESET_LIGHT));
+	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[3], portY[0]), module, Impl::STEPS_PARAM, 1.0, NOB_COLS, NOB_COLS));
+	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[4], portY[0]), module, Impl::PROG_PARAM, 0.0, 12.0, 12.0));
+	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[5], portY[0]), module, Impl::SPAN_R_PARAM, 1.0, 8.0, 1.0));
+	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[5], portY[1]), module, Impl::SPAN_C_PARAM, 1.0, 8.0, 1.0));
+	addParam(createParam<LEDButton>              (but(portX[6], portY[0]), module, Impl::CLEAR_PARAM, 0.0, 1.0, 0.0));
+	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[6], portY[0]), module, Impl::CLEAR_LIGHT));
+	addParam(createParam<LEDButton>              (but(portX[7], portY[0]), module, Impl::RANDOM_PARAM, 0.0, 1.0, 0.0));
+	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[7], portY[0]), module, Impl::RANDOM_LIGHT));
+	addParam(createParam<LEDButton>              (but(portX[6], portY[1]), module, Impl::COPY_PARAM, 0.0, 1.0, 0.0));
+	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[6], portY[1]), module, Impl::COPY_LIGHT));
+	addParam(createParam<LEDButton>              (but(portX[7], portY[1]), module, Impl::PASTE_PARAM, 0.0, 1.0, 0.0));
+	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[7], portY[1]), module, Impl::PASTE_LIGHT));
 
-	addInput(createInput<PJ301MPort>  (prt(portX[0], gy(2.2)), module, Impl::CLOCK_INPUT));
-	addInput(createInput<PJ301MPort>  (prt(portX[1], gy(2.2)), module, Impl::EXT_CLOCK_INPUT));
-	addInput(createInput<PJ301MPort>  (prt(portX[2], gy(2.2)), module, Impl::RESET_INPUT));
-	addInput(createInput<PJ301MPort>  (prt(portX[3], gy(2.2)), module, Impl::STEPS_INPUT));
-	addInput(createInput<PJ301MPort>  (prt(portX[4], gy(2.2)), module, Impl::PROG_INPUT));
+	addInput(createInput<PJ301MPort>(prt(portX[0], portY[1]), module, Impl::CLOCK_INPUT));
+	addInput(createInput<PJ301MPort>(prt(portX[1], portY[1]), module, Impl::EXT_CLOCK_INPUT));
+	addInput(createInput<PJ301MPort>(prt(portX[2], portY[1]), module, Impl::RESET_INPUT));
+	addInput(createInput<PJ301MPort>(prt(portX[3], portY[1]), module, Impl::STEPS_INPUT));
+	addInput(createInput<PJ301MPort>(prt(portX[4], portY[1]), module, Impl::PROG_INPUT));
 
 	{
 		std::size_t j = 0;
@@ -598,9 +878,13 @@ Widget::Widget()
 			for (std::size_t col = 0; col < NOB_COLS; ++col)
 			{
 				if (Impl::is_nob_snap(row))
+				{
 					addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_nobX[col], gridY[j]), module, Impl::nob_map(row, col), 0.0, 12.0, 0.0));
+				}
 				else
+				{
 					addParam(createParam<RoundSmallBlackKnob>    (n_s(g_nobX[col], gridY[j]), module, Impl::nob_map(row, col), 0.0, 10.0, 0.0));
+				}
 			}
 		}
 
@@ -616,15 +900,15 @@ Widget::Widget()
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
-		addInput(createInput<PJ301MPort>  (prt(px(0.5, i), py(2, i)), module, Impl::imap(Impl::GATE_INPUT, i)));
-		addInput(createInput<PJ301MPort>  (prt(px(1.5, i), py(2, i)), module, Impl::imap(Impl::VOCT_INPUT, i)));
+		addInput(createInput<PJ301MPort>  (prt(px(0, i), py(2, i)), module, Impl::imap(Impl::GATE_INPUT, i)));
+		addInput(createInput<PJ301MPort>  (prt(px(1, i), py(2, i)), module, Impl::imap(Impl::VOCT_INPUT, i)));
 
-		addOutput(createOutput<PJ301MPort>(prt(px(7.5, i), py(2, i)), module, Impl::omap(Impl::GATE_OUTPUT, i)));
-		addOutput(createOutput<PJ301MPort>(prt(px(6.5, i), py(2, i)), module, Impl::omap(Impl::VOCT_OUTPUT, i)));
+		addOutput(createOutput<PJ301MPort>(prt(px(8, i), py(2, i)), module, Impl::omap(Impl::GATE_OUTPUT, i)));
+		addOutput(createOutput<PJ301MPort>(prt(px(7, i), py(2, i)), module, Impl::omap(Impl::VOCT_OUTPUT, i)));
 	}
 
-	addInput(createInput<PJ301MPort>(prt(gx(0.5), gy(2)), module, Impl::imap(Impl::GATE_INPUT, GTX__N)));
-	addInput(createInput<PJ301MPort>(prt(gx(1.5), gy(2)), module, Impl::imap(Impl::VOCT_INPUT, GTX__N)));
+	addInput(createInput<PJ301MPort>(prt(gx(0), gy(2)), module, Impl::imap(Impl::GATE_INPUT, GTX__N)));
+	addInput(createInput<PJ301MPort>(prt(gx(1), gy(2)), module, Impl::imap(Impl::VOCT_INPUT, GTX__N)));
 }
 
 
