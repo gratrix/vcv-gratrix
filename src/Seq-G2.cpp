@@ -374,9 +374,11 @@ struct Impl : Module {
 
 					if (col < numSteps)
 					{
-						lights[led_map(row, col, 1)].value = gateState[edit_prog][row][col] == GM_CONTINUOUS ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Green
-						lights[led_map(row, col, 2)].value = gateState[edit_prog][row][col] == GM_RETRIGGER  ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Blue
-						lights[led_map(row, col, 0)].value = gateState[edit_prog][row][col] == GM_TRIGGER    ? 1.0 - stepLights[row][col] : stepLights[row][col];  // Red
+						float val = (play_prog == edit_prog) ? 1.0 : 0.1;
+
+						lights[led_map(row, col, 1)].value = gateState[edit_prog][row][col] == GM_CONTINUOUS ? 1.0 - val * stepLights[row][col] : val * stepLights[row][col];  // Green
+						lights[led_map(row, col, 2)].value = gateState[edit_prog][row][col] == GM_RETRIGGER  ? 1.0 - val * stepLights[row][col] : val * stepLights[row][col];  // Blue
+						lights[led_map(row, col, 0)].value = gateState[edit_prog][row][col] == GM_TRIGGER    ? 1.0 - val * stepLights[row][col] : val * stepLights[row][col];  // Red
 					}
 					else
 					{
