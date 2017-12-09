@@ -68,11 +68,12 @@ struct Impl : Module {
 	enum LightIds {
 		RUNNING_LIGHT,
 		RESET_LIGHT,
-		CLEAR_LIGHT,
+		PROG_LIGHT,
+		CLEAR_LIGHT = PROG_LIGHT + PROGRAMS * 2,
 		RANDOM_LIGHT,
 		COPY_LIGHT,
 		PASTE_LIGHT,
-		BUT_LIGHT  = PASTE_LIGHT + 3,
+		BUT_LIGHT,
 		NUM_LIGHTS = BUT_LIGHT   + (BUT_COLS * BUT_ROWS) * 3
 	};
 
@@ -187,28 +188,16 @@ struct Impl : Module {
 
 		// Decode program info
 
-		bool act_prm = false;
+		prg_prm.step(params[PROG_PARAM].value / 12.0f);
+		prg_cv .step(inputs[PROG_INPUT].value);
 
-		if (params[PROG_PARAM].value < 12.0f)
-		{
-			prg_prm.step(params[PROG_PARAM].value / 12.0f);
-			act_prm = true;
-		}
-
-		prg_cv.step(inputs[PROG_INPUT].value);
+		this_prog = prg_prm.key;
 
 		// Input leds
 
-		if (act_prm)
-		{
-			this_prog = prg_prm.key;
-		//	leds[PROG_LIGHT + prg_prm.key*2] = 1.0f;  // Green
-		}
-		else
-		{
-			this_prog = prg_cv.key;
-		//	leds[PROG_LIGHT + prg_cv.key*2+1] = 1.0f;  // Red
-		}
+		float prog_leds[PROGRAMS * 2]  = {};
+		prog_leds[prg_prm.key * 2    ] = 1.0f;  // Green
+		prog_leds[prg_cv .key * 2 + 1] = 1.0f;  // Red
 
 		// Run
 		if (runningTrigger.process(params[RUN_PARAM].value))
@@ -436,11 +425,19 @@ struct Impl : Module {
 			outputs[omap(GATE_OUTPUT, i)].value = (but_val[i] && gate_in >= 1.0f) ? 10.0f : 0.0f;
 		}
 
+		// Update LEDs
+
 		lights[RESET_LIGHT] .value = resetLight;
 		lights[CLEAR_LIGHT] .value = clearLight;
 		lights[RANDOM_LIGHT].value = randomLight;
 		lights[COPY_LIGHT]  .value = copyLight;
 		lights[PASTE_LIGHT] .value = pasteLight;
+
+		for (std::size_t i=0; i<PROGRAMS; ++i)
+		{
+			lights[PROG_LIGHT + i * 2    ].value = prog_leds[i * 2    ];
+			lights[PROG_LIGHT + i * 2 + 1].value = prog_leds[i * 2 + 1];
+		}
 
 		prev_prog = this_prog;
 	}
@@ -753,11 +750,14 @@ Widget::Widget()
 		float x = 5*6*15 / static_cast<double>(10);
 		portX[i] = 2*6*15 + x * (i + 0.5);
 	}
+	float dX = 0.5*(portX[1]-portX[0]);
 
-	float portY[3] = {};
+	float portY[4] = {};
 	portY[0] = gy(2-0.24);
 	portY[1] = gy(2+0.22);
-	portY[2] = 0.5 * (portY[0] + portY[1]);
+	float dY = 0.5*(portY[1]-portY[0]);
+	portY[2] = portY[0] + 0.45 * dY;
+	portY[3] = portY[0] +        dY;
 
 	float gridY[NOB_ROWS + BUT_ROWS] = {};
 	{
@@ -795,15 +795,16 @@ Widget::Widget()
 				pg.line(Vec(x, y0), Vec(x, y1), "fill:none;stroke:#7092BE;stroke-width:1");
 		}
 
-		pg.line(Vec(portX[0], portY[0]), Vec(portX[0], portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
-		pg.line(Vec(portX[2], portY[0]), Vec(portX[2], portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
-		pg.line(Vec(portX[3], portY[0]), Vec(portX[3], portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
-		pg.line(Vec(portX[4], portY[0]), Vec(portX[4], portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
-		pg.line(Vec(portX[8], portY[0]), Vec(portX[9], portY[0]), "fill:none;stroke:#7092BE;stroke-width:1");
-		pg.line(Vec(portX[8], portY[1]), Vec(portX[9], portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
-		pg.line(Vec(portX[4], portY[2]), Vec(portX[6], portY[2]), "fill:none;stroke:#7092BE;stroke-width:1");
+		pg.line(Vec(portX[0],    portY[0]), Vec(portX[0],    portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
+		pg.line(Vec(portX[2],    portY[0]), Vec(portX[2],    portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
+		pg.line(Vec(portX[3],    portY[0]), Vec(portX[3],    portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
+		pg.line(Vec(portX[4],    portY[0]), Vec(portX[4],    portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
+		pg.line(Vec(portX[8],    portY[0]), Vec(portX[9],    portY[0]), "fill:none;stroke:#7092BE;stroke-width:1");
+		pg.line(Vec(portX[8],    portY[1]), Vec(portX[9],    portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
+		pg.line(Vec(portX[4]+dX, portY[2]), Vec(portX[6],    portY[2]), "fill:none;stroke:#7092BE;stroke-width:1");
+		pg.line(Vec(portX[4]+dX, portY[3]), Vec(portX[4]+dX, portY[2]), "fill:none;stroke:#7092BE;stroke-width:1");
+		pg.line(Vec(portX[4],    portY[3]), Vec(portX[4]+dX, portY[3]), "fill:none;stroke:#7092BE;stroke-width:1");
 
-		double dX = 0.5*(portX[1]-portX[0]);
 		pg.line(Vec(portX[0]-dX, portY[0]-29), Vec(portX[0]-dX, portY[1]+16), "fill:none;stroke:#7092BE;stroke-width:2");
 		pg.line(Vec(portX[3]+dX, portY[0]-29), Vec(portX[3]+dX, portY[1]+16), "fill:none;stroke:#7092BE;stroke-width:2");
 		pg.line(Vec(portX[6]+dX, portY[0]-29), Vec(portX[6]+dX, portY[1]+16), "fill:none;stroke:#7092BE;stroke-width:2");
@@ -825,8 +826,8 @@ Widget::Widget()
 		pg.nob_sml_raw(portX[8], portY[1], "COPY");
 		pg.nob_sml_raw(portX[9], portY[1], "PASTE");
 
-		pg.tog_raw    (portX[5], portY[2], "PROG", "CV");
-		pg.tog_raw    (portX[6], portY[2], "PROG", "CV");
+		pg.tog_raw2   (portX[5], portY[2], "KNOB", "CV");
+		pg.tog_raw2   (portX[6], portY[2], "KNOB", "CV");
 
 		pg.bus_in (0, 2, "GATE");
 		pg.bus_in (1, 2, "V/OCT");
@@ -856,6 +857,20 @@ Widget::Widget()
 	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[4], portY[0]), module, Impl::PROG_PARAM, 0.0, 11.0, 0.0));
 	addParam(createParam<CKSS>                   (tog(portX[5], portY[2]), module, Impl::PLAY_PARAM, 0.0, 1.0, 1.0));
 	addParam(createParam<CKSS>                   (tog(portX[6], portY[2]), module, Impl::EDIT_PARAM, 0.0, 1.0, 1.0));
+
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(portX[5] + dX - 30, portY[1] + 5 + 1), module, Impl::PROG_LIGHT +  0*2));  // C
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(portX[5] + dX - 25, portY[1] - 5 + 1), module, Impl::PROG_LIGHT +  1*2));  // C#
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(portX[5] + dX - 20, portY[1] + 5 + 1), module, Impl::PROG_LIGHT +  2*2));  // D
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(portX[5] + dX - 15, portY[1] - 5 + 1), module, Impl::PROG_LIGHT +  3*2));  // Eb
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(portX[5] + dX - 10, portY[1] + 5 + 1), module, Impl::PROG_LIGHT +  4*2));  // E
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(portX[5] + dX     , portY[1] + 5 + 1), module, Impl::PROG_LIGHT +  5*2));  // F
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(portX[5] + dX +  5, portY[1] - 5 + 1), module, Impl::PROG_LIGHT +  6*2));  // Fs
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(portX[5] + dX + 10, portY[1] + 5 + 1), module, Impl::PROG_LIGHT +  7*2));  // G
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(portX[5] + dX + 15, portY[1] - 5 + 1), module, Impl::PROG_LIGHT +  8*2));  // Ab
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(portX[5] + dX + 20, portY[1] + 5 + 1), module, Impl::PROG_LIGHT +  9*2));  // A
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(portX[5] + dX + 25, portY[1] - 5 + 1), module, Impl::PROG_LIGHT + 10*2));  // Bb
+	addChild(createLight<SmallLight<GreenRedLight>>(l_s(portX[5] + dX + 30, portY[1] + 5 + 1), module, Impl::PROG_LIGHT + 11*2));  // B
+
 	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[7], portY[0]), module, Impl::SPAN_R_PARAM, 1.0, 8.0, 1.0));
 	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[7], portY[1]), module, Impl::SPAN_C_PARAM, 1.0, 8.0, 1.0));
 	addParam(createParam<LEDButton>              (but(portX[8], portY[0]), module, Impl::CLEAR_PARAM, 0.0, 1.0, 0.0));

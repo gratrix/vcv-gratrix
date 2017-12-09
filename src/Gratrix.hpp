@@ -145,6 +145,11 @@ public:
 		text(Vec(x, y - 15), title, 10);
 		text(Vec(x, y + 23), subtitle, 10);
 	}
+	void tog_raw2(double x, double y, const std::string &title = "", const std::string &subtitle = "")
+	{
+		text(Vec(x, y - 14), title, 8);
+		text(Vec(x, y + 20), subtitle, 8);
+	}
 
 	void nob_big(double x, double y, const std::string &title = "")
 	{
