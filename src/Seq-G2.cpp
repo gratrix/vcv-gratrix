@@ -34,6 +34,8 @@ struct Impl : Module {
 		RESET_PARAM,
 		STEPS_PARAM,
 		PROG_PARAM,
+		PLAY_PARAM,
+		EDIT_PARAM,
 		SPAN_R_PARAM,
 		SPAN_C_PARAM,
 		CLEAR_PARAM,
@@ -745,16 +747,17 @@ Widget::Widget()
 	float gridXl =              grid_left  / 2;
 	float gridXr = box.size.x - grid_right / 2;
 
-	float portX[8] = {};
-	for (std::size_t i = 0; i < 8; i++)
+	float portX[10] = {};
+	for (std::size_t i = 0; i < 10; i++)
 	{
-		float x = 4*6*15 / static_cast<double>(8);
-		portX[i] = 3*5*15 + x * (i + 0.5);
+		float x = 5*6*15 / static_cast<double>(10);
+		portX[i] = 2*6*15 + x * (i + 0.5);
 	}
 
-	float portY[2] = {};
+	float portY[3] = {};
 	portY[0] = gy(2-0.24);
 	portY[1] = gy(2+0.22);
+	portY[2] = 0.5 * (portY[0] + portY[1]);
 
 	float gridY[NOB_ROWS + BUT_ROWS] = {};
 	{
@@ -796,20 +799,34 @@ Widget::Widget()
 		pg.line(Vec(portX[2], portY[0]), Vec(portX[2], portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
 		pg.line(Vec(portX[3], portY[0]), Vec(portX[3], portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
 		pg.line(Vec(portX[4], portY[0]), Vec(portX[4], portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
+		pg.line(Vec(portX[8], portY[0]), Vec(portX[9], portY[0]), "fill:none;stroke:#7092BE;stroke-width:1");
+		pg.line(Vec(portX[8], portY[1]), Vec(portX[9], portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
+		pg.line(Vec(portX[4], portY[2]), Vec(portX[6], portY[2]), "fill:none;stroke:#7092BE;stroke-width:1");
+
+		double dX = 0.5*(portX[1]-portX[0]);
+		pg.line(Vec(portX[0]-dX, portY[0]-29), Vec(portX[0]-dX, portY[1]+16), "fill:none;stroke:#7092BE;stroke-width:2");
+		pg.line(Vec(portX[3]+dX, portY[0]-29), Vec(portX[3]+dX, portY[1]+16), "fill:none;stroke:#7092BE;stroke-width:2");
+		pg.line(Vec(portX[6]+dX, portY[0]-29), Vec(portX[6]+dX, portY[1]+16), "fill:none;stroke:#7092BE;stroke-width:2");
+		pg.line(Vec(portX[9]+dX, portY[0]-29), Vec(portX[9]+dX, portY[1]+16), "fill:none;stroke:#7092BE;stroke-width:2");
 
 		pg.nob_sml_raw(portX[0], portY[0], "CLOCK");
 		pg.nob_sml_raw(portX[1], portY[0], "RUN");
 		pg.nob_sml_raw(portX[2], portY[0], "RESET");
 		pg.nob_sml_raw(portX[3], portY[0], "STEPS");
 		pg.nob_sml_raw(portX[4], portY[0], "PROG");
-		pg.nob_sml_raw(portX[5], portY[0], "ROWS");
-		pg.nob_sml_raw(portX[6], portY[0], "CLEAR");
-		pg.nob_sml_raw(portX[7], portY[0], "RAND");
+		pg.nob_sml_raw(portX[5], portY[0], "PLAY");
+		pg.nob_sml_raw(portX[6], portY[0], "EDIT");
+		pg.nob_sml_raw(portX[7], portY[0], "ROWS");
+		pg.nob_sml_raw(portX[8], portY[0], "CLEAR");
+		pg.nob_sml_raw(portX[9], portY[0], "RAND");
 
 		pg.nob_sml_raw(portX[1], portY[1], "EXT CLK");
-		pg.nob_sml_raw(portX[5], portY[1], "COLS");
-		pg.nob_sml_raw(portX[6], portY[1], "COPY");
-		pg.nob_sml_raw(portX[7], portY[1], "PASTE");
+		pg.nob_sml_raw(portX[7], portY[1], "COLS");
+		pg.nob_sml_raw(portX[8], portY[1], "COPY");
+		pg.nob_sml_raw(portX[9], portY[1], "PASTE");
+
+		pg.tog_raw    (portX[5], portY[2], "PROG", "CV");
+		pg.tog_raw    (portX[6], portY[2], "PROG", "CV");
 
 		pg.bus_in (0, 2, "GATE");
 		pg.bus_in (1, 2, "V/OCT");
@@ -836,17 +853,19 @@ Widget::Widget()
 	addParam(createParam<LEDButton>              (but(portX[2], portY[0]), module, Impl::RESET_PARAM, 0.0, 1.0, 0.0));
 	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[2], portY[0]), module, Impl::RESET_LIGHT));
 	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[3], portY[0]), module, Impl::STEPS_PARAM, 1.0, NOB_COLS, NOB_COLS));
-	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[4], portY[0]), module, Impl::PROG_PARAM, 0.0, 12.0, 12.0));
-	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[5], portY[0]), module, Impl::SPAN_R_PARAM, 1.0, 8.0, 1.0));
-	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[5], portY[1]), module, Impl::SPAN_C_PARAM, 1.0, 8.0, 1.0));
-	addParam(createParam<LEDButton>              (but(portX[6], portY[0]), module, Impl::CLEAR_PARAM, 0.0, 1.0, 0.0));
-	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[6], portY[0]), module, Impl::CLEAR_LIGHT));
-	addParam(createParam<LEDButton>              (but(portX[7], portY[0]), module, Impl::RANDOM_PARAM, 0.0, 1.0, 0.0));
-	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[7], portY[0]), module, Impl::RANDOM_LIGHT));
-	addParam(createParam<LEDButton>              (but(portX[6], portY[1]), module, Impl::COPY_PARAM, 0.0, 1.0, 0.0));
-	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[6], portY[1]), module, Impl::COPY_LIGHT));
-	addParam(createParam<LEDButton>              (but(portX[7], portY[1]), module, Impl::PASTE_PARAM, 0.0, 1.0, 0.0));
-	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[7], portY[1]), module, Impl::PASTE_LIGHT));
+	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[4], portY[0]), module, Impl::PROG_PARAM, 0.0, 11.0, 0.0));
+	addParam(createParam<CKSS>                   (tog(portX[5], portY[2]), module, Impl::PLAY_PARAM, 0.0, 1.0, 1.0));
+	addParam(createParam<CKSS>                   (tog(portX[6], portY[2]), module, Impl::EDIT_PARAM, 0.0, 1.0, 1.0));
+	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[7], portY[0]), module, Impl::SPAN_R_PARAM, 1.0, 8.0, 1.0));
+	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[7], portY[1]), module, Impl::SPAN_C_PARAM, 1.0, 8.0, 1.0));
+	addParam(createParam<LEDButton>              (but(portX[8], portY[0]), module, Impl::CLEAR_PARAM, 0.0, 1.0, 0.0));
+	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[8], portY[0]), module, Impl::CLEAR_LIGHT));
+	addParam(createParam<LEDButton>              (but(portX[9], portY[0]), module, Impl::RANDOM_PARAM, 0.0, 1.0, 0.0));
+	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[9], portY[0]), module, Impl::RANDOM_LIGHT));
+	addParam(createParam<LEDButton>              (but(portX[8], portY[1]), module, Impl::COPY_PARAM, 0.0, 1.0, 0.0));
+	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[8], portY[1]), module, Impl::COPY_LIGHT));
+	addParam(createParam<LEDButton>              (but(portX[9], portY[1]), module, Impl::PASTE_PARAM, 0.0, 1.0, 0.0));
+	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[9], portY[1]), module, Impl::PASTE_LIGHT));
 
 	addInput(createInput<PJ301MPort>(prt(portX[0], portY[1]), module, Impl::CLOCK_INPUT));
 	addInput(createInput<PJ301MPort>(prt(portX[1], portY[1]), module, Impl::EXT_CLOCK_INPUT));
