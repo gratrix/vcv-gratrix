@@ -146,7 +146,7 @@ void Scope::Voice::step(bool external, int frameCount, const Param &trig_param, 
 }
 
 
-struct ScopeDisplay : TransparentWidget {
+struct Display : TransparentWidget {
 	Scope *module;
 	int frame = 0;
 	std::shared_ptr<Font> font;
@@ -169,7 +169,7 @@ struct ScopeDisplay : TransparentWidget {
 	};
 	Stats statsX[GTX__N + 1];
 
-	ScopeDisplay() {
+	Display() {
 		font = Font::load(assetPlugin(plugin, "res/fonts/Sudo.ttf"));
 	}
 
@@ -313,7 +313,8 @@ struct ScopeDisplay : TransparentWidget {
 };
 
 
-Widget::Widget() {
+Widget::Widget()
+{
 	Scope *module = new Scope();
 	setModule(module);
 	box.size = Vec(24*15, 380);
@@ -325,6 +326,8 @@ Widget::Widget() {
 	{
 		PanelGen pg(assetPlugin(plugin, "build/res/Scope-G1.svg"), box.size, "SCOPE-G1");
 
+		pg.rect(screen_pos, screen_size, "fill:#222222;stroke:none");
+
 		pg.bus_in(0, 2, "IN");
 		pg.bus_in(2, 2, "EXT TRIG");
 
@@ -334,8 +337,6 @@ Widget::Widget() {
 		pg.nob_sml_raw(gx(1+0.22), gy(2+0.22), "TRIG");
 		pg.tog_raw    (gx(3-0.22), gy(2-0.24), "INT", "EXT");
 		pg.nob_sml_raw(gx(3+0.22), gy(2-0.24), "DISP");
-
-		pg.rect(screen_pos, screen_size, "fill:#222222;stroke:none");
 
 		for (std::size_t i=0; i<=12; i++)
 		{
@@ -364,7 +365,7 @@ Widget::Widget() {
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
 	{
-		ScopeDisplay *display = new ScopeDisplay();
+		Display *display  = new Display();
 		display->module   = module;
 		display->box.pos  = screen_pos;
 		display->box.size = screen_size;
