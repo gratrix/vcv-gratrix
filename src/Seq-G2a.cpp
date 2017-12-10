@@ -17,7 +17,7 @@ namespace Seq_G2a {
 
 #define PROGRAMS  12
 #define RATIO     2
-#define NOB_ROWS  2
+#define NOB_ROWS  1
 #define NOB_COLS  16
 #define BUT_ROWS  6
 #define BUT_COLS  (NOB_COLS*RATIO)
@@ -733,6 +733,63 @@ struct Impl : Module {
 
 
 //============================================================================================================
+//! \brief Display.
+
+struct Display : TransparentWidget
+{
+	Impl *module;
+	int frame = 0;
+	std::shared_ptr<Font> font;
+
+	float tx[NOB_COLS] = {};
+	float ty[2] = {};
+
+	Display(Impl *module_, const Rect &box_)
+	:
+		module(module_)
+	{
+		box = box_;
+		font = Font::load(assetPlugin(plugin, "res/fonts/lcd-solid/LCD_Solid.ttf"));
+
+		for (std::size_t i = 0; i < NOB_COLS; i++)
+		{
+			float x = box.size.x / static_cast<double>(NOB_COLS);
+			tx[i] = x * i + 4;
+		}
+
+		ty[0] = 16*1 + 2;
+		ty[1] = 16*2 + 4;
+	}
+
+	void draw_main(NVGcontext *vg, const char *title)
+	{
+		nvgFontSize(vg, 16);
+		nvgFontFaceId(vg, font->handle);
+		nvgTextLetterSpacing(vg, -2);
+
+		nvgFillColor(vg, nvgRGBA(0x28, 0xb0, 0xf3, 0xc0));
+
+		for (std::size_t i=0; i<NOB_COLS; ++i)
+		{
+			nvgText(vg, tx[i], ty[0], "F#", NULL);
+			nvgText(vg, tx[i], ty[1], "XXXX", NULL);
+		}
+	}
+
+	void draw(NVGcontext *vg) override
+	{
+		// Calculate
+		if (++frame >= 4)
+		{
+			frame = 0;
+		}
+
+		draw_main(vg, "F# Gb");
+	}
+};
+
+
+//============================================================================================================
 //! \brief The Widget.
 
 Widget::Widget()
@@ -744,6 +801,8 @@ Widget::Widget()
 	float grid_left  = 3*15*OUT_LEFT;
 	float grid_right = 3*15*OUT_RIGHT;
 	float grid_size  = box.size.x - grid_left - grid_right;
+
+	auto display_rect = Rect(Vec(grid_left, 35), Vec(grid_size, 40));
 
 	float g_nobX[NOB_COLS] = {};
 	for (std::size_t i = 0; i < NOB_COLS; i++)
@@ -780,7 +839,7 @@ Widget::Widget()
 	float gridY[NOB_ROWS + BUT_ROWS] = {};
 	{
 		std::size_t j = 0;
-		int pos = 35;
+		int pos = 35+40;
 
 		for (std::size_t row = 0; row < NOB_ROWS; ++row, ++j)
 		{
@@ -800,6 +859,8 @@ Widget::Widget()
 	#if GTX__SAVE_SVG
 	{
 		PanelGen pg(assetPlugin(plugin, "build/res/Seq-G2a.svg"), box.size, "SEQ-G2a");
+
+		pg.rect(display_rect.pos, display_rect.size, "fill:#222222;stroke:none");
 
 		for (std::size_t i=0; i<NOB_COLS-1; i++)
 		{
@@ -865,6 +926,8 @@ Widget::Widget()
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 0)));
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
+
+	addChild(new Display(module, display_rect));
 
 	addParam(createParam<RoundSmallBlackKnob>    (n_s(portX[0], portY[0]), module, Impl::CLOCK_PARAM, -2.0, 6.0, 2.0));
 	addParam(createParam<LEDButton>              (but(portX[1], portY[0]), module, Impl::RUN_PARAM, 0.0, 1.0, 0.0));
