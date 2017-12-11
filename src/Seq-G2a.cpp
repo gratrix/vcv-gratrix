@@ -250,22 +250,9 @@ struct Impl : Module {
 			}
 		}
 
-		// Update knobs BUGGY
+		// Update knobs
 
-		if (masterState)
-		{
-			knob_push(edit_prog);
-			masterState = false;
-		}
-		else if (prev_prog == edit_prog)
-		{
-			knob_pull(edit_prog);
-		}
-		else
-		{
-			knob_pull(prev_prog);
-			knob_push(edit_prog);
-		}
+		knob_pull(edit_prog);
 
 		// Trigger buttons
 
@@ -624,27 +611,13 @@ struct Impl : Module {
 
 	void knob_pull(std::size_t prog)
 	{
-	//	for (std::size_t col = 0; col < LCD_COLS; col++)
-	//	{
-	//		for (std::size_t row = 0; row < LCD_ROWS; ++row)
-	//		{
-	//			lcd_state[prog][row][col] = params[nob_map(row, col)].value;
-	//		}
-	//	}
-	}
-
-	//--------------------------------------------------------------------------------------------------------
-	//! \brief Knob state to params.
-
-	void knob_push(std::size_t prog)
-	{
-	//	for (std::size_t col = 0; col < LCD_COLS; col++)
-	//	{
-	//		for (std::size_t row = 0; row < LCD_ROWS; ++row)
-	//		{
-	//			widget->params[nob_map(row, col)]->setValue(lcd_state[prog][row][col]);
-	//		}
-	//	}
+		for (std::size_t col = 0; col < LCD_COLS && col < PRG_COLS; col++)
+		{
+			for (std::size_t row = 0; row < LCD_ROWS && row < PRG_ROWS; ++row)
+			{
+				lcd_state[prog][row][col] = static_cast<uint8_t>(params[prg_map(row, col)].value + 0.5f);
+			}
+		}
 	}
 
 	//--------------------------------------------------------------------------------------------------------
@@ -805,6 +778,18 @@ struct Display : TransparentWidget
 		if (++frame >= 4)
 		{
 			frame = 0;
+
+			static const char *names[12] = {" C", " C#", " D", " Eb", " E", " F", " F#", " G", " Ab", " A", " Bb", " B"};
+
+			for (std::size_t col = 0; col < LCD_COLS; ++col)
+			{
+				for (std::size_t row = 0; row < LCD_ROWS; ++row)
+				{
+					std::size_t note = module->lcd_state[module->edit_prog][row][col];
+
+					std::strncpy(text[row][col], names[note % 12], LCD_TEXT);
+				}
+			}
 		}
 
 		draw_main(vg);
