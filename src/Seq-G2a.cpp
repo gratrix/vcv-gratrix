@@ -862,16 +862,30 @@ Widget::Widget()
 
 		pg.rect(display_rect.pos, display_rect.size, "fill:#222222;stroke:none");
 
+		{
+			float y0 = display_rect.pos.y - 2;
+			float y1 = display_rect.pos.y + display_rect.size.y + 2;
+			pg.line(Vec(g_nobX[0]-dX, y0), Vec(g_nobX[0]-dX, y1), "fill:none;stroke:#CEE1FD;stroke-width:3");
+			for (std::size_t i=3; i<NOB_COLS; i+=4)
+			{
+				pg.line(Vec(g_nobX[i]+dX, y0), Vec(g_nobX[i]+dX, y1), "fill:none;stroke:#CEE1FD;stroke-width:3");
+			}
+		}
+
 		for (std::size_t i=0; i<NOB_COLS-1; i++)
 		{
 			double x  = 0.5 * (g_nobX[i] + g_nobX[i+1]);
-			double y0 = gridY[0];
-			double y1 = gridY[NOB_ROWS + BUT_ROWS - 1];
+			double y0 = gridY[0] - rad_n_s();
+			double y1 = gridY[NOB_ROWS + BUT_ROWS - 1] + rad_but();
 
 			if (i % 4 == 3)
+			{
 				pg.line(Vec(x, y0), Vec(x, y1), "fill:none;stroke:#7092BE;stroke-width:3");
+			}
 			else
+			{
 				pg.line(Vec(x, y0), Vec(x, y1), "fill:none;stroke:#7092BE;stroke-width:1");
+			}
 		}
 
 		pg.line(Vec(portX[0],    portY[0]), Vec(portX[0],    portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
