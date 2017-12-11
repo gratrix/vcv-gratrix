@@ -153,8 +153,9 @@ struct Impl : Module {
 	bool        masterState = false;
 
 	uint8_t lcd_state[PROGRAMS][LCD_ROWS][LCD_COLS] = {};
-	uint8_t but_state[PROGRAMS][BUT_ROWS][BUT_COLS] = {};
 	uint8_t lcd_cache[LCD_ROWS][LCD_COLS] = {};
+	uint8_t prg_cache[PRG_ROWS][PRG_COLS] = {};
+	uint8_t but_state[PROGRAMS][BUT_ROWS][BUT_COLS] = {};
 	uint8_t but_cache[BUT_ROWS][BUT_COLS] = {};
 
 	float resetLight = 0.0;
@@ -608,6 +609,8 @@ struct Impl : Module {
 
 	//--------------------------------------------------------------------------------------------------------
 	//! \brief Knob params to state.
+	//!
+	//! Only updates on knob value change, otheriwse current value always applied to current program.
 
 	void knob_pull(std::size_t prog)
 	{
@@ -615,7 +618,12 @@ struct Impl : Module {
 		{
 			for (std::size_t row = 0; row < LCD_ROWS && row < PRG_ROWS; ++row)
 			{
-				lcd_state[prog][row][col] = static_cast<uint8_t>(params[prg_map(row, col)].value + 0.5f);
+				uint8_t live = static_cast<uint8_t>(params[prg_map(row, col)].value + 0.5f);
+
+				if (prg_cache[row][col] != live)
+				{
+					lcd_state[prog][row][col] = prg_cache[row][col] = live;
+				}
 			}
 		}
 	}
