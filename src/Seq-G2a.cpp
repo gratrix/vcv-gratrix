@@ -20,6 +20,8 @@ namespace Seq_G2a {
 #define LCD_ROWS  2
 #define LCD_COLS  16
 #define LCD_TEXT  4
+#define PRG_ROWS  1
+#define PRG_COLS  LCD_COLS
 #define NOB_ROWS  2//1
 #define NOB_COLS  LCD_COLS
 #define BUT_ROWS  2//6
@@ -45,7 +47,8 @@ struct Impl : Module {
 		RANDOM_PARAM,
 		COPY_PARAM,
 		PASTE_PARAM,
-		NOB_PARAM,
+		PRG_PARAM,
+		NOB_PARAM  = PRG_PARAM + (PRG_COLS * PRG_ROWS),
 		BUT_PARAM  = NOB_PARAM + (NOB_COLS * NOB_ROWS),
 		NUM_PARAMS = BUT_PARAM + (BUT_COLS * BUT_ROWS)
 	};
@@ -106,12 +109,13 @@ struct Impl : Module {
 		}
 	};
 
-	static constexpr bool is_nob_snap(std::size_t row) { return true; }
+	static constexpr bool is_nob_snap(std::size_t row) { return false; }
 
 	static constexpr std::size_t lcd_val_map(std::size_t row, std::size_t col)     { return LCD_OUTPUT + (OUT_LEFT + OUT_RIGHT) * row + col; }
 	static constexpr std::size_t nob_val_map(std::size_t row, std::size_t col)     { return NOB_OUTPUT + (OUT_LEFT + OUT_RIGHT) * row + col; }
 	static constexpr std::size_t but_val_map(std::size_t row, std::size_t col)     { return BUT_OUTPUT + (OUT_LEFT + OUT_RIGHT) * row + col; }
 
+	static constexpr std::size_t prg_map(std::size_t row, std::size_t col)                  { return PRG_PARAM  +      PRG_COLS * row + col; }
 	static constexpr std::size_t nob_map(std::size_t row, std::size_t col)                  { return NOB_PARAM  +      NOB_COLS * row + col; }
 	static constexpr std::size_t but_map(std::size_t row, std::size_t col)                  { return BUT_PARAM  +      BUT_COLS * row + col; }
 	static constexpr std::size_t led_map(std::size_t row, std::size_t col, std::size_t idx) { return BUT_LIGHT  + 3 * (BUT_COLS * row + col) + idx; }
@@ -830,6 +834,13 @@ Widget::Widget()
 		g_lcdX[i] = grid_left + x * (i + 0.5);
 	}
 
+	float g_prgX[PRG_COLS] = {};
+	for (std::size_t i = 0; i < PRG_COLS; i++)
+	{
+		float x  = grid_size / static_cast<double>(PRG_COLS);
+		g_prgX[i] = grid_left + x * (i + 0.5);
+	}
+
 	float g_nobX[NOB_COLS] = {};
 	for (std::size_t i = 0; i < NOB_COLS; i++)
 	{
@@ -862,7 +873,7 @@ Widget::Widget()
 	portY[2] = portY[0] + 0.45 * dY;
 	portY[3] = portY[0] +        dY;
 
-	float gridY[LCD_ROWS + NOB_ROWS + BUT_ROWS] = {};
+	float gridY[LCD_ROWS + PRG_ROWS + NOB_ROWS + BUT_ROWS] = {};
 	{
 		std::size_t j = 0;
 		int pos = 35;
@@ -872,6 +883,13 @@ Widget::Widget()
 			pos += rad_but() + 3.5;  // not quite right
 			gridY[j] = pos;
 			pos += rad_but() + 3.5;
+		}
+
+		for (std::size_t row = 0; row < PRG_ROWS; ++row, ++j)
+		{
+			pos += rad_n_s() + 4.5;
+			gridY[j] = pos;
+			pos += rad_n_s() + 4.5;
 		}
 
 		for (std::size_t row = 0; row < NOB_ROWS; ++row, ++j)
@@ -1025,6 +1043,11 @@ Widget::Widget()
 			if (OUT_RIGHT) addOutput(createOutput<PJ301MPort>(prt(gridXr, gridY[j]), module, Impl::lcd_val_map(row, 1)));
 		}
 
+		for (std::size_t row = 0; row < PRG_ROWS; ++row, ++j)
+		{
+			;
+		}
+
 		for (std::size_t row = 0; row < NOB_ROWS; ++row, ++j)
 		{
 			if (OUT_LEFT ) addOutput(createOutput<PJ301MPort>(prt(gridXl, gridY[j]), module, Impl::nob_val_map(row, 0)));
@@ -1044,6 +1067,14 @@ Widget::Widget()
 		for (std::size_t row = 0; row < LCD_ROWS; ++row, ++j)
 		{
 			;
+		}
+
+		for (std::size_t row = 0; row < PRG_ROWS; ++row, ++j)
+		{
+			for (std::size_t col = 0; col < PRG_COLS; ++col)
+			{
+				addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_prgX[col], gridY[j]), module, Impl::prg_map(row, col), 0.0, 12.0, 0.0));
+			}
 		}
 
 		for (std::size_t row = 0; row < NOB_ROWS; ++row, ++j)
