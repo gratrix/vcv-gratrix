@@ -17,6 +17,9 @@ namespace Seq_G2a {
 
 #define PROGRAMS  12
 #define RATIO     2
+#define LCD_ROWS  2
+#define LCD_COLS  16
+#define LCD_TEXT  4
 #define NOB_ROWS  1
 #define NOB_COLS  16
 #define BUT_ROWS  6
@@ -741,27 +744,44 @@ struct Display : TransparentWidget
 	int frame = 0;
 	std::shared_ptr<Font> font;
 
-	float tx[NOB_COLS] = {};
-	float ty[2] = {};
+	float tx[LCD_COLS] = {};
+	float ty[LCD_ROWS] = {};
+
+	char text[LCD_ROWS][LCD_COLS][LCD_TEXT + 1] = {};
+
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief Constructor.
 
 	Display(Impl *module_, const Rect &box_)
 	:
 		module(module_)
 	{
-		box = box_;
+		box  = box_;
 		font = Font::load(assetPlugin(plugin, "res/fonts/lcd-solid/LCD_Solid.ttf"));
 
-		for (std::size_t i = 0; i < NOB_COLS; i++)
+		for (std::size_t col = 0; col < LCD_COLS; col++)
 		{
-			float x = box.size.x / static_cast<double>(NOB_COLS);
-			tx[i] = x * i + 4;
+			tx[col] = 4.0f + col * box.size.x / static_cast<double>(LCD_COLS);
 		}
 
-		ty[0] = 16*1 + 2;
-		ty[1] = 16*2 + 4;
+		for (std::size_t row = 0; row < LCD_ROWS; row++)
+		{
+			ty[row] = (row + 1) * 18.0f;
+		}
+
+		for (std::size_t col = 0; col < LCD_COLS; ++col)
+		{
+			for (std::size_t row = 0; row < LCD_ROWS; ++row)
+			{
+				std::strncpy(text[row][col], "01234567012345670123456701234567", LCD_TEXT);
+			}
+		}
 	}
 
-	void draw_main(NVGcontext *vg, const char *title)
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief ...
+
+	void draw_main(NVGcontext *vg)
 	{
 		nvgFontSize(vg, 16);
 		nvgFontFaceId(vg, font->handle);
@@ -769,12 +789,17 @@ struct Display : TransparentWidget
 
 		nvgFillColor(vg, nvgRGBA(0x28, 0xb0, 0xf3, 0xc0));
 
-		for (std::size_t i=0; i<NOB_COLS; ++i)
+		for (std::size_t col = 0; col < LCD_COLS; ++col)
 		{
-			nvgText(vg, tx[i], ty[0], "F#", NULL);
-			nvgText(vg, tx[i], ty[1], "XXXX", NULL);
+			for (std::size_t row = 0; row < LCD_ROWS; ++row)
+			{
+				nvgText(vg, tx[col], ty[row], text[row][col], NULL);
+			}
 		}
 	}
+
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief ...
 
 	void draw(NVGcontext *vg) override
 	{
@@ -784,7 +809,7 @@ struct Display : TransparentWidget
 			frame = 0;
 		}
 
-		draw_main(vg, "F# Gb");
+		draw_main(vg);
 	}
 };
 
