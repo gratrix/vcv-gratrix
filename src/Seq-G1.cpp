@@ -893,6 +893,7 @@ Widget::Widget()
 			gridY[j] = pos;
 			pos += rad_but() + 3.5;
 		}
+		pos -= 8; // not quite right
 		#endif
 
 		#if PRG_ROWS
