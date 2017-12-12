@@ -131,7 +131,6 @@ struct Impl : Module {
 	}
 
 
-	Widget *widget;
 	Decode prg_nob;
 	Decode prg_cv;
 	bool running = true;
@@ -182,14 +181,13 @@ struct Impl : Module {
 	//--------------------------------------------------------------------------------------------------------
 	//! \brief Constructor.
 
-	Impl(Widget *widget_)
+	Impl()
 	:
 		Module(
 			NUM_PARAMS,
 			(GTX__N+1) * (NUM_INPUTS  - OFF_INPUTS ) + OFF_INPUTS,
 			(GTX__N  ) * (NUM_OUTPUTS - OFF_OUTPUTS) + OFF_OUTPUTS,
-			NUM_LIGHTS),
-		widget(widget_)
+			NUM_LIGHTS)
 	{
 		reset();
 	}
@@ -850,7 +848,7 @@ struct Display : TransparentWidget
 
 Widget::Widget()
 {
-	Impl *module = new Impl(this);
+	Impl *module = new Impl();
 	setModule(module);
 	box.size = Vec((OUT_LEFT+LCD_COLS+OUT_RIGHT)*3*15, 380);
 
@@ -964,19 +962,20 @@ Widget::Widget()
 
 		{
 			float y0 = display_rect.pos.y - 2;
-			float y1 = display_rect.pos.y + display_rect.size.y + 2;
-			pg.line(Vec(g_nobX[0]-dX, y0), Vec(g_nobX[0]-dX, y1), "fill:none;stroke:#CEE1FD;stroke-width:3");
-			for (std::size_t i=3; i<NOB_COLS; i+=4)
+			float y1 = display_rect.pos.y + display_rect.size.y + 3;
+
+			pg.line(Vec(g_prgX[0]-dX, y0), Vec(g_prgX[0]-dX, y1), "fill:none;stroke:#CEE1FD;stroke-width:3");
+			for (std::size_t i=3; i<PRG_COLS; i+=4)
 			{
-				pg.line(Vec(g_nobX[i]+dX, y0), Vec(g_nobX[i]+dX, y1), "fill:none;stroke:#CEE1FD;stroke-width:3");
+				pg.line(Vec(g_prgX[i]+dX, y0), Vec(g_prgX[i]+dX, y1), "fill:none;stroke:#CEE1FD;stroke-width:3");
 			}
 		}
 
-		for (std::size_t i=0; i<NOB_COLS-1; i++)
+		for (std::size_t i=0; i<PRG_COLS-1; i++)
 		{
-			double x  = 0.5 * (g_nobX[i] + g_nobX[i+1]);
-			double y0 = gridY[0] - rad_n_s();
-			double y1 = gridY[NOB_ROWS + BUT_ROWS - 1] + rad_but();
+			double x  = 0.5 * (g_prgX[i] + g_prgX[i+1]);
+			double y0 = display_rect.pos.y + display_rect.size.y + 3;
+			double y1 = gridY[PRG_ROWS + BUT_ROWS - 1] + rad_but();
 
 			if (i % 4 == 3)
 			{
