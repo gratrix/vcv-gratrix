@@ -967,10 +967,8 @@ Widget::Widget()
 		pg.line(Vec(portX[4]+dX, portY[3]), Vec(portX[4]+dX, portY[2]), "fill:none;stroke:#7092BE;stroke-width:1");
 		pg.line(Vec(portX[4],    portY[3]), Vec(portX[4]+dX, portY[3]), "fill:none;stroke:#7092BE;stroke-width:1");
 
-		pg.line(Vec(portX[0]-dX, portY[0]-29), Vec(portX[0]-dX, portY[1]+16), "fill:none;stroke:#7092BE;stroke-width:2");
 		pg.line(Vec(portX[3]+dX, portY[0]-29), Vec(portX[3]+dX, portY[1]+16), "fill:none;stroke:#7092BE;stroke-width:2");
 		pg.line(Vec(portX[6]+dX, portY[0]-29), Vec(portX[6]+dX, portY[1]+16), "fill:none;stroke:#7092BE;stroke-width:2");
-		pg.line(Vec(portX[9]+dX, portY[0]-29), Vec(portX[9]+dX, portY[1]+16), "fill:none;stroke:#7092BE;stroke-width:2");
 
 		pg.nob_sml_raw(portX[0], portY[0], "CLOCK");
 		pg.nob_sml_raw(portX[1], portY[0], "RUN");
