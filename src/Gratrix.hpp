@@ -2178,7 +2178,6 @@ namespace Chord_G1  { struct Widget : ModuleWidget { Widget(); }; }
 namespace Octave_G1 { struct Widget : ModuleWidget { Widget(); }; }
 namespace Seq_G1    { struct Widget : ModuleWidget { Widget(); }; }
 namespace Seq_G2    { struct Widget : ModuleWidget { Widget(); }; }
-namespace Seq_G2a   { struct Widget : ModuleWidget { Widget(); }; }
 }
 
 struct MuxWidget       : ModuleWidget { MuxWidget();       };

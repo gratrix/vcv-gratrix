@@ -17,8 +17,13 @@ namespace Seq_G2 {
 
 #define PROGRAMS  12
 #define RATIO     2
-#define NOB_ROWS  2
-#define NOB_COLS  16
+#define LCD_ROWS  2
+#define LCD_COLS  16
+#define LCD_TEXT  4
+#define PRG_ROWS  1
+#define PRG_COLS  LCD_COLS
+#define NOB_ROWS  0
+#define NOB_COLS  LCD_COLS
 #define BUT_ROWS  6
 #define BUT_COLS  (NOB_COLS*RATIO)
 #define OUT_LEFT  1
@@ -42,7 +47,8 @@ struct Impl : Module {
 		RANDOM_PARAM,
 		COPY_PARAM,
 		PASTE_PARAM,
-		NOB_PARAM,
+		PRG_PARAM,
+		NOB_PARAM  = PRG_PARAM + (PRG_COLS * PRG_ROWS),
 		BUT_PARAM  = NOB_PARAM + (NOB_COLS * NOB_ROWS),
 		NUM_PARAMS = BUT_PARAM + (BUT_COLS * BUT_ROWS)
 	};
@@ -58,7 +64,8 @@ struct Impl : Module {
 		OFF_INPUTS = GATE_INPUT
 	};
 	enum OutputIds {
-		NOB_OUTPUT,
+		LCD_OUTPUT,
+		NOB_OUTPUT  = LCD_OUTPUT + LCD_ROWS * (OUT_LEFT + OUT_RIGHT),
 		BUT_OUTPUT  = NOB_OUTPUT + NOB_ROWS * (OUT_LEFT + OUT_RIGHT),
 		GATE_OUTPUT = BUT_OUTPUT + BUT_ROWS * (OUT_LEFT + OUT_RIGHT),  // N
 		VOCT_OUTPUT,                                                   // N
@@ -102,11 +109,13 @@ struct Impl : Module {
 		}
 	};
 
-	static constexpr bool is_nob_snap(std::size_t row) { return true; }
+	static constexpr bool is_nob_snap(std::size_t row) { return false; }
 
+	static constexpr std::size_t lcd_val_map(std::size_t row, std::size_t col)     { return LCD_OUTPUT + (OUT_LEFT + OUT_RIGHT) * row + col; }
 	static constexpr std::size_t nob_val_map(std::size_t row, std::size_t col)     { return NOB_OUTPUT + (OUT_LEFT + OUT_RIGHT) * row + col; }
 	static constexpr std::size_t but_val_map(std::size_t row, std::size_t col)     { return BUT_OUTPUT + (OUT_LEFT + OUT_RIGHT) * row + col; }
 
+	static constexpr std::size_t prg_map(std::size_t row, std::size_t col)                  { return PRG_PARAM  +      PRG_COLS * row + col; }
 	static constexpr std::size_t nob_map(std::size_t row, std::size_t col)                  { return NOB_PARAM  +      NOB_COLS * row + col; }
 	static constexpr std::size_t but_map(std::size_t row, std::size_t col)                  { return BUT_PARAM  +      BUT_COLS * row + col; }
 	static constexpr std::size_t led_map(std::size_t row, std::size_t col, std::size_t idx) { return BUT_LIGHT  + 3 * (BUT_COLS * row + col) + idx; }
@@ -122,7 +131,6 @@ struct Impl : Module {
 	}
 
 
-	Widget *widget;
 	Decode prg_nob;
 	Decode prg_cv;
 	bool running = true;
@@ -140,20 +148,25 @@ struct Impl : Module {
 	int numSteps = 0;
 	std::size_t play_prog = 0;
 	std::size_t edit_prog = 0;
-	std::size_t prev_prog = 0;
-	bool        masterState = false;
 
-	uint8_t knobState[PROGRAMS][NOB_ROWS][NOB_COLS] = {};
-	uint8_t gateState[PROGRAMS][BUT_ROWS][BUT_COLS] = {};
-	uint8_t knobCopy[NOB_ROWS][NOB_COLS] = {};
-	uint8_t gateCopy[BUT_ROWS][BUT_COLS] = {};
+	#if LCD_ROWS
+	uint8_t lcd_state[PROGRAMS][LCD_ROWS][LCD_COLS] = {};
+	uint8_t lcd_cache          [LCD_ROWS][LCD_COLS] = {};
+	#endif
+	#if PRG_ROWS
+	uint8_t prg_cache          [PRG_ROWS][PRG_COLS] = {};
+	#endif
+	#if BUT_ROWS
+	uint8_t but_state[PROGRAMS][BUT_ROWS][BUT_COLS] = {};
+	uint8_t but_cache          [BUT_ROWS][BUT_COLS] = {};
+	float   but_lights         [BUT_ROWS][BUT_COLS] = {};
+	#endif
 
 	float resetLight = 0.0;
 	float clearLight = 0.0;
 	float randomLight = 0.0;
 	float copyLight = 0.0;
 	float pasteLight = 0.0;
-	float stepLights[BUT_ROWS][BUT_COLS] = {};
 
 	enum GateMode
 	{
@@ -168,14 +181,13 @@ struct Impl : Module {
 	//--------------------------------------------------------------------------------------------------------
 	//! \brief Constructor.
 
-	Impl(Widget *widget_)
+	Impl()
 	:
 		Module(
 			NUM_PARAMS,
 			(GTX__N+1) * (NUM_INPUTS  - OFF_INPUTS ) + OFF_INPUTS,
 			(GTX__N  ) * (NUM_OUTPUTS - OFF_OUTPUTS) + OFF_OUTPUTS,
-			NUM_LIGHTS),
-		widget(widget_)
+			NUM_LIGHTS)
 	{
 		reset();
 	}
@@ -212,7 +224,6 @@ struct Impl : Module {
 		{
 			running = !running;
 		}
-		lights[RUNNING_LIGHT].value = running ? 1.0 : 0.0;
 
 		bool nextStep = false;
 
@@ -241,22 +252,9 @@ struct Impl : Module {
 			}
 		}
 
-		// Update knobs BUGGY
+		// Update knobs
 
-		if (masterState)
-		{
-			knob_push(edit_prog);
-			masterState = false;
-		}
-		else if (prev_prog == edit_prog)
-		{
-			knob_pull(edit_prog);
-		}
-		else
-		{
-			knob_pull(prev_prog);
-			knob_push(edit_prog);
-		}
+		knob_pull(edit_prog);
 
 		// Trigger buttons
 
@@ -306,7 +304,7 @@ struct Impl : Module {
 			pasteLight -= pasteLight * dim;
 		}
 
-		numSteps = RATIO * clampi(roundf(params[STEPS_PARAM].value + inputs[STEPS_INPUT].value), 1, NOB_COLS);
+		numSteps = RATIO * clampi(roundf(params[STEPS_PARAM].value + inputs[STEPS_INPUT].value), 1, LCD_COLS);
 
 		if (nextStep)
 		{
@@ -318,16 +316,19 @@ struct Impl : Module {
 				index = 0;
 			}
 
+			#if BUT_ROWS
 			for (int row = 0; row < BUT_ROWS; row++)
 			{
-				stepLights[row][index] = 1.0;
+				but_lights[row][index] = 1.0;
 			}
+			#endif
 
 			gatePulse.trigger(1e-3);
 		}
 
 		bool pulse = gatePulse.process(1.0 / engineGetSampleRate());
 
+		#if BUT_ROWS
 		// Gate buttons
 
 		for (int col = 0; col < BUT_COLS; ++col)
@@ -338,7 +339,7 @@ struct Impl : Module {
 
 				if (gateTriggers[row][col].process(params[but_map(row, col)].value))
 				{
-					auto state = gateState[edit_prog][row][col];
+					auto state = but_state[edit_prog][row][col];
 
 					if (++state >= GATE_STATES)
 					{
@@ -352,7 +353,7 @@ struct Impl : Module {
 					{
 						for (std::size_t c = col; c < col + span_c && c < BUT_COLS; ++c)
 						{
-							gateState[edit_prog][r][c] = state;
+							but_state[edit_prog][r][c] = state;
 						}
 					}
 				}
@@ -360,9 +361,9 @@ struct Impl : Module {
 				// Get state of buttons for lights
 
 				{
-					bool gateOn = (running && (col == index) && (gateState[edit_prog][row][col] > 0));
+					bool gateOn = (running && (col == index) && (but_state[edit_prog][row][col] > 0));
 
-					switch (gateState[edit_prog][row][col])
+					switch (but_state[edit_prog][row][col])
 					{
 						case GM_CONTINUOUS :                            break;
 						case GM_RETRIGGER  : gateOn = gateOn && !pulse; break;
@@ -370,15 +371,15 @@ struct Impl : Module {
 						default            : break;
 					}
 
-					stepLights[row][col] -= stepLights[row][col] / lightLambda / engineGetSampleRate();
+					but_lights[row][col] -= but_lights[row][col] / lightLambda / engineGetSampleRate();
 
 					if (col < numSteps)
 					{
 						float val = (play_prog == edit_prog) ? 1.0 : 0.1;
 
-						lights[led_map(row, col, 1)].value = gateState[edit_prog][row][col] == GM_CONTINUOUS ? 1.0 - val * stepLights[row][col] : val * stepLights[row][col];  // Green
-						lights[led_map(row, col, 2)].value = gateState[edit_prog][row][col] == GM_RETRIGGER  ? 1.0 - val * stepLights[row][col] : val * stepLights[row][col];  // Blue
-						lights[led_map(row, col, 0)].value = gateState[edit_prog][row][col] == GM_TRIGGER    ? 1.0 - val * stepLights[row][col] : val * stepLights[row][col];  // Red
+						lights[led_map(row, col, 1)].value = but_state[edit_prog][row][col] == GM_CONTINUOUS ? 1.0 - val * but_lights[row][col] : val * but_lights[row][col];  // Green
+						lights[led_map(row, col, 2)].value = but_state[edit_prog][row][col] == GM_RETRIGGER  ? 1.0 - val * but_lights[row][col] : val * but_lights[row][col];  // Blue
+						lights[led_map(row, col, 0)].value = but_state[edit_prog][row][col] == GM_TRIGGER    ? 1.0 - val * but_lights[row][col] : val * but_lights[row][col];  // Red
 					}
 					else
 					{
@@ -389,25 +390,37 @@ struct Impl : Module {
 				}
 			}
 		}
+		#endif
 
-		// Compute row output
+		// Compute row outputs
 
-		int nob_index = index / RATIO;
+		#if LCD_ROWS
+		std::size_t lcd_index = index / RATIO;
+		float       lcd_val[LCD_ROWS];
+		for (std::size_t row = 0; row < LCD_ROWS; ++row)
+		{
+			lcd_val[row] = lcd_state[play_prog][row][lcd_index] / 12.0f;
+		}
+		#endif
 
-		float nob_val[NOB_ROWS];
+		#if NOB_ROWS
+		std::size_t nob_index = index / RATIO;
+		float       nob_val[NOB_ROWS];
 		for (std::size_t row = 0; row < NOB_ROWS; ++row)
 		{
-			nob_val[row] = knobState[play_prog][row][nob_index];
+			nob_val[row] = params[nob_map(row, nob_index)].value;
 
 			if (is_nob_snap(row)) nob_val[row] /= 12.0f;
 		}
+		#endif
 
+		#if BUT_ROWS
 		bool but_val[BUT_ROWS];
 		for (std::size_t row = 0; row < BUT_ROWS; ++row)
 		{
-			but_val[row] = running && (gateState[play_prog][row][index] > 0);
+			but_val[row] = running && (but_state[play_prog][row][index] > 0);
 
-			switch (gateState[play_prog][row][index])
+			switch (but_state[play_prog][row][index])
 			{
 				case GM_CONTINUOUS :                                        break;
 				case GM_RETRIGGER  : but_val[row] = but_val[row] && !pulse; break;
@@ -415,23 +428,37 @@ struct Impl : Module {
 				default            : break;
 			}
 		}
+		#endif
 
 		// Write row outputs
 
+		#if LCD_ROWS
+		for (std::size_t row = 0; row < LCD_ROWS; ++row)
+		{
+			if (OUT_LEFT || OUT_RIGHT) outputs[lcd_val_map(row, 0)].value = lcd_val[row];
+			if (OUT_LEFT && OUT_RIGHT) outputs[lcd_val_map(row, 1)].value = lcd_val[row];
+		}
+		#endif
+
+		#if NOB_ROWS
 		for (std::size_t row = 0; row < NOB_ROWS; ++row)
 		{
 			if (OUT_LEFT || OUT_RIGHT) outputs[nob_val_map(row, 0)].value = nob_val[row];
 			if (OUT_LEFT && OUT_RIGHT) outputs[nob_val_map(row, 1)].value = nob_val[row];
 		}
+		#endif
 
+		#if BUT_ROWS
 		for (std::size_t row = 0; row < BUT_ROWS; ++row)
 		{
 			if (OUT_LEFT || OUT_RIGHT) outputs[but_val_map(row, 0)].value = but_val[row] ? 10.0f : 0.0f;
 			if (OUT_LEFT && OUT_RIGHT) outputs[but_val_map(row, 1)].value = but_val[row] ? 10.0f : 0.0f;
 		}
+		#endif
 
-		// Detemine ploy outputs
+		// Detemine poly outputs
 
+		#if BUT_ROWS
 		for (std::size_t i=0; i<GTX__N && i<BUT_ROWS; ++i)
 		{
 			// Pass V/OCT trough (for now)
@@ -442,22 +469,22 @@ struct Impl : Module {
 
 			outputs[omap(GATE_OUTPUT, i)].value = (but_val[i] && gate_in >= 1.0f) ? 10.0f : 0.0f;
 		}
+		#endif
 
 		// Update LEDs
 
-		lights[RESET_LIGHT] .value = resetLight;
-		lights[CLEAR_LIGHT] .value = clearLight;
-		lights[RANDOM_LIGHT].value = randomLight;
-		lights[COPY_LIGHT]  .value = copyLight;
-		lights[PASTE_LIGHT] .value = pasteLight;
+		lights[RUNNING_LIGHT].value = running ? 1.0 : 0.0;
+		lights[RESET_LIGHT]  .value = resetLight;
+		lights[CLEAR_LIGHT]  .value = clearLight;
+		lights[RANDOM_LIGHT] .value = randomLight;
+		lights[COPY_LIGHT]   .value = copyLight;
+		lights[PASTE_LIGHT]  .value = pasteLight;
 
 		for (std::size_t i=0; i<PROGRAMS; ++i)
 		{
 			lights[PROG_LIGHT + i * 2    ].value = prog_leds[i * 2    ];
 			lights[PROG_LIGHT + i * 2 + 1].value = prog_leds[i * 2 + 1];
 		}
-
-		prev_prog = edit_prog;
 	}
 
 	//--------------------------------------------------------------------------------------------------------
@@ -470,16 +497,16 @@ struct Impl : Module {
 			// Running
 			json_object_set_new(rootJ, "running", json_boolean(running));
 
-			// Knobs
+			#if LCD_ROWS
 			if (json_t *ja = json_array())
 			{
 				for (std::size_t prog = 0; prog < PROGRAMS; ++prog)
 				{
-					for (std::size_t row = 0; row < NOB_ROWS; ++row)
+					for (std::size_t row = 0; row < LCD_ROWS; ++row)
 					{
-						for (std::size_t col = 0; col < NOB_COLS; ++col)
+						for (std::size_t col = 0; col < LCD_COLS; ++col)
 						{
-							if (json_t *ji = json_integer(static_cast<int>(knobState[prog][row][col])))
+							if (json_t *ji = json_integer(static_cast<int>(lcd_state[prog][row][col])))
 							{
 								json_array_append_new(ja, ji);
 							}
@@ -487,10 +514,11 @@ struct Impl : Module {
 					}
 				}
 
-				json_object_set_new(rootJ, "knobs", ja);
+				json_object_set_new(rootJ, "lcd", ja);
 			}
+			#endif
 
-			// Gates
+			#if BUT_ROWS
 			if (json_t *ja = json_array())
 			{
 				for (std::size_t prog = 0; prog < PROGRAMS; ++prog)
@@ -499,7 +527,7 @@ struct Impl : Module {
 					{
 						for (std::size_t col = 0; col < BUT_COLS; ++col)
 						{
-							if (json_t *ji = json_integer(static_cast<int>(gateState[prog][row][col])))
+							if (json_t *ji = json_integer(static_cast<int>(but_state[prog][row][col])))
 							{
 								json_array_append_new(ja, ji);
 							}
@@ -507,8 +535,9 @@ struct Impl : Module {
 					}
 				}
 
-				json_object_set_new(rootJ, "gates", ja);
+				json_object_set_new(rootJ, "but", ja);
 			}
+			#endif
 
 			return rootJ;
 		}
@@ -527,27 +556,28 @@ struct Impl : Module {
 			running = json_is_true(jb);
 		}
 
-		// Knobs
-		if (json_t *ja = json_object_get(rootJ, "knobs"))
+		#if LCD_ROWS
+		if (json_t *ja = json_object_get(rootJ, "lcd"))
 		{
 			for (std::size_t i = 0, prog = 0; prog < PROGRAMS; ++prog)
 			{
-				for (std::size_t row = 0; row < NOB_ROWS; ++row)
+				for (std::size_t row = 0; row < LCD_ROWS; ++row)
 				{
-					for (std::size_t col = 0; col < NOB_COLS; ++col, ++i)
+					for (std::size_t col = 0; col < LCD_COLS; ++col, ++i)
 					{
 						if (json_t *ji = json_array_get(ja, i))
 						{
 							//! \todo Range check
-							knobState[prog][row][col] = json_integer_value(ji);
+							lcd_state[prog][row][col] = json_integer_value(ji);
 						}
 					}
 				}
 			}
 		}
+		#endif
 
-		// Gates
-		if (json_t *ja = json_object_get(rootJ, "gates"))
+		#if BUT_ROWS
+		if (json_t *ja = json_object_get(rootJ, "but"))
 		{
 			for (std::size_t i = 0, prog = 0; prog < PROGRAMS; ++prog)
 			{
@@ -561,19 +591,18 @@ struct Impl : Module {
 
 							if (value < 0 || value >= GATE_STATES)
 							{
-								gateState[prog][row][col] = GM_OFF;
+								but_state[prog][row][col] = GM_OFF;
 							}
 							else
 							{
-								gateState[prog][row][col] = static_cast<uint8_t>(value);
+								but_state[prog][row][col] = static_cast<uint8_t>(value);
 							}
 						}
 					}
 				}
 			}
 		}
-
-		masterState = true;
+		#endif
 	}
 
 	//--------------------------------------------------------------------------------------------------------
@@ -583,13 +612,7 @@ struct Impl : Module {
 	{
 		for (std::size_t prog = 0; prog < PROGRAMS; ++prog)
 		{
-			for (std::size_t col = 0; col < BUT_COLS; col++)
-			{
-				for (std::size_t row = 0; row < BUT_ROWS; row++)
-				{
-					gateState[prog][row][col] = GM_OFF;
-				}
-			}
+			clear_prog(prog);
 		}
 	}
 
@@ -600,46 +623,31 @@ struct Impl : Module {
 	{
 		for (std::size_t prog = 0; prog < PROGRAMS; ++prog)
 		{
-			for (std::size_t col = 0; col < BUT_COLS; col++)
-			{
-				for (std::size_t row = 0; row < BUT_ROWS; row++)
-				{
-					uint32_t r = randomu32() % (GATE_STATES + 1);
-
-					if (r >= GATE_STATES) r = GM_CONTINUOUS;
-
-					gateState[prog][row][col] = r;
-				}
-			}
+			randomize_prog(prog);
 		}
 	}
 
 	//--------------------------------------------------------------------------------------------------------
 	//! \brief Knob params to state.
+	//!
+	//! Only updates on knob value change, otheriwse current value always applied to current program.
 
 	void knob_pull(std::size_t prog)
 	{
-		for (std::size_t col = 0; col < NOB_COLS; col++)
+		#if LCD_ROWS && PRG_ROWS
+		for (std::size_t col = 0; col < LCD_COLS && col < PRG_COLS; col++)
 		{
-			for (std::size_t row = 0; row < NOB_ROWS; ++row)
+			for (std::size_t row = 0; row < LCD_ROWS && row < PRG_ROWS; ++row)
 			{
-				knobState[prog][row][col] = params[nob_map(row, col)].value;
+				uint8_t live = static_cast<uint8_t>(params[prg_map(row, col)].value + 0.5f);
+
+				if (prg_cache[row][col] != live)
+				{
+					lcd_state[prog][row][col] = prg_cache[row][col] = live;
+				}
 			}
 		}
-	}
-
-	//--------------------------------------------------------------------------------------------------------
-	//! \brief Knob state to params.
-
-	void knob_push(std::size_t prog)
-	{
-		for (std::size_t col = 0; col < NOB_COLS; col++)
-		{
-			for (std::size_t row = 0; row < NOB_ROWS; ++row)
-			{
-				widget->params[nob_map(row, col)]->setValue(knobState[prog][row][col]);
-			}
-		}
+		#endif
 	}
 
 	//--------------------------------------------------------------------------------------------------------
@@ -647,23 +655,25 @@ struct Impl : Module {
 
 	void clear_prog(std::size_t prog)
 	{
-		for (std::size_t col = 0; col < NOB_COLS; col++)
+		#if LCD_ROWS
+		for (std::size_t col = 0; col < LCD_COLS; col++)
 		{
-			for (std::size_t row = 0; row < NOB_ROWS; ++row)
+			for (std::size_t row = 0; row < LCD_ROWS; ++row)
 			{
-				knobState[prog][row][col] = 0;
-
-				widget->params[nob_map(row, col)]->setValue(0);
+				lcd_state[prog][row][col] = 0;
 			}
 		}
+		#endif
 
+		#if BUT_ROWS
 		for (std::size_t col = 0; col < BUT_COLS; col++)
 		{
 			for (std::size_t row = 0; row < BUT_ROWS; row++)
 			{
-				gateState[prog][row][col] = GM_OFF;
+				but_state[prog][row][col] = GM_OFF;
 			}
 		}
+		#endif
 	}
 
 	//--------------------------------------------------------------------------------------------------------
@@ -671,6 +681,7 @@ struct Impl : Module {
 
 	void randomize_prog(std::size_t prog)
 	{
+		#if BUT_ROWS
 		for (std::size_t col = 0; col < BUT_COLS; col++)
 		{
 			for (std::size_t row = 0; row < BUT_ROWS; row++)
@@ -679,9 +690,10 @@ struct Impl : Module {
 
 				if (r >= GATE_STATES) r = GM_CONTINUOUS;
 
-				gateState[prog][row][col] = r;
+				but_state[prog][row][col] = r;
 			}
 		}
+		#endif
 	}
 
 	//--------------------------------------------------------------------------------------------------------
@@ -689,21 +701,25 @@ struct Impl : Module {
 
 	void copy_prog(std::size_t prog)
 	{
-		for (std::size_t col = 0; col < NOB_COLS; col++)
+		#if LCD_ROWS
+		for (std::size_t col = 0; col < LCD_COLS; col++)
 		{
-			for (std::size_t row = 0; row < NOB_ROWS; ++row)
+			for (std::size_t row = 0; row < LCD_ROWS; ++row)
 			{
-				knobCopy[row][col] = knobState[prog][row][col];
+				lcd_cache[row][col] = lcd_state[prog][row][col];
 			}
 		}
+		#endif
 
+		#if BUT_ROWS
 		for (std::size_t col = 0; col < BUT_COLS; col++)
 		{
 			for (std::size_t row = 0; row < BUT_ROWS; row++)
 			{
-				gateCopy[row][col] = gateState[prog][row][col];
+				but_cache[row][col] = but_state[prog][row][col];
 			}
 		}
+		#endif
 	}
 
 	//--------------------------------------------------------------------------------------------------------
@@ -711,25 +727,120 @@ struct Impl : Module {
 
 	void paste_prog(std::size_t prog)
 	{
-		for (std::size_t col = 0; col < NOB_COLS; col++)
+		#if LCD_ROWS
+		for (std::size_t col = 0; col < LCD_COLS; col++)
 		{
-			for (std::size_t row = 0; row < NOB_ROWS; ++row)
+			for (std::size_t row = 0; row < LCD_ROWS; ++row)
 			{
-				knobState[prog][row][col] = knobCopy[row][col];
-
-				widget->params[nob_map(row, col)]->setValue(knobCopy[row][col]);
+				lcd_state[prog][row][col] = lcd_cache[row][col];
 			}
 		}
+		#endif
 
+		#if BUT_ROWS
 		for (std::size_t col = 0; col < BUT_COLS; col++)
 		{
 			for (std::size_t row = 0; row < BUT_ROWS; row++)
 			{
-				gateState[prog][row][col] = gateCopy[row][col];
+				but_state[prog][row][col] = but_cache[row][col];
+			}
+		}
+		#endif
+	}
+};
+
+
+#if LCD_ROWS
+//============================================================================================================
+//! \brief Display.
+
+struct Display : TransparentWidget
+{
+	Impl *module;
+	int frame = 0;
+	std::shared_ptr<Font> font;
+
+	float tx[LCD_COLS] = {};
+	float ty[LCD_ROWS] = {};
+
+	char text[LCD_ROWS][LCD_COLS][LCD_TEXT + 1] = {};
+
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief Constructor.
+
+	Display(Impl *module_, const Rect &box_)
+	:
+		module(module_)
+	{
+		box  = box_;
+		font = Font::load(assetPlugin(plugin, "res/fonts/lcd-solid/LCD_Solid.ttf"));
+
+		for (std::size_t col = 0; col < LCD_COLS; col++)
+		{
+			tx[col] = 4.0f + col * box.size.x / static_cast<double>(LCD_COLS);
+		}
+
+		for (std::size_t row = 0; row < LCD_ROWS; row++)
+		{
+			ty[row] = (row + 1) * 18.0f;
+		}
+
+		for (std::size_t col = 0; col < LCD_COLS; ++col)
+		{
+			for (std::size_t row = 0; row < LCD_ROWS; ++row)
+			{
+				std::strncpy(text[row][col], "01234567012345670123456701234567", LCD_TEXT);
 			}
 		}
 	}
+
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief ...
+
+	void draw_main(NVGcontext *vg)
+	{
+		nvgFontSize(vg, 16);
+		nvgFontFaceId(vg, font->handle);
+		nvgTextLetterSpacing(vg, -2);
+
+		nvgFillColor(vg, nvgRGBA(0x28, 0xb0, 0xf3, 0xc0));
+
+		for (std::size_t col = 0; col < LCD_COLS; ++col)
+		{
+			for (std::size_t row = 0; row < LCD_ROWS; ++row)
+			{
+				nvgText(vg, tx[col], ty[row], text[row][col], NULL);
+			}
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------
+	//! \brief ...
+
+	void draw(NVGcontext *vg) override
+	{
+		// Calculate
+		if (++frame >= 4)
+		{
+			frame = 0;
+
+			static const char *names[12] = {" C", " C#", " D", " Eb", " E", " F", " F#", " G", " Ab", " A", " Bb", " B"};
+
+			for (std::size_t col = 0; col < LCD_COLS; ++col)
+			{
+				for (std::size_t row = 0; row < LCD_ROWS; ++row)
+				{
+					std::size_t note = module->lcd_state[module->edit_prog][row][col];
+
+					std::strncpy(text[row][col], names[note % 12], LCD_TEXT);
+				}
+			}
+		}
+
+		draw_main(vg);
+	}
 };
+#endif
 
 
 //============================================================================================================
@@ -737,27 +848,51 @@ struct Impl : Module {
 
 Widget::Widget()
 {
-	Impl *module = new Impl(this);
+	Impl *module = new Impl();
 	setModule(module);
-	box.size = Vec((OUT_LEFT+NOB_COLS+OUT_RIGHT)*3*15, 380);
+	box.size = Vec((OUT_LEFT+LCD_COLS+OUT_RIGHT)*3*15, 380);
 
 	float grid_left  = 3*15*OUT_LEFT;
 	float grid_right = 3*15*OUT_RIGHT;
 	float grid_size  = box.size.x - grid_left - grid_right;
 
+	auto display_rect = Rect(Vec(grid_left, 35), Vec(grid_size, 40));
+
+	#if LCD_ROWS
+	float g_lcdX[LCD_COLS] = {};
+	for (std::size_t i = 0; i < LCD_COLS; i++)
+	{
+		float x  = grid_size / static_cast<double>(LCD_COLS);
+		g_lcdX[i] = grid_left + x * (i + 0.5);
+	}
+	#endif
+
+	#if PRG_ROWS
+	float g_prgX[PRG_COLS] = {};
+	for (std::size_t i = 0; i < PRG_COLS; i++)
+	{
+		float x  = grid_size / static_cast<double>(PRG_COLS);
+		g_prgX[i] = grid_left + x * (i + 0.5);
+	}
+	#endif
+
+	#if NOB_ROWS
 	float g_nobX[NOB_COLS] = {};
 	for (std::size_t i = 0; i < NOB_COLS; i++)
 	{
 		float x  = grid_size / static_cast<double>(NOB_COLS);
 		g_nobX[i] = grid_left + x * (i + 0.5);
 	}
+	#endif
 
+	#if BUT_ROWS
 	float g_butX[BUT_COLS] = {};
 	for (std::size_t i = 0; i < BUT_COLS; i++)
 	{
 		float x  = grid_size / static_cast<double>(BUT_COLS);
 		g_butX[i] = grid_left + x * (i + 0.5);
 	}
+	#endif
 
 	float gridXl =              grid_left  / 2;
 	float gridXr = box.size.x - grid_right / 2;
@@ -777,40 +912,79 @@ Widget::Widget()
 	portY[2] = portY[0] + 0.45 * dY;
 	portY[3] = portY[0] +        dY;
 
-	float gridY[NOB_ROWS + BUT_ROWS] = {};
+	float gridY[LCD_ROWS + PRG_ROWS + NOB_ROWS + BUT_ROWS] = {};
 	{
 		std::size_t j = 0;
 		int pos = 35;
 
+		#if LCD_ROWS
+		for (std::size_t row = 0; row < LCD_ROWS; ++row, ++j)
+		{
+			pos += rad_but() + 3.5;  // not quite right
+			gridY[j] = pos;
+			pos += rad_but() + 3.5;
+		}
+		#endif
+
+		#if PRG_ROWS
+		for (std::size_t row = 0; row < PRG_ROWS; ++row, ++j)
+		{
+			pos += rad_n_s() + 4.5;
+			gridY[j] = pos;
+			pos += rad_n_s() + 4.5;
+		}
+		#endif
+
+		#if NOB_ROWS
 		for (std::size_t row = 0; row < NOB_ROWS; ++row, ++j)
 		{
 			pos += rad_n_s() + 4.5;
 			gridY[j] = pos;
 			pos += rad_n_s() + 4.5;
 		}
+		#endif
 
+		#if BUT_ROWS
 		for (std::size_t row = 0; row < BUT_ROWS; ++row, ++j)
 		{
 			pos += rad_but() + 3.5;
 			gridY[j] = pos;
 			pos += rad_but() + 3.5;
 		}
+		#endif
 	}
 
 	#if GTX__SAVE_SVG
 	{
 		PanelGen pg(assetPlugin(plugin, "build/res/Seq-G2.svg"), box.size, "SEQ-G2");
 
-		for (std::size_t i=0; i<NOB_COLS-1; i++)
+		pg.rect(display_rect.pos, display_rect.size, "fill:#222222;stroke:none");
+
 		{
-			double x  = 0.5 * (g_nobX[i] + g_nobX[i+1]);
-			double y0 = gridY[0];
-			double y1 = gridY[NOB_ROWS + BUT_ROWS - 1];
+			float y0 = display_rect.pos.y - 2;
+			float y1 = display_rect.pos.y + display_rect.size.y + 3;
+
+			pg.line(Vec(g_prgX[0]-dX, y0), Vec(g_prgX[0]-dX, y1), "fill:none;stroke:#CEE1FD;stroke-width:3");
+			for (std::size_t i=3; i<PRG_COLS; i+=4)
+			{
+				pg.line(Vec(g_prgX[i]+dX, y0), Vec(g_prgX[i]+dX, y1), "fill:none;stroke:#CEE1FD;stroke-width:3");
+			}
+		}
+
+		for (std::size_t i=0; i<PRG_COLS-1; i++)
+		{
+			double x  = 0.5 * (g_prgX[i] + g_prgX[i+1]);
+			double y0 = display_rect.pos.y + display_rect.size.y + 3;
+			double y1 = gridY[LCD_ROWS + PRG_ROWS + NOB_ROWS + BUT_ROWS - 1] + rad_but();
 
 			if (i % 4 == 3)
+			{
 				pg.line(Vec(x, y0), Vec(x, y1), "fill:none;stroke:#7092BE;stroke-width:3");
+			}
 			else
+			{
 				pg.line(Vec(x, y0), Vec(x, y1), "fill:none;stroke:#7092BE;stroke-width:1");
+			}
 		}
 
 		pg.line(Vec(portX[0],    portY[0]), Vec(portX[0],    portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
@@ -866,6 +1040,8 @@ Widget::Widget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
+	addChild(new Display(module, display_rect));
+
 	addParam(createParam<RoundSmallBlackKnob>    (n_s(portX[0], portY[0]), module, Impl::CLOCK_PARAM, -2.0, 6.0, 2.0));
 	addParam(createParam<LEDButton>              (but(portX[1], portY[0]), module, Impl::RUN_PARAM, 0.0, 1.0, 0.0));
 	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[1], portY[0]), module, Impl::RUNNING_LIGHT));
@@ -909,22 +1085,59 @@ Widget::Widget()
 	{
 		std::size_t j = 0;
 
+		#if LCD_ROWS
+		for (std::size_t row = 0; row < LCD_ROWS; ++row, ++j)
+		{
+			if (OUT_LEFT ) addOutput(createOutput<PJ301MPort>(prt(gridXl, gridY[j]), module, Impl::lcd_val_map(row, 0)));
+			if (OUT_RIGHT) addOutput(createOutput<PJ301MPort>(prt(gridXr, gridY[j]), module, Impl::lcd_val_map(row, 1)));
+		}
+		#endif
+
+		#if PRG_ROWS
+		for (std::size_t row = 0; row < PRG_ROWS; ++row, ++j)
+		{
+			;
+		}
+		#endif
+
+		#if NOB_ROWS
 		for (std::size_t row = 0; row < NOB_ROWS; ++row, ++j)
 		{
 			if (OUT_LEFT ) addOutput(createOutput<PJ301MPort>(prt(gridXl, gridY[j]), module, Impl::nob_val_map(row, 0)));
 			if (OUT_RIGHT) addOutput(createOutput<PJ301MPort>(prt(gridXr, gridY[j]), module, Impl::nob_val_map(row, 1)));
 		}
+		#endif
 
+		#if BUT_ROWS
 		for (std::size_t row = 0; row < BUT_ROWS; ++row, ++j)
 		{
 			if (OUT_LEFT ) addOutput(createOutput<PJ301MPort>(prt(gridXl, gridY[j]), module, Impl::but_val_map(row, 0)));
 			if (OUT_RIGHT) addOutput(createOutput<PJ301MPort>(prt(gridXr, gridY[j]), module, Impl::but_val_map(row, 1)));
 		}
+		#endif
 	}
 
 	{
 		std::size_t j = 0;
 
+		#if LCD_ROWS
+		for (std::size_t row = 0; row < LCD_ROWS; ++row, ++j)
+		{
+			;
+		}
+		#endif
+
+		#if PRG_ROWS
+		for (std::size_t row = 0; row < PRG_ROWS; ++row, ++j)
+		{
+			for (std::size_t col = 0; col < PRG_COLS; ++col)
+			{
+				addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_prgX[col], gridY[j]), module, Impl::prg_map(row, col), 0.0, 12.0, 0.0));
+			}
+		}
+		#endif
+
+		#if NOB_ROWS
 		for (std::size_t row = 0; row < NOB_ROWS; ++row, ++j)
 		{
 			for (std::size_t col = 0; col < NOB_COLS; ++col)
@@ -939,7 +1152,9 @@ Widget::Widget()
 				}
 			}
 		}
+		#endif
 
+		#if BUT_ROWS
 		for (std::size_t row = 0; row < BUT_ROWS; ++row, ++j)
 		{
 			for (std::size_t col = 0; col < BUT_COLS; ++col)
@@ -948,6 +1163,7 @@ Widget::Widget()
 				addChild(createLight<MediumLight<RedGreenBlueLight>>(l_m(g_butX[col], gridY[j]), module, Impl::led_map(row, col, 0)));
 			}
 		}
+		#endif
 	}
 
 	for (std::size_t i=0; i<GTX__N; ++i)
