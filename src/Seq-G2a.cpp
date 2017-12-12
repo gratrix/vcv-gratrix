@@ -975,7 +975,7 @@ Widget::Widget()
 		{
 			double x  = 0.5 * (g_prgX[i] + g_prgX[i+1]);
 			double y0 = display_rect.pos.y + display_rect.size.y + 3;
-			double y1 = gridY[PRG_ROWS + BUT_ROWS - 1] + rad_but();
+			double y1 = gridY[LCD_ROWS + PRG_ROWS + NOB_ROWS + BUT_ROWS - 1] + rad_but();
 
 			if (i % 4 == 3)
 			{

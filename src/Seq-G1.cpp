@@ -870,7 +870,7 @@ Widget::Widget()
 	for (std::size_t i = 0; i < 10; i++)
 	{
 		float x = 5*6*15 / static_cast<double>(10);
-		portX[i] = 2*6*15 + x * (i + 0.5);
+		portX[i] = x * (i + 0.5);
 	}
 	float dX = 0.5*(portX[1]-portX[0]);
 
@@ -944,7 +944,7 @@ Widget::Widget()
 		{
 			double x  = 0.5 * (g_prgX[i] + g_prgX[i+1]);
 			double y0 = display_rect.pos.y + display_rect.size.y + 3;
-			double y1 = gridY[PRG_ROWS + BUT_ROWS - 1] + rad_but();
+			double y1 = gridY[LCD_ROWS + PRG_ROWS + NOB_ROWS + BUT_ROWS - 1] + rad_but();
 
 			if (i % 4 == 3)
 			{
