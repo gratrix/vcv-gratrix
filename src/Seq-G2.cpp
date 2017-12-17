@@ -635,9 +635,9 @@ struct Impl : Module {
 	void knob_pull(std::size_t prog)
 	{
 		#if LCD_ROWS && PRG_ROWS
-		for (std::size_t col = 0; col < LCD_COLS && col < PRG_COLS; col++)
+		for (std::size_t row = 0; row < LCD_ROWS && row < PRG_ROWS; ++row)
 		{
-			for (std::size_t row = 0; row < LCD_ROWS && row < PRG_ROWS; ++row)
+			for (std::size_t col = 0; col < LCD_COLS && col < PRG_COLS; col++)
 			{
 				uint8_t live = static_cast<uint8_t>(params[prg_map(row, col)].value + 0.5f);
 
@@ -656,9 +656,9 @@ struct Impl : Module {
 	void clear_prog(std::size_t prog)
 	{
 		#if LCD_ROWS
-		for (std::size_t col = 0; col < LCD_COLS; col++)
+		for (std::size_t row = 0; row < LCD_ROWS; ++row)
 		{
-			for (std::size_t row = 0; row < LCD_ROWS; ++row)
+			for (std::size_t col = 0; col < LCD_COLS; col++)
 			{
 				lcd_state[prog][row][col] = 0;
 			}
@@ -666,9 +666,9 @@ struct Impl : Module {
 		#endif
 
 		#if BUT_ROWS
-		for (std::size_t col = 0; col < BUT_COLS; col++)
+		for (std::size_t row = 0; row < BUT_ROWS; row++)
 		{
-			for (std::size_t row = 0; row < BUT_ROWS; row++)
+			for (std::size_t col = 0; col < BUT_COLS; col++)
 			{
 				but_state[prog][row][col] = GM_OFF;
 			}
@@ -682,9 +682,9 @@ struct Impl : Module {
 	void randomize_prog(std::size_t prog)
 	{
 		#if BUT_ROWS
-		for (std::size_t col = 0; col < BUT_COLS; col++)
+		for (std::size_t row = 0; row < BUT_ROWS; row++)
 		{
-			for (std::size_t row = 0; row < BUT_ROWS; row++)
+			for (std::size_t col = 0; col < BUT_COLS; col++)
 			{
 				uint32_t r = randomu32() % (GATE_STATES + 1);
 
@@ -702,9 +702,9 @@ struct Impl : Module {
 	void copy_prog(std::size_t prog)
 	{
 		#if LCD_ROWS
-		for (std::size_t col = 0; col < LCD_COLS; col++)
+		for (std::size_t row = 0; row < LCD_ROWS; ++row)
 		{
-			for (std::size_t row = 0; row < LCD_ROWS; ++row)
+			for (std::size_t col = 0; col < LCD_COLS; col++)
 			{
 				lcd_cache[row][col] = lcd_state[prog][row][col];
 			}
@@ -712,9 +712,9 @@ struct Impl : Module {
 		#endif
 
 		#if BUT_ROWS
-		for (std::size_t col = 0; col < BUT_COLS; col++)
+		for (std::size_t row = 0; row < BUT_ROWS; row++)
 		{
-			for (std::size_t row = 0; row < BUT_ROWS; row++)
+			for (std::size_t col = 0; col < BUT_COLS; col++)
 			{
 				but_cache[row][col] = but_state[prog][row][col];
 			}
@@ -728,9 +728,9 @@ struct Impl : Module {
 	void paste_prog(std::size_t prog)
 	{
 		#if LCD_ROWS
-		for (std::size_t col = 0; col < LCD_COLS; col++)
+		for (std::size_t row = 0; row < LCD_ROWS; ++row)
 		{
-			for (std::size_t row = 0; row < LCD_ROWS; ++row)
+			for (std::size_t col = 0; col < LCD_COLS; col++)
 			{
 				lcd_state[prog][row][col] = lcd_cache[row][col];
 			}
@@ -738,9 +738,9 @@ struct Impl : Module {
 		#endif
 
 		#if BUT_ROWS
-		for (std::size_t col = 0; col < BUT_COLS; col++)
+		for (std::size_t row = 0; row < BUT_ROWS; row++)
 		{
-			for (std::size_t row = 0; row < BUT_ROWS; row++)
+			for (std::size_t col = 0; col < BUT_COLS; col++)
 			{
 				but_state[prog][row][col] = but_cache[row][col];
 			}
