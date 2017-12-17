@@ -149,12 +149,19 @@ struct Impl : Module {
 	std::size_t play_prog = 0;
 	std::size_t edit_prog = 0;
 
+	struct LcdData
+	{
+		bool    active = 0;
+		int8_t  note   = 0;   // C4
+		int8_t  octave = 4;   // C4
+	};
+
 	#if LCD_ROWS
-	uint8_t lcd_state[PROGRAMS][LCD_ROWS][LCD_COLS] = {};
-	uint8_t lcd_cache          [LCD_ROWS][LCD_COLS] = {};
+	LcdData lcd_state[PROGRAMS][LCD_ROWS][LCD_COLS] = {};
+	LcdData lcd_cache          [LCD_ROWS][LCD_COLS] = {};
 	#endif
 	#if PRG_ROWS
-	uint8_t prg_cache          [PRG_ROWS][PRG_COLS] = {};
+	int8_t  prg_cache          [PRG_ROWS][PRG_COLS] = {};
 	#endif
 	#if BUT_ROWS
 	uint8_t but_state[PROGRAMS][BUT_ROWS][BUT_COLS] = {};
@@ -399,7 +406,7 @@ struct Impl : Module {
 		float       lcd_val[LCD_ROWS];
 		for (std::size_t row = 0; row < LCD_ROWS; ++row)
 		{
-			lcd_val[row] = lcd_state[play_prog][row][lcd_index] / 12.0f;
+			lcd_val[row] = lcd_state[play_prog][row][lcd_index].note / 12.0f;
 		}
 		#endif
 
@@ -506,7 +513,7 @@ struct Impl : Module {
 					{
 						for (std::size_t col = 0; col < LCD_COLS; ++col)
 						{
-							if (json_t *ji = json_integer(static_cast<int>(lcd_state[prog][row][col])))
+							if (json_t *ji = json_integer(static_cast<int>(lcd_state[prog][row][col].note)))
 							{
 								json_array_append_new(ja, ji);
 							}
@@ -568,7 +575,7 @@ struct Impl : Module {
 						if (json_t *ji = json_array_get(ja, i))
 						{
 							//! \todo Range check
-							lcd_state[prog][row][col] = json_integer_value(ji);
+							lcd_state[prog][row][col].note = json_integer_value(ji);
 						}
 					}
 				}
@@ -635,15 +642,29 @@ struct Impl : Module {
 	void knob_pull(std::size_t prog)
 	{
 		#if LCD_ROWS && PRG_ROWS
-		for (std::size_t row = 0; row < LCD_ROWS && row < PRG_ROWS; ++row)
+		for (std::size_t row = 0; row < PRG_ROWS; ++row)
 		{
-			for (std::size_t col = 0; col < LCD_COLS && col < PRG_COLS; col++)
+			for (std::size_t col = 0; col < LCD_COLS && col < PRG_COLS; col+=4)
 			{
-				uint8_t live = static_cast<uint8_t>(params[prg_map(row, col)].value + 0.5f);
+				uint8_t p_select = static_cast<uint8_t>(params[prg_map(row, col  )].value + 0.5f);
+				uint8_t p_note   = static_cast<uint8_t>(params[prg_map(row, col+1)].value + 0.5f);
+				uint8_t p_octave = static_cast<uint8_t>(params[prg_map(row, col+2)].value + 0.5f);
+			//	uint8_t p_mode   = static_cast<uint8_t>(params[prg_map(row, col+3)].value + 0.5f);
 
-				if (prg_cache[row][col] != live)
+				if (p_select < (LCD_ROWS << 2))
 				{
-					lcd_state[prog][row][col] = prg_cache[row][col] = live;
+					std::size_t r =       (p_select >> 2);
+					std::size_t c = col + (p_select &  3);
+
+					if (prg_cache[row][col+1] != p_note)
+					{
+						lcd_state[prog][r][c].note = prg_cache[row][col+1] = p_note;
+					}
+
+					if (prg_cache[row][col+2] != p_octave)
+					{
+						lcd_state[prog][r][c].octave = prg_cache[row][col+2] = p_octave;
+					}
 				}
 			}
 		}
@@ -660,7 +681,7 @@ struct Impl : Module {
 		{
 			for (std::size_t col = 0; col < LCD_COLS; col++)
 			{
-				lcd_state[prog][row][col] = 0;
+				lcd_state[prog][row][col] = LcdData();
 			}
 		}
 		#endif
@@ -824,15 +845,25 @@ struct Display : TransparentWidget
 		{
 			frame = 0;
 
-			static const char *names[12] = {" C", " C#", " D", " Eb", " E", " F", " F#", " G", " Ab", " A", " Bb", " B"};
+			static const char   *note_names[13] = {"C-", "C#", "D-", "Eb", "E-", "F-", "F#", "G-", "Ab", "A-", "Bb", "B-", "??"};
+			static const char *octave_names[10] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "?"};
 
 			for (std::size_t col = 0; col < LCD_COLS; ++col)
 			{
 				for (std::size_t row = 0; row < LCD_ROWS; ++row)
 				{
-					std::size_t note = module->lcd_state[module->edit_prog][row][col];
+					bool active = module->lcd_state[module->edit_prog][row][col].active;
+					int  note   = module->lcd_state[module->edit_prog][row][col].note;
+					int  octave = module->lcd_state[module->edit_prog][row][col].octave;
 
-					std::strncpy(text[row][col], names[note % 12], LCD_TEXT);
+					if (note   < 0 || note   > 12) note   = 12;
+					if (octave < 0 || octave >  9) octave =  9;
+
+					text[row][col][0] = active ? '>' : ' ';
+					text[row][col][1] =   note_names[  note][0];
+					text[row][col][2] =   note_names[  note][1];
+					text[row][col][3] = octave_names[octave][0];
+					text[row][col][4] = '\0';
 				}
 			}
 		}
@@ -1131,9 +1162,12 @@ Widget::Widget()
 		#if PRG_ROWS
 		for (std::size_t row = 0; row < PRG_ROWS; ++row, ++j)
 		{
-			for (std::size_t col = 0; col < PRG_COLS; ++col)
+			for (std::size_t col = 0; col < PRG_COLS; col+=4)
 			{
-				addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_prgX[col], gridY[j]), module, Impl::prg_map(row, col), 0.0, 12.0, 0.0));
+				addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_prgX[col  ], gridY[j]), module, Impl::prg_map(row, col  ), 0.0,  7.0, 0.0));
+				addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_prgX[col+1], gridY[j]), module, Impl::prg_map(row, col+1), 0.0, 11.0, 0.0));
+				addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_prgX[col+2], gridY[j]), module, Impl::prg_map(row, col+2), 0.0,  8.0, 4.0));
+				addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_prgX[col+3], gridY[j]), module, Impl::prg_map(row, col+3), 0.0, 12.0, 0.0));
 			}
 		}
 		#endif
