@@ -887,7 +887,7 @@ Widget::Widget()
 	float grid_right = 3*15*OUT_RIGHT;
 	float grid_size  = box.size.x - grid_left - grid_right;
 
-	auto display_rect = Rect(Vec(grid_left, 35), Vec(grid_size, 40));
+	auto display_rect = Rect(Vec(grid_left, 35), Vec(grid_size, (rad_but()+1.5) * 2 * LCD_ROWS));
 
 	#if LCD_ROWS
 	float g_lcdX[LCD_COLS] = {};
@@ -946,16 +946,15 @@ Widget::Widget()
 	float gridY[LCD_ROWS + PRG_ROWS + NOB_ROWS + BUT_ROWS] = {};
 	{
 		std::size_t j = 0;
-		int pos = 35;
+		float pos = 35;
 
 		#if LCD_ROWS
 		for (std::size_t row = 0; row < LCD_ROWS; ++row, ++j)
 		{
-			pos += rad_but() + 3.5;  // not quite right
+			pos += rad_but() + 1.5;
 			gridY[j] = pos;
-			pos += rad_but() + 3.5;
+			pos += rad_but() + 1.5;
 		}
-		pos -= 8; // not quite right
 		#endif
 
 		#if PRG_ROWS
@@ -979,9 +978,9 @@ Widget::Widget()
 		#if BUT_ROWS
 		for (std::size_t row = 0; row < BUT_ROWS; ++row, ++j)
 		{
-			pos += rad_but() + 2;
+			pos += rad_but() + 1.5;
 			gridY[j] = pos;
-			pos += rad_but() + 2;
+			pos += rad_but() + 1.5;
 		}
 		#endif
 	}
@@ -1108,11 +1107,11 @@ Widget::Widget()
 	addParam(createParam<LEDButton>              (but(portX[9], portY[1]), module, Impl::PASTE_PARAM, 0.0, 1.0, 0.0));
 	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[9], portY[1]), module, Impl::PASTE_LIGHT));
 
-	addInput(createInput<PJ301MPort>(prt(portX[0], portY[1]), module, Impl::CLOCK_INPUT));
-	addInput(createInput<PJ301MPort>(prt(portX[1], portY[1]), module, Impl::EXT_CLOCK_INPUT));
-	addInput(createInput<PJ301MPort>(prt(portX[2], portY[1]), module, Impl::RESET_INPUT));
-	addInput(createInput<PJ301MPort>(prt(portX[3], portY[1]), module, Impl::STEPS_INPUT));
-	addInput(createInput<PJ301MPort>(prt(portX[4], portY[1]), module, Impl::PROG_INPUT));
+	addInput(createInputGTX<IPrtMed>(Vec(portX[0], portY[1]), module, Impl::CLOCK_INPUT));
+	addInput(createInputGTX<IPrtMed>(Vec(portX[1], portY[1]), module, Impl::EXT_CLOCK_INPUT));
+	addInput(createInputGTX<IPrtMed>(Vec(portX[2], portY[1]), module, Impl::RESET_INPUT));
+	addInput(createInputGTX<IPrtMed>(Vec(portX[3], portY[1]), module, Impl::STEPS_INPUT));
+	addInput(createInputGTX<IPrtMed>(Vec(portX[4], portY[1]), module, Impl::PROG_INPUT));
 
 	{
 		std::size_t j = 0;
