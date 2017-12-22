@@ -42,6 +42,83 @@ struct MicroModule
 };
 
 
+//============================================================================================================
+//! \brief UI components.
+
+struct IPrtMed : SVGPort
+{
+	IPrtMed()
+	{
+		background->svg = SVG::load(assetPlugin(plugin, "res/ui/IPrtMed.svg"));
+		background->wrap();
+		box.size = background->box.size;
+	}
+
+	static Vec size() { return Vec(25.0, 25.0); }  // Copied from SVG so no need to pre-load.
+	static Vec pos()  { return Vec(12.5, 12.5); }  // Copied from SVG so no need to pre-load.
+};
+
+struct OPrtMed : SVGPort
+{
+	OPrtMed()
+	{
+		background->svg = SVG::load(assetPlugin(plugin, "res/ui/OPrtMed.svg"));
+		background->wrap();
+		box.size = background->box.size;
+	}
+
+	static Vec size() { return Vec(25.0, 25.0); }  // Copied from SVG so no need to pre-load.
+	static Vec pos()  { return Vec(12.5, 12.5); }  // Copied from SVG so no need to pre-load.
+};
+
+struct IPrtSml : SVGPort
+{
+	IPrtSml()
+	{
+		background->svg = SVG::load(assetPlugin(plugin, "res/ui/IPrtSml.svg"));
+		background->wrap();
+		box.size = background->box.size;
+	}
+
+	static Vec size() { return Vec(18, 18); }  // Copied from SVG so no need to pre-load.
+	static Vec pos()  { return Vec( 9,  9); }  // Copied from SVG so no need to pre-load.
+};
+
+struct OPrtSml : SVGPort
+{
+	OPrtSml()
+	{
+		background->svg = SVG::load(assetPlugin(plugin, "res/ui/OPrtSml.svg"));
+		background->wrap();
+		box.size = background->box.size;
+	}
+
+	static Vec size() { return Vec(18, 18); }  // Copied from SVG so no need to pre-load.
+	static Vec pos()  { return Vec( 9,  9); }  // Copied from SVG so no need to pre-load.
+};
+
+
+//============================================================================================================
+//! \brief Create output function that creates the UI component centered.
+
+template <class TPort> Port *createInputGTX(Vec pos, Module *module, int outputId)
+{
+	return createInput<TPort>(pos.minus(TPort::pos()), module, outputId);
+}
+
+
+//============================================================================================================
+//! \brief Create output function that creates the UI component centered.
+
+template <class TPort> Port *createOutputGTX(Vec pos, Module *module, int outputId)
+{
+	return createOutput<TPort>(pos.minus(TPort::pos()), module, outputId);
+}
+
+
+//============================================================================================================
+//! \brief ...
+
 inline double dx(double i, std::size_t n) { return  std::sin(GTX__2PI * static_cast<double>(i) / static_cast<double>(n)); }
 inline double dy(double i, std::size_t n) { return -std::cos(GTX__2PI * static_cast<double>(i) / static_cast<double>(n)); }
 inline double dx(double i               ) { return dx(i, GTX__N); }
@@ -81,10 +158,10 @@ inline Vec    but(const Vec &a)       { return but(a.x, a.y); }
 inline Vec    scr(const Vec &a)       { return scr(a.x, a.y); }
 inline Vec    prt(const Vec &a)       { return prt(a.x, a.y); }
 
-inline int    px(          std::size_t i) { return static_cast<int>(0.5 + GTX__IO_RADIUS  * dx(i)); }
-inline int    py(          std::size_t i) { return static_cast<int>(0.5 + GTX__IO_RADIUS  * dy(i)); }
-inline int    px(double j, std::size_t i) { return gx(j) + px(i); }
-inline int    py(double j, std::size_t i) { return gy(j) + py(i); }
+inline double px(          std::size_t i) { return GTX__IO_RADIUS * dx(i); }
+inline double py(          std::size_t i) { return GTX__IO_RADIUS * dy(i); }
+inline double px(double j, std::size_t i) { return gx(j) + px(i); }
+inline double py(double j, std::size_t i) { return gy(j) + py(i); }
 
 
 #if GTX__SAVE_SVG
