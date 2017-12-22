@@ -858,15 +858,6 @@ Widget::Widget()
 
 	auto display_rect = Rect(Vec(grid_left, 35), Vec(grid_size, (rad_but()+1.5) * 2 * LCD_ROWS));
 
-	#if LCD_ROWS
-	float g_lcdX[LCD_COLS] = {};
-	for (std::size_t i = 0; i < LCD_COLS; i++)
-	{
-		float x  = grid_size / static_cast<double>(LCD_COLS);
-		g_lcdX[i] = grid_left + x * (i + 0.5);
-	}
-	#endif
-
 	#if PRG_ROWS
 	float g_prgX[PRG_COLS] = {};
 	for (std::size_t i = 0; i < PRG_COLS; i++)
@@ -1126,10 +1117,10 @@ Widget::Widget()
 		{
 			for (std::size_t col = 0; col < PRG_COLS; col+=4)
 			{
-				addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_prgX[col  ], gridY[j]), module, Impl::prg_map(row, col  ), 0.0,  7.0, 0.0));
+				addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_prgX[col  ], gridY[j]), module, Impl::prg_map(row, col  ), 0.0, (4 * LCD_ROWS) - 1, 0.0));
 				addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_prgX[col+1], gridY[j]), module, Impl::prg_map(row, col+1), 0.0, 11.0, 0.0));
 				addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_prgX[col+2], gridY[j]), module, Impl::prg_map(row, col+2), 0.0,  8.0, 4.0));
-				addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_prgX[col+3], gridY[j]), module, Impl::prg_map(row, col+3), 0.0, 12.0, 0.0));
+				addParam(createParam<RoundSmallBlackKnob>    (n_s(g_prgX[col+3], gridY[j]), module, Impl::prg_map(row, col+3), 0.0, 10.0, 0.0));
 			}
 		}
 		#endif
