@@ -133,12 +133,19 @@ struct Impl : Module {
 	std::size_t play_prog = 0;
 	std::size_t edit_prog = 0;
 
+	struct LcdData
+	{
+		bool    active = 0;
+		int8_t  note   = 0;   // C4
+		int8_t  octave = 4;   // C4
+	};
+
 	#if LCD_ROWS
-	uint8_t lcd_state[PROGRAMS][LCD_ROWS][LCD_COLS] = {};
-	uint8_t lcd_cache          [LCD_ROWS][LCD_COLS] = {};
+	LcdData lcd_state[PROGRAMS][LCD_ROWS][LCD_COLS] = {};
+	LcdData lcd_cache          [LCD_ROWS][LCD_COLS] = {};
 	#endif
 	#if PRG_ROWS
-	uint8_t prg_cache          [PRG_ROWS][PRG_COLS] = {};
+	int8_t  prg_cache          [PRG_ROWS][PRG_COLS] = {};
 	#endif
 	#if BUT_ROWS
 	uint8_t but_state[PROGRAMS][BUT_ROWS][BUT_COLS] = {};
@@ -383,7 +390,7 @@ struct Impl : Module {
 		float       lcd_val[LCD_ROWS];
 		for (std::size_t row = 0; row < LCD_ROWS; ++row)
 		{
-			lcd_val[row] = lcd_state[play_prog][row][lcd_index] / 12.0f;
+			lcd_val[row] = lcd_state[play_prog][row][lcd_index].note / 12.0f;
 		}
 		#endif
 
@@ -475,7 +482,7 @@ struct Impl : Module {
 					{
 						for (std::size_t col = 0; col < LCD_COLS; ++col)
 						{
-							if (json_t *ji = json_integer(static_cast<int>(lcd_state[prog][row][col])))
+							if (json_t *ji = json_integer(static_cast<int>(lcd_state[prog][row][col].note)))
 							{
 								json_array_append_new(ja, ji);
 							}
@@ -537,7 +544,7 @@ struct Impl : Module {
 						if (json_t *ji = json_array_get(ja, i))
 						{
 							//! \todo Range check
-							lcd_state[prog][row][col] = json_integer_value(ji);
+							lcd_state[prog][row][col].note = json_integer_value(ji);
 						}
 					}
 				}
@@ -604,15 +611,29 @@ struct Impl : Module {
 	void knob_pull(std::size_t prog)
 	{
 		#if LCD_ROWS && PRG_ROWS
-		for (std::size_t row = 0; row < LCD_ROWS && row < PRG_ROWS; ++row)
+		for (std::size_t row = 0; row < PRG_ROWS; ++row)
 		{
-			for (std::size_t col = 0; col < LCD_COLS && col < PRG_COLS; col++)
+			for (std::size_t col = 0; col < LCD_COLS && col < PRG_COLS; col+=4)
 			{
-				uint8_t live = static_cast<uint8_t>(params[prg_map(row, col)].value + 0.5f);
+				uint8_t p_select = static_cast<uint8_t>(params[prg_map(row, col  )].value + 0.5f);
+				uint8_t p_note   = static_cast<uint8_t>(params[prg_map(row, col+1)].value + 0.5f);
+				uint8_t p_octave = static_cast<uint8_t>(params[prg_map(row, col+2)].value + 0.5f);
+			//	uint8_t p_mode   = static_cast<uint8_t>(params[prg_map(row, col+3)].value + 0.5f);
 
-				if (prg_cache[row][col] != live)
+				if (p_select < (LCD_ROWS << 2))
 				{
-					lcd_state[prog][row][col] = prg_cache[row][col] = live;
+					std::size_t r =       (p_select >> 2);
+					std::size_t c = col + (p_select &  3);
+
+					if (prg_cache[row][col+1] != p_note)
+					{
+						lcd_state[prog][r][c].note = prg_cache[row][col+1] = p_note;
+					}
+
+					if (prg_cache[row][col+2] != p_octave)
+					{
+						lcd_state[prog][r][c].octave = prg_cache[row][col+2] = p_octave;
+					}
 				}
 			}
 		}
@@ -629,7 +650,7 @@ struct Impl : Module {
 		{
 			for (std::size_t col = 0; col < LCD_COLS; col++)
 			{
-				lcd_state[prog][row][col] = 0;
+				lcd_state[prog][row][col] = LcdData();
 			}
 		}
 		#endif
@@ -793,15 +814,25 @@ struct Display : TransparentWidget
 		{
 			frame = 0;
 
-			static const char *names[12] = {" C", " C#", " D", " Eb", " E", " F", " F#", " G", " Ab", " A", " Bb", " B"};
+			static const char   *note_names[13] = {"C-", "C#", "D-", "Eb", "E-", "F-", "F#", "G-", "Ab", "A-", "Bb", "B-", "??"};
+			static const char *octave_names[10] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "?"};
 
 			for (std::size_t col = 0; col < LCD_COLS; ++col)
 			{
 				for (std::size_t row = 0; row < LCD_ROWS; ++row)
 				{
-					std::size_t note = module->lcd_state[module->edit_prog][row][col];
+					bool active = module->lcd_state[module->edit_prog][row][col].active;
+					int  note   = module->lcd_state[module->edit_prog][row][col].note;
+					int  octave = module->lcd_state[module->edit_prog][row][col].octave;
 
-					std::strncpy(text[row][col], names[note % 12], LCD_TEXT);
+					if (note   < 0 || note   > 12) note   = 12;
+					if (octave < 0 || octave >  9) octave =  9;
+
+					text[row][col][0] = active ? '>' : ' ';
+					text[row][col][1] =   note_names[  note][0];
+					text[row][col][2] =   note_names[  note][1];
+					text[row][col][3] = octave_names[octave][0];
+					text[row][col][4] = '\0';
 				}
 			}
 		}
@@ -825,7 +856,7 @@ Widget::Widget()
 	float grid_right = 3*15*OUT_RIGHT;
 	float grid_size  = box.size.x - grid_left - grid_right;
 
-	auto display_rect = Rect(Vec(grid_left, 35), Vec(grid_size, 40));
+	auto display_rect = Rect(Vec(grid_left, 35), Vec(grid_size, (rad_but()+1.5) * 2 * LCD_ROWS));
 
 	#if LCD_ROWS
 	float g_lcdX[LCD_COLS] = {};
@@ -884,16 +915,15 @@ Widget::Widget()
 	float gridY[LCD_ROWS + PRG_ROWS + NOB_ROWS + BUT_ROWS] = {};
 	{
 		std::size_t j = 0;
-		int pos = 35;
+		float pos = 35;
 
 		#if LCD_ROWS
 		for (std::size_t row = 0; row < LCD_ROWS; ++row, ++j)
 		{
-			pos += rad_but() + 3.5;  // not quite right
+			pos += rad_but() + 1.5;
 			gridY[j] = pos;
-			pos += rad_but() + 3.5;
+			pos += rad_but() + 1.5;
 		}
-		pos -= 8; // not quite right
 		#endif
 
 		#if PRG_ROWS
@@ -917,9 +947,9 @@ Widget::Widget()
 		#if BUT_ROWS
 		for (std::size_t row = 0; row < BUT_ROWS; ++row, ++j)
 		{
-			pos += rad_but() + 3.5;
+			pos += rad_but() + 1.5;
 			gridY[j] = pos;
-			pos += rad_but() + 3.5;
+			pos += rad_but() + 1.5;
 		}
 		#endif
 	}
@@ -1039,11 +1069,11 @@ Widget::Widget()
 	addParam(createParam<LEDButton>              (but(portX[9], portY[1]), module, Impl::PASTE_PARAM, 0.0, 1.0, 0.0));
 	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[9], portY[1]), module, Impl::PASTE_LIGHT));
 
-	addInput(createInput<PJ301MPort>(prt(portX[0], portY[1]), module, Impl::CLOCK_INPUT));
-	addInput(createInput<PJ301MPort>(prt(portX[1], portY[1]), module, Impl::EXT_CLOCK_INPUT));
-	addInput(createInput<PJ301MPort>(prt(portX[2], portY[1]), module, Impl::RESET_INPUT));
-	addInput(createInput<PJ301MPort>(prt(portX[3], portY[1]), module, Impl::STEPS_INPUT));
-	addInput(createInput<PJ301MPort>(prt(portX[4], portY[1]), module, Impl::PROG_INPUT));
+	addInput(createInputGTX<IPrtMed>(Vec(portX[0], portY[1]), module, Impl::CLOCK_INPUT));
+	addInput(createInputGTX<IPrtMed>(Vec(portX[1], portY[1]), module, Impl::EXT_CLOCK_INPUT));
+	addInput(createInputGTX<IPrtMed>(Vec(portX[2], portY[1]), module, Impl::RESET_INPUT));
+	addInput(createInputGTX<IPrtMed>(Vec(portX[3], portY[1]), module, Impl::STEPS_INPUT));
+	addInput(createInputGTX<IPrtMed>(Vec(portX[4], portY[1]), module, Impl::PROG_INPUT));
 
 	{
 		std::size_t j = 0;
@@ -1051,8 +1081,8 @@ Widget::Widget()
 		#if LCD_ROWS
 		for (std::size_t row = 0; row < LCD_ROWS; ++row, ++j)
 		{
-			if (OUT_LEFT ) addOutput(createOutput<PJ301MPort>(prt(gridXl, gridY[j]), module, Impl::lcd_val_map(row, 0)));
-			if (OUT_RIGHT) addOutput(createOutput<PJ301MPort>(prt(gridXr, gridY[j]), module, Impl::lcd_val_map(row, 1)));
+			if (OUT_LEFT ) addOutput(createOutputGTX<OPrtSml>(Vec(gridXl, gridY[j]), module, Impl::lcd_val_map(row, 0)));
+			if (OUT_RIGHT) addOutput(createOutputGTX<OPrtSml>(Vec(gridXr, gridY[j]), module, Impl::lcd_val_map(row, 1)));
 		}
 		#endif
 
@@ -1066,16 +1096,16 @@ Widget::Widget()
 		#if NOB_ROWS
 		for (std::size_t row = 0; row < NOB_ROWS; ++row, ++j)
 		{
-			if (OUT_LEFT ) addOutput(createOutput<PJ301MPort>(prt(gridXl, gridY[j]), module, Impl::nob_val_map(row, 0)));
-			if (OUT_RIGHT) addOutput(createOutput<PJ301MPort>(prt(gridXr, gridY[j]), module, Impl::nob_val_map(row, 1)));
+			if (OUT_LEFT ) addOutput(createOutputGTX<OPrtSml>(Vec(gridXl, gridY[j]), module, Impl::nob_val_map(row, 0)));
+			if (OUT_RIGHT) addOutput(createOutputGTX<OPrtSml>(Vec(gridXr, gridY[j]), module, Impl::nob_val_map(row, 1)));
 		}
 		#endif
 
 		#if BUT_ROWS
 		for (std::size_t row = 0; row < BUT_ROWS; ++row, ++j)
 		{
-			if (OUT_LEFT ) addOutput(createOutput<PJ301MPort>(prt(gridXl, gridY[j]), module, Impl::but_val_map(row, 0)));
-			if (OUT_RIGHT) addOutput(createOutput<PJ301MPort>(prt(gridXr, gridY[j]), module, Impl::but_val_map(row, 1)));
+			if (OUT_LEFT ) addOutput(createOutputGTX<OPrtSml>(Vec(gridXl, gridY[j]), module, Impl::but_val_map(row, 0)));
+			if (OUT_RIGHT) addOutput(createOutputGTX<OPrtSml>(Vec(gridXr, gridY[j]), module, Impl::but_val_map(row, 1)));
 		}
 		#endif
 	}
@@ -1093,9 +1123,12 @@ Widget::Widget()
 		#if PRG_ROWS
 		for (std::size_t row = 0; row < PRG_ROWS; ++row, ++j)
 		{
-			for (std::size_t col = 0; col < PRG_COLS; ++col)
+			for (std::size_t col = 0; col < PRG_COLS; col+=4)
 			{
-				addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_prgX[col], gridY[j]), module, Impl::prg_map(row, col), 0.0, 12.0, 0.0));
+				addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_prgX[col  ], gridY[j]), module, Impl::prg_map(row, col  ), 0.0,  7.0, 0.0));
+				addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_prgX[col+1], gridY[j]), module, Impl::prg_map(row, col+1), 0.0, 11.0, 0.0));
+				addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_prgX[col+2], gridY[j]), module, Impl::prg_map(row, col+2), 0.0,  8.0, 4.0));
+				addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_prgX[col+3], gridY[j]), module, Impl::prg_map(row, col+3), 0.0, 12.0, 0.0));
 			}
 		}
 		#endif
@@ -1129,7 +1162,6 @@ Widget::Widget()
 		#endif
 	}
 }
-
 
 
 } // Seq_G1
