@@ -1006,15 +1006,16 @@ Widget::Widget()
 		{
 			double x  = 0.5 * (g_prgX[i] + g_prgX[i+1]);
 			double y0 = display_rect.pos.y + display_rect.size.y + 3;
-			double y1 = gridY[LCD_ROWS + PRG_ROWS + NOB_ROWS + BUT_ROWS - 1] + rad_but();
+			double y1 = y0 + (rad_n_s() + 4.5) * 2;
+			double y2 = gridY[LCD_ROWS + PRG_ROWS + NOB_ROWS + BUT_ROWS - 1] + rad_but();
 
 			if (i % 4 == 3)
 			{
-				pg.line(Vec(x, y0), Vec(x, y1), "fill:none;stroke:#7092BE;stroke-width:3");
+				pg.line(Vec(x, y0), Vec(x, y2), "fill:none;stroke:#7092BE;stroke-width:3");
 			}
 			else
 			{
-				pg.line(Vec(x, y0), Vec(x, y1), "fill:none;stroke:#7092BE;stroke-width:1");
+				pg.line(Vec(x, y1), Vec(x, y2), "fill:none;stroke:#7092BE;stroke-width:1");
 			}
 		}
 
