@@ -127,8 +127,8 @@ struct Impl : Module {
 	SchmittTrigger copyTrigger;
 	SchmittTrigger pasteTrigger;
 	SchmittTrigger gateTriggers[BUT_ROWS][BUT_COLS];
-	float phase = 0.0;
-	int index = 0;
+	float phase  = 0;
+	int index    = 0;
 	int numSteps = 0;
 	std::size_t play_prog = 0;
 	std::size_t edit_prog = 0;
@@ -136,8 +136,10 @@ struct Impl : Module {
 	struct LcdData
 	{
 		bool    active = 0;
+		int8_t  mode   = 0;
 		int8_t  note   = 0;   // C4
 		int8_t  octave = 4;   // C4
+		float   value  = 0;
 	};
 
 	#if LCD_ROWS
@@ -146,6 +148,7 @@ struct Impl : Module {
 	#endif
 	#if PRG_ROWS
 	int8_t  prg_cache          [PRG_ROWS][PRG_COLS] = {};
+	float   prg_cache_float    [PRG_ROWS][PRG_COLS] = {};
 	#endif
 	#if BUT_ROWS
 	uint8_t but_state[PROGRAMS][BUT_ROWS][BUT_COLS] = {};
@@ -153,11 +156,11 @@ struct Impl : Module {
 	float   but_lights         [BUT_ROWS][BUT_COLS] = {};
 	#endif
 
-	float resetLight = 0.0;
-	float clearLight = 0.0;
-	float randomLight = 0.0;
-	float copyLight = 0.0;
-	float pasteLight = 0.0;
+	float resetLight  = 0;
+	float clearLight  = 0;
+	float randomLight = 0;
+	float copyLight   = 0;
+	float pasteLight  = 0;
 
 	enum GateMode
 	{
@@ -390,7 +393,28 @@ struct Impl : Module {
 		float       lcd_val[LCD_ROWS];
 		for (std::size_t row = 0; row < LCD_ROWS; ++row)
 		{
-			lcd_val[row] = lcd_state[play_prog][row][lcd_index].note / 12.0f;
+			auto &current = lcd_state[play_prog][row][lcd_index];
+
+			switch (current.mode)
+			{
+				case 0 :
+				{
+					lcd_val[row] = (current.octave - 4.0f) + (current.note / 12.0f);
+				}
+				break;
+
+				case 1 :
+				{
+					lcd_val[row] = current.value;
+				}
+				break;
+
+				default :
+				{
+					lcd_val[row] = 0;
+				}
+				break;
+			}
 		}
 		#endif
 
@@ -611,6 +635,14 @@ struct Impl : Module {
 	void knob_pull(std::size_t prog)
 	{
 		#if LCD_ROWS && PRG_ROWS
+		for (std::size_t row = 0; row < LCD_ROWS; ++row)
+		{
+			for (std::size_t col = 0; col < LCD_COLS; ++col)
+			{
+					lcd_state[prog][row][col].active = false;
+			}
+		}
+
 		for (std::size_t row = 0; row < PRG_ROWS; ++row)
 		{
 			for (std::size_t col = 0; col < LCD_COLS && col < PRG_COLS; col+=4)
@@ -618,21 +650,33 @@ struct Impl : Module {
 				uint8_t p_select = static_cast<uint8_t>(params[prg_map(row, col  )].value + 0.5f);
 				uint8_t p_note   = static_cast<uint8_t>(params[prg_map(row, col+1)].value + 0.5f);
 				uint8_t p_octave = static_cast<uint8_t>(params[prg_map(row, col+2)].value + 0.5f);
-			//	uint8_t p_mode   = static_cast<uint8_t>(params[prg_map(row, col+3)].value + 0.5f);
+				float   p_value  =                      params[prg_map(row, col+3)].value;
 
 				if (p_select < (LCD_ROWS << 2))
 				{
 					std::size_t r =       (p_select >> 2);
 					std::size_t c = col + (p_select &  3);
 
+					auto &current = lcd_state[prog][r][c];
+
+					current.active = true;
+
 					if (prg_cache[row][col+1] != p_note)
 					{
-						lcd_state[prog][r][c].note = prg_cache[row][col+1] = p_note;
+						current.note = prg_cache[row][col+1] = p_note;
+						current.mode = 0;
 					}
 
 					if (prg_cache[row][col+2] != p_octave)
 					{
-						lcd_state[prog][r][c].octave = prg_cache[row][col+2] = p_octave;
+						current.octave = prg_cache[row][col+2] = p_octave;
+						current.mode   = 0;
+					}
+
+					if (prg_cache_float[row][col+3] != p_value)
+					{
+						current.value = prg_cache_float[row][col+3] = p_value;
+						current.mode = 1;
 					}
 				}
 			}
@@ -822,17 +866,42 @@ struct Display : TransparentWidget
 				for (std::size_t row = 0; row < LCD_ROWS; ++row)
 				{
 					bool active = module->lcd_state[module->edit_prog][row][col].active;
-					int  note   = module->lcd_state[module->edit_prog][row][col].note;
-					int  octave = module->lcd_state[module->edit_prog][row][col].octave;
-
-					if (note   < 0 || note   > 12) note   = 12;
-					if (octave < 0 || octave >  9) octave =  9;
+					int  mode   = module->lcd_state[module->edit_prog][row][col].mode;
 
 					text[row][col][0] = active ? '>' : ' ';
-					text[row][col][1] =   note_names[  note][0];
-					text[row][col][2] =   note_names[  note][1];
-					text[row][col][3] = octave_names[octave][0];
-					text[row][col][4] = '\0';
+
+					switch (mode)
+					{
+						case 0 :
+						{
+							int  note   = module->lcd_state[module->edit_prog][row][col].note;
+							int  octave = module->lcd_state[module->edit_prog][row][col].octave;
+
+							if (note   < 0 || note   > 12) note   = 12;
+							if (octave < 0 || octave >  9) octave =  9;
+
+							text[row][col][1] =   note_names[  note][0];
+							text[row][col][2] =   note_names[  note][1];
+							text[row][col][3] = octave_names[octave][0];
+							text[row][col][4] = '\0';
+						}
+						break;
+
+						case 1 :
+						{
+							float value = module->lcd_state[module->edit_prog][row][col].value;
+
+							snprintf(&text[row][col][1], 4, "%4.2f", value);
+						}
+						break;
+
+						default :
+						{
+							text[row][col][1] = '?';
+							text[row][col][2] = '\0';
+						}
+						break;
+					}
 				}
 			}
 		}
