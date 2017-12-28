@@ -968,12 +968,12 @@ Widget::Widget()
 
 	auto display_rect = Rect(Vec(grid_left, 35), Vec(grid_size, (rad_but()+1.5) * 2 * LCD_ROWS));
 
-	#if PRG_ROWS
-	float g_prgX[PRG_COLS] = {};
-	for (std::size_t i = 0; i < PRG_COLS; i++)
+	#if LCD_ROWS
+	float g_lcdX[LCD_COLS] = {};
+	for (std::size_t i = 0; i < LCD_COLS; i++)
 	{
-		float x  = grid_size / static_cast<double>(PRG_COLS);
-		g_prgX[i] = grid_left + x * (i + 0.5);
+		float x  = grid_size / static_cast<double>(LCD_COLS);
+		g_lcdX[i] = grid_left + x * (i + 0.5);
 	}
 	#endif
 
@@ -1065,27 +1065,26 @@ Widget::Widget()
 			float y0 = display_rect.pos.y - 2;
 			float y1 = display_rect.pos.y + display_rect.size.y + 3;
 
-			pg.line(Vec(g_prgX[0]-dX, y0), Vec(g_prgX[0]-dX, y1), "fill:none;stroke:#CEE1FD;stroke-width:3");
-			for (std::size_t i=3; i<PRG_COLS; i+=4)
+			pg.line(Vec(g_lcdX[0]-dX, y0), Vec(g_lcdX[0]-dX, y1), "fill:none;stroke:#CEE1FD;stroke-width:3");
+			for (std::size_t i=3; i<LCD_COLS; i+=4)
 			{
-				pg.line(Vec(g_prgX[i]+dX, y0), Vec(g_prgX[i]+dX, y1), "fill:none;stroke:#CEE1FD;stroke-width:3");
+				pg.line(Vec(g_lcdX[i]+dX, y0), Vec(g_lcdX[i]+dX, y1), "fill:none;stroke:#CEE1FD;stroke-width:3");
 			}
 		}
 
-		for (std::size_t i=0; i<PRG_COLS-1; i++)
+		for (std::size_t i=0; i<LCD_COLS-1; i++)
 		{
-			double x  = 0.5 * (g_prgX[i] + g_prgX[i+1]);
-			double y0 = display_rect.pos.y + display_rect.size.y + 3;
-			double y1 = y0 + (rad_n_s() + 4.5) * 2;
-			double y2 = gridY[LCD_ROWS + PRG_ROWS + NOB_ROWS + BUT_ROWS - 1] + rad_but();
+			double x  = 0.5 * (g_lcdX[i] + g_lcdX[i+1]);
+			double y0 = gridY[LCD_ROWS + PRG_ROWS                          ] - rad_but();
+			double y1 = gridY[LCD_ROWS + PRG_ROWS + NOB_ROWS + BUT_ROWS - 1] + rad_but();
 
 			if (i % 4 == 3)
 			{
-				pg.line(Vec(x, y0), Vec(x, y2), "fill:none;stroke:#7092BE;stroke-width:3");
+				pg.line(Vec(x, y0), Vec(x, y1), "fill:none;stroke:#7092BE;stroke-width:3");
 			}
 			else
 			{
-				pg.line(Vec(x, y1), Vec(x, y2), "fill:none;stroke:#7092BE;stroke-width:1");
+				pg.line(Vec(x, y0), Vec(x, y1), "fill:none;stroke:#7092BE;stroke-width:1");
 			}
 		}
 
@@ -1228,14 +1227,14 @@ Widget::Widget()
 
 		#if PRG_ROWS
 		{
-			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_prgX[0], gridY[j]), module, Impl::PRG_ROW_PARAM,    0.0, LCD_ROWS - 1, 0.0));
-			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_prgX[1], gridY[j]), module, Impl::PRG_COL_PARAM,    0.0, LCD_COLS - 1, 0.0));
-			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_prgX[2], gridY[j]), module, Impl::PRG_NOTE_PARAM,   0.0, 11.0, 0.0));
-			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_prgX[3], gridY[j]), module, Impl::PRG_OCTAVE_PARAM, 0.0,  8.0, 4.0));
-			addParam(createParam<RoundSmallBlackKnob>    (n_s(g_prgX[4], gridY[j]), module, Impl::PRG_VALUE_PARAM,  0.0, 10.0, 0.0));
-			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_prgX[5], gridY[j]), module, Impl::PRG_GATE_PARAM,   0.0,  3.0, 0.0));
-			addParam(createParam<RoundSmallBlackKnob>    (n_s(g_prgX[6], gridY[j]), module, Impl::PRG_ROWS_PARAM,   0.0, 10.0, 0.0));
-			addParam(createParam<RoundSmallBlackKnob>    (n_s(g_prgX[7], gridY[j]), module, Impl::PRG_COLS_PARAM,   0.0, 10.0, 0.0));
+			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[ 4], gridY[j]), module, Impl::PRG_ROW_PARAM,    0.0, LCD_ROWS - 1, 0.0));
+			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[ 5], gridY[j]), module, Impl::PRG_COL_PARAM,    0.0, LCD_COLS - 1, 0.0));
+			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[ 6], gridY[j]), module, Impl::PRG_NOTE_PARAM,   0.0, 11.0, 0.0));
+			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[ 7], gridY[j]), module, Impl::PRG_OCTAVE_PARAM, 0.0,  8.0, 4.0));
+			addParam(createParam<RoundSmallBlackKnob>    (n_s(g_lcdX[ 8], gridY[j]), module, Impl::PRG_VALUE_PARAM,  0.0, 10.0, 0.0));
+			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[ 9], gridY[j]), module, Impl::PRG_GATE_PARAM,   0.0,  3.0, 0.0));
+			addParam(createParam<RoundSmallBlackKnob>    (n_s(g_lcdX[10], gridY[j]), module, Impl::PRG_ROWS_PARAM,   0.0, 10.0, 0.0));
+			addParam(createParam<RoundSmallBlackKnob>    (n_s(g_lcdX[11], gridY[j]), module, Impl::PRG_COLS_PARAM,   0.0, 10.0, 0.0));
 			++j;
 		}
 		#endif
