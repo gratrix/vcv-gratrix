@@ -996,6 +996,8 @@ Widget::Widget()
 		}
 		#endif
 
+		pos += 13;
+
 		#if PRG_ROWS
 		{
 			pos += rad_n_s() + 4.5;
@@ -1069,6 +1071,15 @@ Widget::Widget()
 
 		pg.line(Vec(portX[3]+dX, portY[0]-29), Vec(portX[3]+dX, portY[1]+16), "fill:none;stroke:#7092BE;stroke-width:2");
 		pg.line(Vec(portX[6]+dX, portY[0]-29), Vec(portX[6]+dX, portY[1]+16), "fill:none;stroke:#7092BE;stroke-width:2");
+
+		pg.nob_sml_raw(g_lcdX[0], gridY[LCD_ROWS], "ROW");
+		pg.nob_sml_raw(g_lcdX[1], gridY[LCD_ROWS], "COL");
+		pg.nob_sml_raw(g_lcdX[2], gridY[LCD_ROWS], "NOTE");
+		pg.nob_sml_raw(g_lcdX[3], gridY[LCD_ROWS], "OCT");
+		pg.nob_sml_raw(g_lcdX[4], gridY[LCD_ROWS], "VALUE");
+		pg.nob_sml_raw(g_lcdX[5], gridY[LCD_ROWS], "GATE");
+		pg.nob_sml_raw(g_lcdX[6], gridY[LCD_ROWS], "---");
+		pg.nob_sml_raw(g_lcdX[7], gridY[LCD_ROWS], "---");
 
 		pg.nob_sml_raw(portX[0], portY[0], "CLOCK");
 		pg.nob_sml_raw(portX[1], portY[0], "RUN");
