@@ -49,12 +49,12 @@ struct Impl : Module {
 		PASTE_PARAM,
 		PRG_ROW_PARAM,
 		PRG_COL_PARAM,
+		PRG_SPAN_PARAM,
+		PRG_STRIDE_PARAM,
 		PRG_NOTE_PARAM,
 		PRG_OCTAVE_PARAM,
 		PRG_VALUE_PARAM,
 		PRG_GATE_PARAM,
-		PRG_ROWS_PARAM,
-		PRG_COLS_PARAM,
 		NOB_PARAM,
 		BUT_PARAM  = NOB_PARAM + (NOB_COLS * NOB_ROWS),
 		NUM_PARAMS = BUT_PARAM + (BUT_COLS * BUT_ROWS)
@@ -656,38 +656,54 @@ struct Impl : Module {
 		}
 
 		{
-			int8_t prg_row    = static_cast<int8_t>(params[PRG_ROW_PARAM   ].value + 0.5f);
-			int8_t prg_col    = static_cast<int8_t>(params[PRG_COL_PARAM   ].value + 0.5f);
-			int8_t prg_note   = static_cast<int8_t>(params[PRG_NOTE_PARAM  ].value + 0.5f);
-			int8_t prg_octave = static_cast<int8_t>(params[PRG_OCTAVE_PARAM].value + 0.5f);
-			float  prg_value  =                     params[PRG_VALUE_PARAM ].value;
-//			int8_t prg_gate   = static_cast<int8_t>(params[PRG_GATE_PARAM  ].value + 0.5f);
-//			int8_t prg_rows   = static_cast<int8_t>(params[PRG_ROWS_PARAM  ].value + 0.5f);
-//			int8_t prg_cols   = static_cast<int8_t>(params[PRG_COLS_PARAM  ].value + 0.5f);
+			std::size_t prg_row = static_cast<std::size_t>(params[PRG_ROW_PARAM].value + 0.5f);
 
-			if (prg_row >= 0 && prg_row < LCD_ROWS &&
-			    prg_col >= 0 && prg_col < LCD_COLS)
+			if (prg_row < LCD_ROWS)
 			{
-				auto &current = lcd_state[prog][prg_row][prg_col];
+				std::size_t prg_col = static_cast<std::size_t>(params[PRG_COL_PARAM].value + 0.5f);
 
-				current.active = true;
-
-				if (prg_cache_note != prg_note)
+				if (prg_col < LCD_COLS)
 				{
-					current.note = prg_cache_note = prg_note;
-					current.mode = 0;
-				}
+					std::size_t prg_span   = static_cast<std::size_t>(params[PRG_SPAN_PARAM  ].value + 0.5f);
+					std::size_t prg_stride = static_cast<std::size_t>(params[PRG_STRIDE_PARAM].value + 0.5f);
 
-				if (prg_cache_octave != prg_octave)
-				{
-					current.octave = prg_cache_octave = prg_octave;
-					current.mode   = 0;
-				}
+					int8_t prg_note   = static_cast<int8_t>(params[PRG_NOTE_PARAM  ].value + 0.5f);
+					int8_t prg_octave = static_cast<int8_t>(params[PRG_OCTAVE_PARAM].value + 0.5f);
+					float  prg_value  =                     params[PRG_VALUE_PARAM ].value;
+		//			int8_t prg_gate   = static_cast<int8_t>(params[PRG_GATE_PARAM  ].value + 0.5f);
 
-				if (prg_cache_value != prg_value)
-				{
-					current.value = prg_cache_value = prg_value;
-					current.mode = 1;
+					std::size_t col_max = prg_col + prg_span * prg_stride;
+					if (col_max > LCD_COLS)
+						col_max = LCD_COLS;
+
+					for (std::size_t col = prg_col; col < col_max; col += prg_stride)
+					{
+						auto &current = lcd_state[prog][prg_row][col];
+
+						current.active = true;
+
+						if (prg_cache_note != prg_note)
+						{
+							current.note = prg_note;
+							current.mode = 0;
+						}
+
+						if (prg_cache_octave != prg_octave)
+						{
+							current.octave = prg_octave;
+							current.mode   = 0;
+						}
+
+						if (prg_cache_value != prg_value)
+						{
+							current.value = prg_value;
+							current.mode  = 1;
+						}
+					}
+
+					prg_cache_note   = prg_note;
+					prg_cache_octave = prg_octave;
+					prg_cache_value  = prg_value;
 				}
 			}
 		}
@@ -847,13 +863,24 @@ struct Display : TransparentWidget
 		nvgFontFaceId(vg, font->handle);
 		nvgTextLetterSpacing(vg, -2);
 
-		nvgFillColor(vg, nvgRGBA(0x28, 0xb0, 0xf3, 0xc0));
+		char old = 'x';
 
 		for (std::size_t col = 0; col < LCD_COLS; ++col)
 		{
 			for (std::size_t row = 0; row < LCD_ROWS; ++row)
 			{
-				nvgText(vg, tx[col], ty[row], text[row][col], NULL);
+				if (old != text[row][col][0])
+				{
+					switch (text[row][col][0])
+					{
+						case 'p' : nvgFillColor(vg, nvgRGBA(0xe1, 0x02, 0x78, 0xc0)); break;
+						default  : nvgFillColor(vg, nvgRGBA(0x28, 0xb0, 0xf3, 0xc0)); break;
+					}
+
+					old = text[row][col][0];
+				}
+
+				nvgText(vg, tx[col], ty[row], text[row][col] + 1, NULL);
 			}
 		}
 	}
@@ -878,7 +905,7 @@ struct Display : TransparentWidget
 					bool active = module->lcd_state[module->edit_prog][row][col].active;
 					int  mode   = module->lcd_state[module->edit_prog][row][col].mode;
 
-					text[row][col][0] = active ? '>' : ' ';
+					text[row][col][0] = active ? 'p' : 'b';
 
 					switch (mode)
 					{
@@ -1074,11 +1101,11 @@ Widget::Widget()
 
 		pg.nob_sml_raw(g_lcdX[0], gridY[LCD_ROWS], "ROW");
 		pg.nob_sml_raw(g_lcdX[1], gridY[LCD_ROWS], "COL");
-		pg.nob_sml_raw(g_lcdX[2], gridY[LCD_ROWS], "NOTE");
-		pg.nob_sml_raw(g_lcdX[3], gridY[LCD_ROWS], "OCT");
-		pg.nob_sml_raw(g_lcdX[4], gridY[LCD_ROWS], "VALUE");
-		pg.nob_sml_raw(g_lcdX[5], gridY[LCD_ROWS], "GATE");
-		pg.nob_sml_raw(g_lcdX[6], gridY[LCD_ROWS], "---");
+		pg.nob_sml_raw(g_lcdX[2], gridY[LCD_ROWS], "SPAN");
+		pg.nob_sml_raw(g_lcdX[3], gridY[LCD_ROWS], "STRIDE");
+		pg.nob_sml_raw(g_lcdX[4], gridY[LCD_ROWS], "NOTE");
+		pg.nob_sml_raw(g_lcdX[5], gridY[LCD_ROWS], "OCT");
+		pg.nob_sml_raw(g_lcdX[6], gridY[LCD_ROWS], "VALUE");
 		pg.nob_sml_raw(g_lcdX[7], gridY[LCD_ROWS], "---");
 
 		pg.nob_sml_raw(portX[0], portY[0], "CLOCK");
@@ -1200,14 +1227,14 @@ Widget::Widget()
 
 		#if PRG_ROWS
 		{
-			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[0], gridY[j]), module, Impl::PRG_ROW_PARAM,    0.0, LCD_ROWS - 1, 0.0));
-			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[1], gridY[j]), module, Impl::PRG_COL_PARAM,    0.0, LCD_COLS - 1, 0.0));
-			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[2], gridY[j]), module, Impl::PRG_NOTE_PARAM,   0.0, 11.0, 0.0));
-			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[3], gridY[j]), module, Impl::PRG_OCTAVE_PARAM, 0.0,  8.0, 4.0));
-			addParam(createParam<RoundSmallBlackKnob>    (n_s(g_lcdX[4], gridY[j]), module, Impl::PRG_VALUE_PARAM,  0.0, 10.0, 0.0));
-			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[5], gridY[j]), module, Impl::PRG_GATE_PARAM,   0.0,  3.0, 0.0));
-			addParam(createParam<RoundSmallBlackKnob>    (n_s(g_lcdX[6], gridY[j]), module, Impl::PRG_ROWS_PARAM,   0.0, 10.0, 0.0));
-			addParam(createParam<RoundSmallBlackKnob>    (n_s(g_lcdX[7], gridY[j]), module, Impl::PRG_COLS_PARAM,   0.0, 10.0, 0.0));
+			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[ 0], gridY[j]), module, Impl::PRG_ROW_PARAM,    0.0, LCD_ROWS - 1, 0.0));
+			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[ 1], gridY[j]), module, Impl::PRG_COL_PARAM,    0.0, LCD_COLS - 1, 0.0));
+			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[ 2], gridY[j]), module, Impl::PRG_SPAN_PARAM,   1.0, LCD_COLS    , 1.0));
+			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[ 3], gridY[j]), module, Impl::PRG_STRIDE_PARAM, 1.0, LCD_COLS - 1, 1.0));
+			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[ 4], gridY[j]), module, Impl::PRG_NOTE_PARAM,   0.0,         11.0, 0.0));
+			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[ 5], gridY[j]), module, Impl::PRG_OCTAVE_PARAM, 0.0,          8.0, 4.0));
+			addParam(createParam<RoundSmallBlackKnob>    (n_s(g_lcdX[ 6], gridY[j]), module, Impl::PRG_VALUE_PARAM,  0.0,         10.0, 0.0));
+			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[ 7], gridY[j]), module, Impl::PRG_GATE_PARAM,   0.0,          3.0, 0.0));
 			++j;
 		}
 		#endif
