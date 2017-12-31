@@ -43,7 +43,7 @@ struct MicroModule
 
 
 //============================================================================================================
-//! \brief UI components.
+//! \name UI Port components
 
 struct IPrtMed : SVGPort
 {
@@ -99,6 +99,135 @@ struct OPrtSml : SVGPort
 
 
 //============================================================================================================
+//! \name UI Knob components
+
+struct KnobFreeHug : RoundKnob
+{
+	KnobFreeHug()
+	{
+		setSVG(SVG::load(assetPlugin(plugin, "res/ui/KnobFreeHuge.svg")));
+		box.size = Vec(56, 56);
+	}
+
+	static Vec size() { return Vec(56.0, 56.0); }  // Copied from SVG so no need to pre-load.
+	static Vec pos()  { return Vec(28.0, 28.0); }  // Copied from SVG so no need to pre-load.
+};
+
+struct KnobSnapHug : RoundKnob
+{
+	KnobSnapHug()
+	{
+		setSVG(SVG::load(assetPlugin(plugin, "res/ui/KnobSnapHuge.svg")));
+		box.size = Vec(56, 56);
+		snap = true;
+	}
+
+	static Vec size() { return Vec(56.0, 56.0); }  // Copied from SVG so no need to pre-load.
+	static Vec pos()  { return Vec(28.0, 28.0); }  // Copied from SVG so no need to pre-load.
+};
+
+struct KnobFreeLrg : RoundKnob
+{
+	KnobFreeLrg()
+	{
+		setSVG(SVG::load(assetPlugin(plugin, "res/ui/KnobFreeLarge.svg")));
+		box.size = Vec(46, 46);
+	}
+
+	static Vec size() { return Vec(46.0, 46.0); }  // Copied from SVG so no need to pre-load.
+	static Vec pos()  { return Vec(23.0, 23.0); }  // Copied from SVG so no need to pre-load.
+};
+
+struct KnobSnapLrg : RoundKnob
+{
+	KnobSnapLrg()
+	{
+		setSVG(SVG::load(assetPlugin(plugin, "res/ui/KnobSnapLarge.svg")));
+		box.size = Vec(46, 46);
+		snap = true;
+	}
+
+	static Vec size() { return Vec(46.0, 46.0); }  // Copied from SVG so no need to pre-load.
+	static Vec pos()  { return Vec(23.0, 23.0); }  // Copied from SVG so no need to pre-load.
+};
+
+struct KnobFreeMed : RoundKnob
+{
+	KnobFreeMed()
+	{
+		setSVG(SVG::load(assetPlugin(plugin, "res/ui/KnobFreeMedium.svg")));
+		box.size = Vec(38, 38);
+	}
+
+	static Vec size() { return Vec(38.0, 38.0); }  // Copied from SVG so no need to pre-load.
+	static Vec pos()  { return Vec(19.0, 19.0); }  // Copied from SVG so no need to pre-load.
+};
+
+struct KnobSnapMed : RoundKnob
+{
+	KnobSnapMed()
+	{
+		setSVG(SVG::load(assetPlugin(plugin, "res/ui/KnobSnapMedium.svg")));
+		box.size = Vec(38, 38);
+		snap = true;
+	}
+
+	static Vec size() { return Vec(38.0, 38.0); }  // Copied from SVG so no need to pre-load.
+	static Vec pos()  { return Vec(19.0, 19.0); }  // Copied from SVG so no need to pre-load.
+};
+
+struct KnobFreeSml : RoundKnob
+{
+	KnobFreeSml()
+	{
+		setSVG(SVG::load(assetPlugin(plugin, "res/ui/KnobFreeSmall.svg")));
+		box.size = Vec(28, 28);
+	}
+
+	static Vec size() { return Vec(28.0, 28.0); }  // Copied from SVG so no need to pre-load.
+	static Vec pos()  { return Vec(14.0, 14.0); }  // Copied from SVG so no need to pre-load.
+};
+
+struct KnobSnapSml : RoundKnob
+{
+	KnobSnapSml()
+	{
+		setSVG(SVG::load(assetPlugin(plugin, "res/ui/KnobSnapSmall.svg")));
+		box.size = Vec(28, 28);
+		snap = true;
+	}
+
+	static Vec size() { return Vec(28.0, 28.0); }  // Copied from SVG so no need to pre-load.
+	static Vec pos()  { return Vec(14.0, 14.0); }  // Copied from SVG so no need to pre-load.
+};
+
+struct KnobFreeTny : RoundKnob
+{
+	KnobFreeTny()
+	{
+		setSVG(SVG::load(assetPlugin(plugin, "res/ui/KnobFreeTiny.svg")));
+		box.size = Vec(28, 28);
+	}
+
+	static Vec size() { return Vec(28.0, 28.0); }  // Copied from SVG so no need to pre-load.
+	static Vec pos()  { return Vec(14.0, 14.0); }  // Copied from SVG so no need to pre-load.
+};
+
+struct KnobSnapTny : RoundKnob
+{
+	KnobSnapTny()
+	{
+		setSVG(SVG::load(assetPlugin(plugin, "res/ui/KnobSnapTiny.svg")));
+		box.size = Vec(28, 28);
+		snap = true;
+	}
+
+	static Vec size() { return Vec(28.0, 28.0); }  // Copied from SVG so no need to pre-load.
+	static Vec pos()  { return Vec(14.0, 14.0); }  // Copied from SVG so no need to pre-load.
+};
+
+
+//============================================================================================================
 //! \brief Create output function that creates the UI component centered.
 
 template <class TPort> Port *createInputGTX(Vec pos, Module *module, int outputId)
@@ -113,6 +242,15 @@ template <class TPort> Port *createInputGTX(Vec pos, Module *module, int outputI
 template <class TPort> Port *createOutputGTX(Vec pos, Module *module, int outputId)
 {
 	return createOutput<TPort>(pos.minus(TPort::pos()), module, outputId);
+}
+
+
+//============================================================================================================
+//! \brief Create param function that creates the UI component centered.
+
+template <class TParamWidget> ParamWidget *createParamGTX(Vec pos, Module *module, int paramId, float minValue, float maxValue, float defaultValue)
+{
+	return createParam<TParamWidget>(pos.minus(TParamWidget::pos()), module, paramId, minValue, maxValue, defaultValue);
 }
 
 

@@ -1181,13 +1181,13 @@ Widget::Widget()
 
 	addChild(new Display(module, display_rect));
 
-	addParam(createParam<RoundSmallBlackKnob>    (n_s(portX[0], portY[0]), module, Impl::CLOCK_PARAM, -2.0, 6.0, 2.0));
+	addParam(createParamGTX<KnobFreeSml>         (Vec(portX[0], portY[0]), module, Impl::CLOCK_PARAM, -2.0, 6.0, 2.0));
 	addParam(createParam<LEDButton>              (but(portX[1], portY[0]), module, Impl::RUN_PARAM, 0.0, 1.0, 0.0));
 	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[1], portY[0]), module, Impl::RUNNING_LIGHT));
 	addParam(createParam<LEDButton>              (but(portX[2], portY[0]), module, Impl::RESET_PARAM, 0.0, 1.0, 0.0));
 	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[2], portY[0]), module, Impl::RESET_LIGHT));
-	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[3], portY[0]), module, Impl::STEPS_PARAM, 1.0, NOB_COLS, NOB_COLS));
-	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[4], portY[0]), module, Impl::PROG_PARAM, 0.0, 11.0, 0.0));
+	addParam(createParamGTX<KnobSnapSml>         (Vec(portX[3], portY[0]), module, Impl::STEPS_PARAM, 1.0, NOB_COLS, NOB_COLS));
+	addParam(createParamGTX<KnobSnapSml>         (Vec(portX[4], portY[0]), module, Impl::PROG_PARAM, 0.0, 11.0, 0.0));
 	addParam(createParam<CKSS>                   (tog(portX[5], portY[2]), module, Impl::PLAY_PARAM, 0.0, 1.0, 1.0));
 	addParam(createParam<CKSS>                   (tog(portX[6], portY[2]), module, Impl::EDIT_PARAM, 0.0, 1.0, 1.0));
 
@@ -1204,8 +1204,8 @@ Widget::Widget()
 	addChild(createLight<SmallLight<GreenRedLight>>(l_s(portX[5] + dX + 25, portY[1] - 5 + 1), module, Impl::PROG_LIGHT + 10*2));  // Bb
 	addChild(createLight<SmallLight<GreenRedLight>>(l_s(portX[5] + dX + 30, portY[1] + 5 + 1), module, Impl::PROG_LIGHT + 11*2));  // B
 
-	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[7], portY[0]), module, Impl::SPAN_R_PARAM, 1.0, 8.0, 1.0));
-	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(portX[7], portY[1]), module, Impl::SPAN_C_PARAM, 1.0, 8.0, 1.0));
+	addParam(createParamGTX<KnobSnapSml>         (Vec(portX[7], portY[0]), module, Impl::SPAN_R_PARAM, 1.0, 8.0, 1.0));
+	addParam(createParamGTX<KnobSnapSml>         (Vec(portX[7], portY[1]), module, Impl::SPAN_C_PARAM, 1.0, 8.0, 1.0));
 	addParam(createParam<LEDButton>              (but(portX[8], portY[0]), module, Impl::CLEAR_PARAM, 0.0, 1.0, 0.0));
 	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[8], portY[0]), module, Impl::CLEAR_LIGHT));
 	addParam(createParam<LEDButton>              (but(portX[9], portY[0]), module, Impl::RANDOM_PARAM, 0.0, 1.0, 0.0));
@@ -1265,14 +1265,14 @@ Widget::Widget()
 
 		#if PRG_ROWS
 		{
-			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[ 4], gridY[j]), module, Impl::PRG_ROW_PARAM,    0.0, LCD_ROWS - 1, 0.0));
-			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[ 5], gridY[j]), module, Impl::PRG_COL_PARAM,    0.0, LCD_COLS - 1, 0.0));
-			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[ 6], gridY[j]), module, Impl::PRG_SPAN_PARAM,   1.0, LCD_COLS    , 1.0));
-			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[ 7], gridY[j]), module, Impl::PRG_STRIDE_PARAM, 1.0, LCD_COLS - 1, 1.0));
-			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[ 8], gridY[j]), module, Impl::PRG_NOTE_PARAM,   0.0,         11.0, 0.0));
-			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[ 9], gridY[j]), module, Impl::PRG_OCTAVE_PARAM, 0.0,          8.0, 4.0));
-			addParam(createParam<RoundSmallBlackKnob>    (n_s(g_lcdX[10], gridY[j]), module, Impl::PRG_VALUE_PARAM,  0.0,         10.0, 0.0));
-			addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_lcdX[11], gridY[j]), module, Impl::PRG_GATE_PARAM,   0.0,          3.0, 0.0));
+			addParam(createParamGTX<KnobSnapSml>(Vec(g_lcdX[ 4], gridY[j]), module, Impl::PRG_ROW_PARAM,    0.0, LCD_ROWS - 1, 0.0));
+			addParam(createParamGTX<KnobSnapSml>(Vec(g_lcdX[ 5], gridY[j]), module, Impl::PRG_COL_PARAM,    0.0, LCD_COLS - 1, 0.0));
+			addParam(createParamGTX<KnobSnapSml>(Vec(g_lcdX[ 6], gridY[j]), module, Impl::PRG_SPAN_PARAM,   1.0, LCD_COLS    , 1.0));
+			addParam(createParamGTX<KnobSnapSml>(Vec(g_lcdX[ 7], gridY[j]), module, Impl::PRG_STRIDE_PARAM, 1.0, LCD_COLS - 1, 1.0));
+			addParam(createParamGTX<KnobSnapSml>(Vec(g_lcdX[ 8], gridY[j]), module, Impl::PRG_NOTE_PARAM,   0.0,         11.0, 0.0));
+			addParam(createParamGTX<KnobSnapSml>(Vec(g_lcdX[ 9], gridY[j]), module, Impl::PRG_OCTAVE_PARAM, 0.0,          8.0, 4.0));
+			addParam(createParamGTX<KnobFreeSml>(Vec(g_lcdX[10], gridY[j]), module, Impl::PRG_VALUE_PARAM,  0.0,         10.0, 0.0));
+			addParam(createParamGTX<KnobSnapSml>(Vec(g_lcdX[11], gridY[j]), module, Impl::PRG_GATE_PARAM,   0.0,          3.0, 0.0));
 			++j;
 		}
 		#endif
