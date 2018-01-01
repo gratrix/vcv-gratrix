@@ -136,21 +136,21 @@ Widget::Widget()
 	addParam(createParamGTX<KnobFreeMed>(Vec(fx(1-0.18), fy(-0.28)), module, VCA::MIX_1_PARAM, 0.0, 1.0, 0.5));
 	addParam(createParamGTX<KnobFreeMed>(Vec(fx(1-0.18), fy(+0.28)), module, VCA::MIX_2_PARAM, 0.0, 1.0, 0.5));
 
-	addOutput(createOutput<PJ301MPort>(prt(fx(1+0.28), fy(-0.28)), module, VCA::MIX_1_OUTPUT));
-	addOutput(createOutput<PJ301MPort>(prt(fx(1+0.28), fy(+0.28)), module, VCA::MIX_2_OUTPUT));
+	addOutput(createOutputGTX<PortOutMed>(Vec(fx(1+0.28), fy(-0.28)), module, VCA::MIX_1_OUTPUT));
+	addOutput(createOutputGTX<PortOutMed>(Vec(fx(1+0.28), fy(+0.28)), module, VCA::MIX_2_OUTPUT));
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
-		addInput (createInput <PJ301MPort>(prt(px(1, i), py(1, i)), module, VCABank::imap(VCA::LIN_INPUT,  i)));
-		addInput (createInput <PJ301MPort>(prt(px(0, i), py(1, i)), module, VCABank::imap(VCA::EXP_INPUT,  i)));
-		addInput (createInput <PJ301MPort>(prt(px(0, i), py(2, i)), module, VCABank::imap(VCA::IN_INPUT,   i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(1, i)), module, VCABank::imap(VCA::LIN_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, VCABank::imap(VCA::EXP_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, VCABank::imap(VCA::IN_INPUT,  i)));
 
-		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(2, i)), module, VCABank::omap(VCA::OUT_OUTPUT, i)));
+		addOutput(createOutputGTX<PortOutMed>(Vec(px(1, i), py(2, i)), module, VCABank::omap(VCA::OUT_OUTPUT, i)));
 	}
 
-	addInput(createInput<PJ301MPort>(prt(gx(1), gy(1)), module, VCABank::imap(VCA::LIN_INPUT, GTX__N)));
-	addInput(createInput<PJ301MPort>(prt(gx(0), gy(1)), module, VCABank::imap(VCA::EXP_INPUT, GTX__N)));
-	addInput(createInput<PJ301MPort>(prt(gx(0), gy(2)), module, VCABank::imap(VCA::IN_INPUT,  GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(1)), module, VCABank::imap(VCA::LIN_INPUT, GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, VCABank::imap(VCA::EXP_INPUT, GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(2)), module, VCABank::imap(VCA::IN_INPUT,  GTX__N)));
 }
 
 

@@ -1308,8 +1308,8 @@ Widget::Widget()
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
-		addInput(createInputGTX<PortInMed>  (Vec(px(0, i), py(2, i)), module, Impl::imap(Impl::GATE_INPUT, i)));
-		addInput(createInputGTX<PortInMed>  (Vec(px(1, i), py(2, i)), module, Impl::imap(Impl::VOCT_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, Impl::imap(Impl::GATE_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(2, i)), module, Impl::imap(Impl::VOCT_INPUT, i)));
 
 		addOutput(createOutputGTX<PortOutMed>(Vec(px(8, i), py(2, i)), module, Impl::omap(Impl::GATE_OUTPUT, i)));
 		addOutput(createOutputGTX<PortOutMed>(Vec(px(7, i), py(2, i)), module, Impl::omap(Impl::VOCT_OUTPUT, i)));

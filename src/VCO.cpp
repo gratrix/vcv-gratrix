@@ -316,21 +316,21 @@ Widget::Widget()
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
-		addInput(createInput<PJ301MPort>  (prt(px(0, i), py(2, i)), module, VCOBank::imap(VCO::PITCH_INPUT, i)));
-		addInput(createInput<PJ301MPort>  (prt(px(0, i), py(1, i)), module, VCOBank::imap(VCO::FM_INPUT,    i)));
-		addInput(createInput<PJ301MPort>  (prt(px(1, i), py(2, i)), module, VCOBank::imap(VCO::SYNC_INPUT,  i)));
-		addInput(createInput<PJ301MPort>  (prt(px(1, i), py(1, i)), module, VCOBank::imap(VCO::PW_INPUT,    i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, VCOBank::imap(VCO::PITCH_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, VCOBank::imap(VCO::FM_INPUT,    i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(2, i)), module, VCOBank::imap(VCO::SYNC_INPUT,  i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(1, i)), module, VCOBank::imap(VCO::PW_INPUT,    i)));
 
-		addOutput(createOutput<PJ301MPort>(prt(px(2, i), py(1, i)), module, VCOBank::omap(VCO::SIN_OUTPUT, i)));
-		addOutput(createOutput<PJ301MPort>(prt(px(2, i), py(2, i)), module, VCOBank::omap(VCO::TRI_OUTPUT, i)));
-		addOutput(createOutput<PJ301MPort>(prt(px(3, i), py(1, i)), module, VCOBank::omap(VCO::SAW_OUTPUT, i)));
-		addOutput(createOutput<PJ301MPort>(prt(px(3, i), py(2, i)), module, VCOBank::omap(VCO::SQR_OUTPUT, i)));
+		addOutput(createOutputGTX<PortOutMed>(Vec(px(2, i), py(1, i)), module, VCOBank::omap(VCO::SIN_OUTPUT, i)));
+		addOutput(createOutputGTX<PortOutMed>(Vec(px(2, i), py(2, i)), module, VCOBank::omap(VCO::TRI_OUTPUT, i)));
+		addOutput(createOutputGTX<PortOutMed>(Vec(px(3, i), py(1, i)), module, VCOBank::omap(VCO::SAW_OUTPUT, i)));
+		addOutput(createOutputGTX<PortOutMed>(Vec(px(3, i), py(2, i)), module, VCOBank::omap(VCO::SQR_OUTPUT, i)));
 	}
 
-	addInput(createInput<PJ301MPort>  (prt(gx(0), gy(2)), module, VCOBank::imap(VCO::PITCH_INPUT, GTX__N)));
-	addInput(createInput<PJ301MPort>  (prt(gx(0), gy(1)), module, VCOBank::imap(VCO::FM_INPUT,    GTX__N)));
-	addInput(createInput<PJ301MPort>  (prt(gx(1), gy(2)), module, VCOBank::imap(VCO::SYNC_INPUT,  GTX__N)));
-	addInput(createInput<PJ301MPort>  (prt(gx(1), gy(1)), module, VCOBank::imap(VCO::PW_INPUT,    GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(2)), module, VCOBank::imap(VCO::PITCH_INPUT, GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, VCOBank::imap(VCO::FM_INPUT,    GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(2)), module, VCOBank::imap(VCO::SYNC_INPUT,  GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(1)), module, VCOBank::imap(VCO::PW_INPUT,    GTX__N)));
 }
 
 
@@ -471,16 +471,16 @@ Widget::Widget() {
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
-		addInput(createInput<PJ301MPort>  (prt(px(0, i), py(1, i)), module, VCO2Bank::imap(VCO2::FM_INPUT,   i)));
-		addInput(createInput<PJ301MPort>  (prt(px(1, i), py(1, i)), module, VCO2Bank::imap(VCO2::SYNC_INPUT, i)));
-		addInput(createInput<PJ301MPort>  (prt(px(0, i), py(2, i)), module, VCO2Bank::imap(VCO2::WAVE_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, VCO2Bank::imap(VCO2::FM_INPUT,   i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(1, i)), module, VCO2Bank::imap(VCO2::SYNC_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, VCO2Bank::imap(VCO2::WAVE_INPUT, i)));
 
-		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(2, i)), module, VCO2Bank::omap(VCO2::OUT_OUTPUT, i)));
+		addOutput(createOutputGTX<PortOutMed>(Vec(px(1, i), py(2, i)), module, VCO2Bank::omap(VCO2::OUT_OUTPUT, i)));
 	}
 
-	addInput(createInput<PJ301MPort>  (prt(gx(0), gy(1)), module, VCO2Bank::imap(VCO2::FM_INPUT,   GTX__N)));
-	addInput(createInput<PJ301MPort>  (prt(gx(1), gy(1)), module, VCO2Bank::imap(VCO2::SYNC_INPUT, GTX__N)));
-	addInput(createInput<PJ301MPort>  (prt(gx(0), gy(2)), module, VCO2Bank::imap(VCO2::WAVE_INPUT, GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, VCO2Bank::imap(VCO2::FM_INPUT,   GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(1)), module, VCO2Bank::imap(VCO2::SYNC_INPUT, GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(2)), module, VCO2Bank::imap(VCO2::WAVE_INPUT, GTX__N)));
 }
 
 

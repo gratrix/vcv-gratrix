@@ -149,27 +149,27 @@ Widget::Widget()
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
-		addInput(createInput<PJ301MPort>(prt(px(0, i), py(1, i)), module, Impl::imap(Impl::GATE_1R_INPUT, i)));
-		addInput(createInput<PJ301MPort>(prt(px(1, i), py(1, i)), module, Impl::imap(Impl::GATE_1G_INPUT, i)));
-		addInput(createInput<PJ301MPort>(prt(px(2, i), py(1, i)), module, Impl::imap(Impl::GATE_1B_INPUT, i)));
-		addInput(createInput<PJ301MPort>(prt(px(3, i), py(1, i)), module, Impl::imap(Impl::GATE_2R_INPUT, i)));
-		addInput(createInput<PJ301MPort>(prt(px(4, i), py(1, i)), module, Impl::imap(Impl::GATE_2G_INPUT, i)));
-		addInput(createInput<PJ301MPort>(prt(px(5, i), py(1, i)), module, Impl::imap(Impl::GATE_2B_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, Impl::imap(Impl::GATE_1R_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(1, i)), module, Impl::imap(Impl::GATE_1G_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(2, i), py(1, i)), module, Impl::imap(Impl::GATE_1B_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(3, i), py(1, i)), module, Impl::imap(Impl::GATE_2R_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(4, i), py(1, i)), module, Impl::imap(Impl::GATE_2G_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(5, i), py(1, i)), module, Impl::imap(Impl::GATE_2B_INPUT, i)));
 
-		addInput(createInput<PJ301MPort>(prt(px(0, i), py(2, i)), module, Impl::imap(Impl::VOCT_1R_INPUT, i)));
-		addInput(createInput<PJ301MPort>(prt(px(1, i), py(2, i)), module, Impl::imap(Impl::VOCT_1G_INPUT, i)));
-		addInput(createInput<PJ301MPort>(prt(px(2, i), py(2, i)), module, Impl::imap(Impl::VOCT_1B_INPUT, i)));
-		addInput(createInput<PJ301MPort>(prt(px(3, i), py(2, i)), module, Impl::imap(Impl::VOCT_2R_INPUT, i)));
-		addInput(createInput<PJ301MPort>(prt(px(4, i), py(2, i)), module, Impl::imap(Impl::VOCT_2G_INPUT, i)));
-		addInput(createInput<PJ301MPort>(prt(px(5, i), py(2, i)), module, Impl::imap(Impl::VOCT_2B_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, Impl::imap(Impl::VOCT_1R_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(2, i)), module, Impl::imap(Impl::VOCT_1G_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(2, i), py(2, i)), module, Impl::imap(Impl::VOCT_1B_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(3, i), py(2, i)), module, Impl::imap(Impl::VOCT_2R_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(4, i), py(2, i)), module, Impl::imap(Impl::VOCT_2G_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(5, i), py(2, i)), module, Impl::imap(Impl::VOCT_2B_INPUT, i)));
 	}
 
-	addInput(createInput<PJ301MPort>(prt(gx(0), gy(1)), module, Impl::imap(Impl::GATE_1R_INPUT, GTX__N)));
-	addInput(createInput<PJ301MPort>(prt(gx(1), gy(1)), module, Impl::imap(Impl::GATE_1G_INPUT, GTX__N)));
-	addInput(createInput<PJ301MPort>(prt(gx(2), gy(1)), module, Impl::imap(Impl::GATE_1B_INPUT, GTX__N)));
-	addInput(createInput<PJ301MPort>(prt(gx(3), gy(1)), module, Impl::imap(Impl::GATE_2R_INPUT, GTX__N)));
-	addInput(createInput<PJ301MPort>(prt(gx(4), gy(1)), module, Impl::imap(Impl::GATE_2G_INPUT, GTX__N)));
-	addInput(createInput<PJ301MPort>(prt(gx(5), gy(1)), module, Impl::imap(Impl::GATE_2B_INPUT, GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, Impl::imap(Impl::GATE_1R_INPUT, GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(1)), module, Impl::imap(Impl::GATE_1G_INPUT, GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(2), gy(1)), module, Impl::imap(Impl::GATE_1B_INPUT, GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(3), gy(1)), module, Impl::imap(Impl::GATE_2R_INPUT, GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(4), gy(1)), module, Impl::imap(Impl::GATE_2G_INPUT, GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(5), gy(1)), module, Impl::imap(Impl::GATE_2B_INPUT, GTX__N)));
 
 	for (std::size_t i=0; i<6; ++i)
 	{

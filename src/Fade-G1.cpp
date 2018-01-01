@@ -125,18 +125,19 @@ Widget::Widget()
 
 	addParam(createParamGTX<KnobFreeHug>(Vec(fx(1), fy(0)), module, Impl::BLEND12_PARAM, 0.0, 1.0, 0.0));
 
-	addInput(createInput<PJ301MPort>(prt(fx(0), fy(0)), module, Impl::BLEND12_INPUT));
+	addInput(createInputGTX<PortInMed>(Vec(fx(0), fy(0)), module, Impl::BLEND12_INPUT));
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
-		addInput (createInput<PJ301MPort> (prt(px(0, i), py(1, i)), module, Impl::imap(Impl::IN1_INPUT,   i)));
-		addInput (createInput<PJ301MPort> (prt(px(0, i), py(2, i)), module, Impl::imap(Impl::IN2_INPUT,   i)));
-		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(1, i)), module, Impl::omap(Impl::OUT1_OUTPUT, i)));
-		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(2, i)), module, Impl::omap(Impl::OUT2_OUTPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, Impl::imap(Impl::IN1_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, Impl::imap(Impl::IN2_INPUT, i)));
+
+		addOutput(createOutputGTX<PortOutMed>(Vec(px(1, i), py(1, i)), module, Impl::omap(Impl::OUT1_OUTPUT, i)));
+		addOutput(createOutputGTX<PortOutMed>(Vec(px(1, i), py(2, i)), module, Impl::omap(Impl::OUT2_OUTPUT, i)));
 	}
 
-	addInput(createInput<PJ301MPort>(prt(gx(0), gy(1)), module, Impl::imap(Impl::IN1_INPUT, GTX__N)));
-	addInput(createInput<PJ301MPort>(prt(gx(0), gy(2)), module, Impl::imap(Impl::IN2_INPUT, GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, Impl::imap(Impl::IN1_INPUT, GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(2)), module, Impl::imap(Impl::IN2_INPUT, GTX__N)));
 
 	for (std::size_t i=0, x=0; x<2; ++x)
 	{

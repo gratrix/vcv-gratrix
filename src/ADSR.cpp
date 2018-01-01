@@ -179,22 +179,22 @@ Widget::Widget()
 	addParam(createParamGTX<KnobFreeMed>(Vec(fx(0+0.18), fy(+0.28)), module, ADSR::SUSTAIN_PARAM, 0.0, 1.0, 0.5));
 	addParam(createParamGTX<KnobFreeMed>(Vec(fx(1+0.18), fy(+0.28)), module, ADSR::RELEASE_PARAM, 0.0, 1.0, 0.5));
 
-	addInput(createInput<PJ301MPort>(prt(fx(0-0.28), fy(-0.28)), module, ADSR::ATTACK_INPUT));
-	addInput(createInput<PJ301MPort>(prt(fx(1-0.28), fy(-0.28)), module, ADSR::DECAY_INPUT));
-	addInput(createInput<PJ301MPort>(prt(fx(0-0.28), fy(+0.28)), module, ADSR::SUSTAIN_INPUT));
-	addInput(createInput<PJ301MPort>(prt(fx(1-0.28), fy(+0.28)), module, ADSR::RELEASE_INPUT));
+	addInput(createInputGTX<PortInMed>(Vec(fx(0-0.28), fy(-0.28)), module, ADSR::ATTACK_INPUT));
+	addInput(createInputGTX<PortInMed>(Vec(fx(1-0.28), fy(-0.28)), module, ADSR::DECAY_INPUT));
+	addInput(createInputGTX<PortInMed>(Vec(fx(0-0.28), fy(+0.28)), module, ADSR::SUSTAIN_INPUT));
+	addInput(createInputGTX<PortInMed>(Vec(fx(1-0.28), fy(+0.28)), module, ADSR::RELEASE_INPUT));
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
-		addInput(createInput<PJ301MPort> (prt(px(0, i), py(1, i)), module, ADSRBank::imap(ADSR::GATE_INPUT, i)));
-		addInput(createInput<PJ301MPort> (prt(px(0, i), py(2, i)), module, ADSRBank::imap(ADSR::TRIG_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, ADSRBank::imap(ADSR::GATE_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, ADSRBank::imap(ADSR::TRIG_INPUT, i)));
 
-		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(1, i)), module, ADSRBank::omap(ADSR::ENVELOPE_OUTPUT, i)));
-		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(2, i)), module, ADSRBank::omap(ADSR::INVERTED_OUTPUT, i)));
+		addOutput(createOutputGTX<PortOutMed>(Vec(px(1, i), py(1, i)), module, ADSRBank::omap(ADSR::ENVELOPE_OUTPUT, i)));
+		addOutput(createOutputGTX<PortOutMed>(Vec(px(1, i), py(2, i)), module, ADSRBank::omap(ADSR::INVERTED_OUTPUT, i)));
 	}
 
-	addInput(createInput<PJ301MPort> (prt(gx(0), gy(1)), module, ADSRBank::imap(ADSR::GATE_INPUT, GTX__N)));
-	addInput(createInput<PJ301MPort> (prt(gx(0), gy(2)), module, ADSRBank::imap(ADSR::TRIG_INPUT, GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, ADSRBank::imap(ADSR::GATE_INPUT, GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(2)), module, ADSRBank::imap(ADSR::TRIG_INPUT, GTX__N)));
 }
 
 

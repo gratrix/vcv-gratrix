@@ -97,10 +97,10 @@ Widget::Widget()
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
-		addInput(createInput<PJ301MPort>(prt(px(0, i), py(2, i)), module, Impl::imap(Impl::IN1_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, Impl::imap(Impl::IN1_INPUT, i)));
 	}
 
-	addInput(createInput<PJ301MPort>(prt(gx(0), gy(2)), module, Impl::imap(Impl::IN1_INPUT, GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(2)), module, Impl::imap(Impl::IN1_INPUT, GTX__N)));
 
 	for (std::size_t i=0, k=0; i<GTX__N; ++i)
 	{

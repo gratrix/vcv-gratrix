@@ -381,8 +381,8 @@ Widget::Widget()
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
-		addInput(createInput<PJ301MPort>(prt(px(0, i), py(2, i)), module, Scope::imap(Scope::X_INPUT,    i)));
-		addInput(createInput<PJ301MPort>(prt(px(2, i), py(2, i)), module, Scope::imap(Scope::TRIG_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, Scope::imap(Scope::X_INPUT,    i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(2, i), py(2, i)), module, Scope::imap(Scope::TRIG_INPUT, i)));
 	}
 }
 

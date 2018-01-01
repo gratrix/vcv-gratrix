@@ -329,14 +329,14 @@ Widget::Widget()
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
 	addParam(createParamGTX<KnobSnapSml>(Vec(x0(+1), fy(-0.28)), module, Impl::PROG_PARAM, 0.0, 12.0, 12.0));
-	addInput(createInput<PJ301MPort>    (prt(x0(-1), fy(-0.28)), module, Impl::PROG_INPUT));
-	addInput(createInput<PJ301MPort>    (prt(x0(+1), fy(+0.28)), module, Impl::GATE_INPUT));
-	addInput(createInput<PJ301MPort>    (prt(x0(-1), fy(+0.28)), module, Impl::VOCT_INPUT));
+	addInput(createInputGTX<PortInMed>  (Vec(x0(-1), fy(-0.28)), module, Impl::PROG_INPUT));
+	addInput(createInputGTX<PortInMed>  (Vec(x0(+1), fy(+0.28)), module, Impl::GATE_INPUT));
+	addInput(createInputGTX<PortInMed>  (Vec(x0(-1), fy(+0.28)), module, Impl::VOCT_INPUT));
 
 	for (std::size_t i=0; i<N; ++i)
 	{
-		addOutput(createOutput<PJ301MPort>(prt(px(2, i), py(1, i)), module, Impl::omap(Impl::GATE_OUTPUT, i)));
-		addOutput(createOutput<PJ301MPort>(prt(px(2, i), py(2, i)), module, Impl::omap(Impl::VOCT_OUTPUT, i)));
+		addOutput(createOutputGTX<PortOutMed>(Vec(px(2, i), py(1, i)), module, Impl::omap(Impl::GATE_OUTPUT, i)));
+		addOutput(createOutputGTX<PortOutMed>(Vec(px(2, i), py(2, i)), module, Impl::omap(Impl::VOCT_OUTPUT, i)));
 	}
 
 	for (std::size_t i=0; i<T; ++i)

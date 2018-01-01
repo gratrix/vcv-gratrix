@@ -187,17 +187,17 @@ Widget::Widget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
-	addInput(createInput<PJ301MPort>(prt(x(0, 0), y(0, 0)), module, Impl::VOCT_INPUT));
+	addInput(createInputGTX<PortInMed>(Vec(x(0, 0), y(0, 0)), module, Impl::VOCT_INPUT));
 	for (std::size_t i=0; i<N; ++i)
 	{
-		addOutput(createOutput<PJ301MPort>(prt(x(i, r2), y(i, r2)), module, i + Impl::NOTE_OUTPUT));
+		addOutput(createOutputGTX<PortOutMed>(Vec(x(i, r2), y(i, r2)), module, i + Impl::NOTE_OUTPUT));
 	}
 
-	addOutput(createOutput<PJ301MPort>(prt(gx(-0.20), gy(2)), module, 0 + Impl::OCT_OUTPUT));
-	addOutput(createOutput<PJ301MPort>(prt(gx( 0.15), gy(2)), module, 1 + Impl::OCT_OUTPUT));
-	addOutput(createOutput<PJ301MPort>(prt(gx( 0.50), gy(2)), module, 2 + Impl::OCT_OUTPUT));
-	addOutput(createOutput<PJ301MPort>(prt(gx( 0.85), gy(2)), module, 3 + Impl::OCT_OUTPUT));
-	addOutput(createOutput<PJ301MPort>(prt(gx( 1.20), gy(2)), module, 4 + Impl::OCT_OUTPUT));
+	addOutput(createOutputGTX<PortOutMed>(Vec(gx(-0.20), gy(2)), module, 0 + Impl::OCT_OUTPUT));
+	addOutput(createOutputGTX<PortOutMed>(Vec(gx( 0.15), gy(2)), module, 1 + Impl::OCT_OUTPUT));
+	addOutput(createOutputGTX<PortOutMed>(Vec(gx( 0.50), gy(2)), module, 2 + Impl::OCT_OUTPUT));
+	addOutput(createOutputGTX<PortOutMed>(Vec(gx( 0.85), gy(2)), module, 3 + Impl::OCT_OUTPUT));
+	addOutput(createOutputGTX<PortOutMed>(Vec(gx( 1.20), gy(2)), module, 4 + Impl::OCT_OUTPUT));
 
 	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) - 30, fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  0));  // C
 	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) - 25, fy(0-0.28) - 5), module, Impl::KEY_LIGHT +  1));  // C#

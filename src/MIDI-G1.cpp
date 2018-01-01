@@ -378,8 +378,8 @@ Widget::Widget()
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
-		addOutput(createOutput<PJ301MPort>(prt(px(0, i), py(2, i)), module, Interface::omap(Interface::   PITCH_OUTPUT, i)));
-		addOutput(createOutput<PJ301MPort>(prt(px(0, i), py(1, i)), module, Interface::omap(Interface::    GATE_OUTPUT, i)));
+		addOutput(createOutputGTX<PortOutMed>(Vec(px(0, i), py(2, i)), module, Interface::omap(Interface::   PITCH_OUTPUT, i)));
+		addOutput(createOutputGTX<PortOutMed>(Vec(px(0, i), py(1, i)), module, Interface::omap(Interface::    GATE_OUTPUT, i)));
 	}
 }
 

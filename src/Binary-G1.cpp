@@ -187,14 +187,15 @@ Widget::Widget()
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
-		addInput (createInput<PJ301MPort> (prt(px(0, i), py(1, i)), module, Impl::imap(Impl::IN_A_INPUT,   i)));
-		addInput (createInput<PJ301MPort> (prt(px(0, i), py(2, i)), module, Impl::imap(Impl::IN_B_INPUT,   i)));
-		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(1, i)), module, Impl::omap(Impl::OUT_1_OUTPUT, i)));
-		addOutput(createOutput<PJ301MPort>(prt(px(1, i), py(2, i)), module, Impl::omap(Impl::OUT_2_OUTPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, Impl::imap(Impl::IN_A_INPUT, i)));
+		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, Impl::imap(Impl::IN_B_INPUT, i)));
+
+		addOutput(createOutputGTX<PortOutMed>(Vec(px(1, i), py(1, i)), module, Impl::omap(Impl::OUT_1_OUTPUT, i)));
+		addOutput(createOutputGTX<PortOutMed>(Vec(px(1, i), py(2, i)), module, Impl::omap(Impl::OUT_2_OUTPUT, i)));
 	}
 
-	addInput(createInput<PJ301MPort>(prt(gx(0), gy(1)), module, Impl::imap(Impl::IN_A_INPUT, GTX__N)));
-	addInput(createInput<PJ301MPort>(prt(gx(0), gy(2)), module, Impl::imap(Impl::IN_B_INPUT, GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, Impl::imap(Impl::IN_A_INPUT, GTX__N)));
+	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(2)), module, Impl::imap(Impl::IN_B_INPUT, GTX__N)));
 
 	addChild(createLight<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(-0.28) - 6 * rad_l_s()), module, Impl::FUNCTION_0_AB_1_LIGHT));
 	addChild(createLight<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(-0.28) - 3 * rad_l_s()), module, Impl::FUNCTION_1_AB_1_LIGHT));
