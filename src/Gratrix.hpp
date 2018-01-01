@@ -45,11 +45,11 @@ struct MicroModule
 //============================================================================================================
 //! \name UI Port components
 
-struct IPrtMed : SVGPort
+struct PortInMed : SVGPort
 {
-	IPrtMed()
+	PortInMed()
 	{
-		background->svg = SVG::load(assetPlugin(plugin, "res/ui/IPrtMed.svg"));
+		background->svg = SVG::load(assetPlugin(plugin, "res/ui/PortInMedium.svg"));
 		background->wrap();
 		box.size = background->box.size;
 	}
@@ -58,11 +58,11 @@ struct IPrtMed : SVGPort
 	static Vec pos()  { return Vec(12.5, 12.5); }  // Copied from SVG so no need to pre-load.
 };
 
-struct OPrtMed : SVGPort
+struct PortOutMed : SVGPort
 {
-	OPrtMed()
+	PortOutMed()
 	{
-		background->svg = SVG::load(assetPlugin(plugin, "res/ui/OPrtMed.svg"));
+		background->svg = SVG::load(assetPlugin(plugin, "res/ui/PortOutMedium.svg"));
 		background->wrap();
 		box.size = background->box.size;
 	}
@@ -71,11 +71,11 @@ struct OPrtMed : SVGPort
 	static Vec pos()  { return Vec(12.5, 12.5); }  // Copied from SVG so no need to pre-load.
 };
 
-struct IPrtSml : SVGPort
+struct PortInSml : SVGPort
 {
-	IPrtSml()
+	PortInSml()
 	{
-		background->svg = SVG::load(assetPlugin(plugin, "res/ui/IPrtSml.svg"));
+		background->svg = SVG::load(assetPlugin(plugin, "res/ui/PortInSmall.svg"));
 		background->wrap();
 		box.size = background->box.size;
 	}
@@ -84,11 +84,11 @@ struct IPrtSml : SVGPort
 	static Vec pos()  { return Vec( 9,  9); }  // Copied from SVG so no need to pre-load.
 };
 
-struct OPrtSml : SVGPort
+struct PortOutSml : SVGPort
 {
-	OPrtSml()
+	PortOutSml()
 	{
-		background->svg = SVG::load(assetPlugin(plugin, "res/ui/OPrtSml.svg"));
+		background->svg = SVG::load(assetPlugin(plugin, "res/ui/PortOutSmall.svg"));
 		background->wrap();
 		box.size = background->box.size;
 	}

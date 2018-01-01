@@ -1177,11 +1177,11 @@ Widget::Widget()
 	addParam(createParam<LEDButton>              (but(portX[9], portY[1]), module, Impl::PASTE_PARAM, 0.0, 1.0, 0.0));
 	addChild(createLight<MediumLight<GreenLight>>(l_m(portX[9], portY[1]), module, Impl::PASTE_LIGHT));
 
-	addInput(createInputGTX<IPrtMed>(Vec(portX[0], portY[1]), module, Impl::CLOCK_INPUT));
-	addInput(createInputGTX<IPrtMed>(Vec(portX[1], portY[1]), module, Impl::EXT_CLOCK_INPUT));
-	addInput(createInputGTX<IPrtMed>(Vec(portX[2], portY[1]), module, Impl::RESET_INPUT));
-	addInput(createInputGTX<IPrtMed>(Vec(portX[3], portY[1]), module, Impl::STEPS_INPUT));
-	addInput(createInputGTX<IPrtMed>(Vec(portX[4], portY[1]), module, Impl::PROG_INPUT));
+	addInput(createInputGTX<PortInMed>(Vec(portX[0], portY[1]), module, Impl::CLOCK_INPUT));
+	addInput(createInputGTX<PortInMed>(Vec(portX[1], portY[1]), module, Impl::EXT_CLOCK_INPUT));
+	addInput(createInputGTX<PortInMed>(Vec(portX[2], portY[1]), module, Impl::RESET_INPUT));
+	addInput(createInputGTX<PortInMed>(Vec(portX[3], portY[1]), module, Impl::STEPS_INPUT));
+	addInput(createInputGTX<PortInMed>(Vec(portX[4], portY[1]), module, Impl::PROG_INPUT));
 
 	{
 		std::size_t j = 0;
@@ -1189,8 +1189,8 @@ Widget::Widget()
 		#if LCD_ROWS
 		for (std::size_t row = 0; row < LCD_ROWS; ++row, ++j)
 		{
-			if (OUT_LEFT ) addOutput(createOutputGTX<OPrtSml>(Vec(gridXl, gridY[j]), module, Impl::lcd_val_map(row, 0)));
-			if (OUT_RIGHT) addOutput(createOutputGTX<OPrtSml>(Vec(gridXr, gridY[j]), module, Impl::lcd_val_map(row, 1)));
+			if (OUT_LEFT ) addOutput(createOutputGTX<PortOutSml>(Vec(gridXl, gridY[j]), module, Impl::lcd_val_map(row, 0)));
+			if (OUT_RIGHT) addOutput(createOutputGTX<PortOutSml>(Vec(gridXr, gridY[j]), module, Impl::lcd_val_map(row, 1)));
 		}
 		#endif
 
@@ -1201,16 +1201,16 @@ Widget::Widget()
 		#if NOB_ROWS
 		for (std::size_t row = 0; row < NOB_ROWS; ++row, ++j)
 		{
-			if (OUT_LEFT ) addOutput(createOutputGTX<OPrtSml>(Vec(gridXl, gridY[j]), module, Impl::nob_val_map(row, 0)));
-			if (OUT_RIGHT) addOutput(createOutputGTX<OPrtSml>(Vec(gridXr, gridY[j]), module, Impl::nob_val_map(row, 1)));
+			if (OUT_LEFT ) addOutput(createOutputGTX<PortOutSml>(Vec(gridXl, gridY[j]), module, Impl::nob_val_map(row, 0)));
+			if (OUT_RIGHT) addOutput(createOutputGTX<PortOutSml>(Vec(gridXr, gridY[j]), module, Impl::nob_val_map(row, 1)));
 		}
 		#endif
 
 		#if BUT_ROWS
 		for (std::size_t row = 0; row < BUT_ROWS; ++row, ++j)
 		{
-			if (OUT_LEFT ) addOutput(createOutputGTX<OPrtSml>(Vec(gridXl, gridY[j]), module, Impl::but_val_map(row, 0)));
-			if (OUT_RIGHT) addOutput(createOutputGTX<OPrtSml>(Vec(gridXr, gridY[j]), module, Impl::but_val_map(row, 1)));
+			if (OUT_LEFT ) addOutput(createOutputGTX<PortOutSml>(Vec(gridXl, gridY[j]), module, Impl::but_val_map(row, 0)));
+			if (OUT_RIGHT) addOutput(createOutputGTX<PortOutSml>(Vec(gridXr, gridY[j]), module, Impl::but_val_map(row, 1)));
 		}
 		#endif
 	}
