@@ -49,7 +49,7 @@ struct PortInMed : SVGPort
 {
 	PortInMed()
 	{
-		background->svg = SVG::load(assetPlugin(plugin, "res/ui/PortInMedium.svg"));
+		background->svg = SVG::load(assetPlugin(plugin, "res/components/PortInMedium.svg"));
 		background->wrap();
 		box.size = background->box.size;
 	}
@@ -62,7 +62,7 @@ struct PortOutMed : SVGPort
 {
 	PortOutMed()
 	{
-		background->svg = SVG::load(assetPlugin(plugin, "res/ui/PortOutMedium.svg"));
+		background->svg = SVG::load(assetPlugin(plugin, "res/components/PortOutMedium.svg"));
 		background->wrap();
 		box.size = background->box.size;
 	}
@@ -75,7 +75,7 @@ struct PortInSml : SVGPort
 {
 	PortInSml()
 	{
-		background->svg = SVG::load(assetPlugin(plugin, "res/ui/PortInSmall.svg"));
+		background->svg = SVG::load(assetPlugin(plugin, "res/components/PortInSmall.svg"));
 		background->wrap();
 		box.size = background->box.size;
 	}
@@ -88,7 +88,7 @@ struct PortOutSml : SVGPort
 {
 	PortOutSml()
 	{
-		background->svg = SVG::load(assetPlugin(plugin, "res/ui/PortOutSmall.svg"));
+		background->svg = SVG::load(assetPlugin(plugin, "res/components/PortOutSmall.svg"));
 		background->wrap();
 		box.size = background->box.size;
 	}
@@ -105,7 +105,7 @@ struct KnobFreeHug : RoundKnob
 {
 	KnobFreeHug()
 	{
-		setSVG(SVG::load(assetPlugin(plugin, "res/ui/KnobFreeHuge.svg")));
+		setSVG(SVG::load(assetPlugin(plugin, "res/components/KnobFreeHuge.svg")));
 		box.size = Vec(56, 56);
 	}
 
@@ -117,7 +117,7 @@ struct KnobSnapHug : RoundKnob
 {
 	KnobSnapHug()
 	{
-		setSVG(SVG::load(assetPlugin(plugin, "res/ui/KnobSnapHuge.svg")));
+		setSVG(SVG::load(assetPlugin(plugin, "res/components/KnobSnapHuge.svg")));
 		box.size = Vec(56, 56);
 		snap = true;
 	}
@@ -130,7 +130,7 @@ struct KnobFreeLrg : RoundKnob
 {
 	KnobFreeLrg()
 	{
-		setSVG(SVG::load(assetPlugin(plugin, "res/ui/KnobFreeLarge.svg")));
+		setSVG(SVG::load(assetPlugin(plugin, "res/components/KnobFreeLarge.svg")));
 		box.size = Vec(46, 46);
 	}
 
@@ -142,7 +142,7 @@ struct KnobSnapLrg : RoundKnob
 {
 	KnobSnapLrg()
 	{
-		setSVG(SVG::load(assetPlugin(plugin, "res/ui/KnobSnapLarge.svg")));
+		setSVG(SVG::load(assetPlugin(plugin, "res/components/KnobSnapLarge.svg")));
 		box.size = Vec(46, 46);
 		snap = true;
 	}
@@ -155,7 +155,7 @@ struct KnobFreeMed : RoundKnob
 {
 	KnobFreeMed()
 	{
-		setSVG(SVG::load(assetPlugin(plugin, "res/ui/KnobFreeMedium.svg")));
+		setSVG(SVG::load(assetPlugin(plugin, "res/components/KnobFreeMedium.svg")));
 		box.size = Vec(38, 38);
 	}
 
@@ -167,7 +167,7 @@ struct KnobSnapMed : RoundKnob
 {
 	KnobSnapMed()
 	{
-		setSVG(SVG::load(assetPlugin(plugin, "res/ui/KnobSnapMedium.svg")));
+		setSVG(SVG::load(assetPlugin(plugin, "res/components/KnobSnapMedium.svg")));
 		box.size = Vec(38, 38);
 		snap = true;
 	}
@@ -180,7 +180,7 @@ struct KnobFreeSml : RoundKnob
 {
 	KnobFreeSml()
 	{
-		setSVG(SVG::load(assetPlugin(plugin, "res/ui/KnobFreeSmall.svg")));
+		setSVG(SVG::load(assetPlugin(plugin, "res/components/KnobFreeSmall.svg")));
 		box.size = Vec(28, 28);
 	}
 
@@ -192,7 +192,7 @@ struct KnobSnapSml : RoundKnob
 {
 	KnobSnapSml()
 	{
-		setSVG(SVG::load(assetPlugin(plugin, "res/ui/KnobSnapSmall.svg")));
+		setSVG(SVG::load(assetPlugin(plugin, "res/components/KnobSnapSmall.svg")));
 		box.size = Vec(28, 28);
 		snap = true;
 	}
@@ -205,7 +205,7 @@ struct KnobFreeTny : RoundKnob
 {
 	KnobFreeTny()
 	{
-		setSVG(SVG::load(assetPlugin(plugin, "res/ui/KnobFreeTiny.svg")));
+		setSVG(SVG::load(assetPlugin(plugin, "res/components/KnobFreeTiny.svg")));
 		box.size = Vec(28, 28);
 	}
 
@@ -217,7 +217,7 @@ struct KnobSnapTny : RoundKnob
 {
 	KnobSnapTny()
 	{
-		setSVG(SVG::load(assetPlugin(plugin, "res/ui/KnobSnapTiny.svg")));
+		setSVG(SVG::load(assetPlugin(plugin, "res/components/KnobSnapTiny.svg")));
 		box.size = Vec(28, 28);
 		snap = true;
 	}
