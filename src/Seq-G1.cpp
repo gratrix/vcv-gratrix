@@ -1246,11 +1246,11 @@ Widget::Widget()
 			{
 				if (Impl::is_nob_snap(row))
 				{
-					addParam(createParam<RoundSmallBlackSnapKnob>(n_s(g_nobX[col], gridY[j]), module, Impl::nob_map(row, col), 0.0, 12.0, 0.0));
+					addParam(createParamGTX<KnobSnapSml>(Vec(g_nobX[col], gridY[j]), module, Impl::nob_map(row, col), 0.0, 12.0, 0.0));
 				}
 				else
 				{
-					addParam(createParam<RoundSmallBlackKnob>    (n_s(g_nobX[col], gridY[j]), module, Impl::nob_map(row, col), 0.0, 10.0, 0.0));
+					addParam(createParamGTX<KnobFreeSml>(Vec(g_nobX[col], gridY[j]), module, Impl::nob_map(row, col), 0.0, 10.0, 0.0));
 				}
 			}
 		}

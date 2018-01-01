@@ -159,8 +159,8 @@ Widget::Widget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
-	addParam(createParam<RoundHugeBlackKnob>(n_b(fx(1), fy(0)), module, Impl::BLENDAB_PARAM, 0.0, 1.0, 0.0));
-	addParam(createParam<RoundHugeBlackKnob>(n_b(fx(2), fy(0)), module, Impl::BLEND12_PARAM, 0.0, 1.0, 0.0));
+	addParam(createParamGTX<KnobFreeHug>(Vec(fx(1), fy(0)), module, Impl::BLENDAB_PARAM, 0.0, 1.0, 0.0));
+	addParam(createParamGTX<KnobFreeHug>(Vec(fx(2), fy(0)), module, Impl::BLEND12_PARAM, 0.0, 1.0, 0.0));
 
 	addInput(createInput<PJ301MPort>(prt(fx(0), fy(-0.28)), module, Impl::BLENDAB_INPUT));
 	addInput(createInput<PJ301MPort>(prt(fx(0), fy(+0.28)), module, Impl::BLEND12_INPUT));

@@ -372,12 +372,12 @@ Widget::Widget()
 		addChild(display);
 	}
 
-	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(gx(1-0.22), gy(2-0.24)), module, Scope::X_SCALE_PARAM, -2.0,      8.0,   0.0));
-	addParam(createParam<RoundSmallBlackKnob>(    n_s(gx(1-0.22), gy(2+0.22)), module, Scope::X_POS_PARAM,  -10.0,     10.0,   0.0));
-	addParam(createParam<RoundSmallBlackKnob>(    n_s(gx(1+0.22), gy(2-0.24)), module, Scope::TIME_PARAM,    -6.0,    -16.0, -14.0));
-	addParam(createParam<RoundSmallBlackKnob>(    n_s(gx(1+0.22), gy(2+0.22)), module, Scope::TRIG_PARAM,   -10.0,     10.0,   0.0));
-	addParam(createParam<CKSS>(                   tog(gx(3-0.22), gy(2-0.24)), module, Scope::EXTERNAL_PARAM, 0.0,      1.0,   1.0));
-	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(gx(3+0.22), gy(2-0.24)), module, Scope::DISP_PARAM,     0.0, GTX__N+1,   0.0));
+	addParam(createParamGTX<KnobSnapSml>(Vec(gx(1-0.22), gy(2-0.24)), module, Scope::X_SCALE_PARAM, -2.0,      8.0,   0.0));
+	addParam(createParamGTX<KnobFreeSml>(Vec(gx(1-0.22), gy(2+0.22)), module, Scope::X_POS_PARAM,  -10.0,     10.0,   0.0));
+	addParam(createParamGTX<KnobFreeSml>(Vec(gx(1+0.22), gy(2-0.24)), module, Scope::TIME_PARAM,    -6.0,    -16.0, -14.0));
+	addParam(createParamGTX<KnobFreeSml>(Vec(gx(1+0.22), gy(2+0.22)), module, Scope::TRIG_PARAM,   -10.0,     10.0,   0.0));
+	addParam(createParam<CKSS>          (tog(gx(3-0.22), gy(2-0.24)), module, Scope::EXTERNAL_PARAM, 0.0,      1.0,   1.0));
+	addParam(createParamGTX<KnobSnapSml>(Vec(gx(3+0.22), gy(2-0.24)), module, Scope::DISP_PARAM,     0.0, GTX__N+1,   0.0));
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{

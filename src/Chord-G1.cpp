@@ -328,10 +328,10 @@ Widget::Widget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
-	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(x0(+1), fy(-0.28)), module, Impl::PROG_PARAM, 0.0, 12.0, 12.0));
-	addInput(createInput<PJ301MPort>             (prt(x0(-1), fy(-0.28)), module, Impl::PROG_INPUT));
-	addInput(createInput<PJ301MPort>             (prt(x0(+1), fy(+0.28)), module, Impl::GATE_INPUT));
-	addInput(createInput<PJ301MPort>             (prt(x0(-1), fy(+0.28)), module, Impl::VOCT_INPUT));
+	addParam(createParamGTX<KnobSnapSml>(Vec(x0(+1), fy(-0.28)), module, Impl::PROG_PARAM, 0.0, 12.0, 12.0));
+	addInput(createInput<PJ301MPort>    (prt(x0(-1), fy(-0.28)), module, Impl::PROG_INPUT));
+	addInput(createInput<PJ301MPort>    (prt(x0(+1), fy(+0.28)), module, Impl::GATE_INPUT));
+	addInput(createInput<PJ301MPort>    (prt(x0(-1), fy(+0.28)), module, Impl::VOCT_INPUT));
 
 	for (std::size_t i=0; i<N; ++i)
 	{

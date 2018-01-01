@@ -307,12 +307,12 @@ Widget::Widget()
 	addParam(createParam<CKSS>(tog(fx(-0.2), fy(-0.1)), module, VCO::MODE_PARAM, 0.0, 1.0, 1.0));
 	addParam(createParam<CKSS>(tog(fx(+0.2), fy(-0.1)), module, VCO::SYNC_PARAM, 0.0, 1.0, 1.0));
 
-	addParam(createParam<RoundHugeBlackKnob>(n_b(fx(1), fy(0)), module, VCO::FREQ_PARAM, -54.0, 54.0, 0.0));
+	addParam(createParamGTX<KnobFreeHug>(Vec(fx(1), fy(0)), module, VCO::FREQ_PARAM, -54.0, 54.0, 0.0));
 
-	addParam(createParam<RoundBlackKnob>(n_m(fx(2.1), fy(-0.28)), module, VCO::FINE_PARAM, -1.0, 1.0, 0.0));
-	addParam(createParam<RoundBlackKnob>(n_m(fx(2.9), fy(-0.28)), module, VCO::PW_PARAM,    0.0, 1.0, 0.5));
-	addParam(createParam<RoundBlackKnob>(n_m(fx(2.1), fy(+0.28)), module, VCO::FM_PARAM,    0.0, 1.0, 0.0));
-	addParam(createParam<RoundBlackKnob>(n_m(fx(2.9), fy(+0.28)), module, VCO::PWM_PARAM,   0.0, 1.0, 0.0));
+	addParam(createParamGTX<KnobFreeMed>(Vec(fx(2.1), fy(-0.28)), module, VCO::FINE_PARAM, -1.0, 1.0, 0.0));
+	addParam(createParamGTX<KnobFreeMed>(Vec(fx(2.9), fy(-0.28)), module, VCO::PW_PARAM,    0.0, 1.0, 0.5));
+	addParam(createParamGTX<KnobFreeMed>(Vec(fx(2.1), fy(+0.28)), module, VCO::FM_PARAM,    0.0, 1.0, 0.0));
+	addParam(createParamGTX<KnobFreeMed>(Vec(fx(2.9), fy(+0.28)), module, VCO::PWM_PARAM,   0.0, 1.0, 0.0));
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
@@ -464,10 +464,10 @@ Widget::Widget() {
 	addParam(createParam<CKSS>(tog(fx(1.27), fy(-0.28)), module, VCO2::MODE_PARAM, 0.0, 1.0, 1.0));
 	addParam(createParam<CKSS>(tog(fx(1.27), fy(+0.28)), module, VCO2::SYNC_PARAM, 0.0, 1.0, 1.0));
 
-	addParam(createParam<RoundHugeBlackKnob>(n_b(fx(0), fy(0)), module, VCO2::FREQ_PARAM, -54.0, 54.0, 0.0));
+	addParam(createParamGTX<KnobFreeHug>(Vec(fx(0), fy(0)), module, VCO2::FREQ_PARAM, -54.0, 54.0, 0.0));
 
-	addParam(createParam<RoundBlackKnob>(n_m(fx(0.75), fy(-0.28)), module, VCO2::WAVE_PARAM, 0.0, 3.0, 1.5));
-	addParam(createParam<RoundBlackKnob>(n_m(fx(0.75), fy(+0.28)), module, VCO2::FM_PARAM,   0.0, 1.0, 0.0));
+	addParam(createParamGTX<KnobFreeMed>(Vec(fx(0.75), fy(-0.28)), module, VCO2::WAVE_PARAM, 0.0, 3.0, 1.5));
+	addParam(createParamGTX<KnobFreeMed>(Vec(fx(0.75), fy(+0.28)), module, VCO2::FM_PARAM,   0.0, 1.0, 0.0));
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{

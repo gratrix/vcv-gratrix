@@ -230,12 +230,12 @@ Widget::Widget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
-	addParam(createParam<RoundHugeBlackKnob>(n_b(fx(0), fy(0)), module, VCF::FREQ_PARAM, 0.0, 1.0, 0.5));
+	addParam(createParamGTX<KnobFreeHug>(Vec(fx(0), fy(0)), module, VCF::FREQ_PARAM, 0.0, 1.0, 0.5));
 
-	addParam(createParam<RoundBlackKnob>(n_m(fx(1.1), fy(-0.28)), module, VCF::FINE_PARAM,     0.0, 1.0, 0.5));
-	addParam(createParam<RoundBlackKnob>(n_m(fx(1.9), fy(-0.28)), module, VCF::RES_PARAM,      0.0, 1.0, 0.0));
-	addParam(createParam<RoundBlackKnob>(n_m(fx(1.1), fy(+0.28)), module, VCF::FREQ_CV_PARAM, -1.0, 1.0, 0.0));
-	addParam(createParam<RoundBlackKnob>(n_m(fx(1.9), fy(+0.28)), module, VCF::DRIVE_PARAM,    0.0, 1.0, 0.0));
+	addParam(createParamGTX<KnobFreeMed>(Vec(fx(1.1), fy(-0.28)), module, VCF::FINE_PARAM,     0.0, 1.0, 0.5));
+	addParam(createParamGTX<KnobFreeMed>(Vec(fx(1.9), fy(-0.28)), module, VCF::RES_PARAM,      0.0, 1.0, 0.0));
+	addParam(createParamGTX<KnobFreeMed>(Vec(fx(1.1), fy(+0.28)), module, VCF::FREQ_CV_PARAM, -1.0, 1.0, 0.0));
+	addParam(createParamGTX<KnobFreeMed>(Vec(fx(1.9), fy(+0.28)), module, VCF::DRIVE_PARAM,    0.0, 1.0, 0.0));
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{

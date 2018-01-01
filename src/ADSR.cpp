@@ -174,10 +174,10 @@ Widget::Widget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
-	addParam(createParam<RoundBlackKnob>(n_m(fx(0+0.18), fy(-0.28)), module, ADSR::ATTACK_PARAM,  0.0, 1.0, 0.5));
-	addParam(createParam<RoundBlackKnob>(n_m(fx(1+0.18), fy(-0.28)), module, ADSR::DECAY_PARAM,   0.0, 1.0, 0.5));
-	addParam(createParam<RoundBlackKnob>(n_m(fx(0+0.18), fy(+0.28)), module, ADSR::SUSTAIN_PARAM, 0.0, 1.0, 0.5));
-	addParam(createParam<RoundBlackKnob>(n_m(fx(1+0.18), fy(+0.28)), module, ADSR::RELEASE_PARAM, 0.0, 1.0, 0.5));
+	addParam(createParamGTX<KnobFreeMed>(Vec(fx(0+0.18), fy(-0.28)), module, ADSR::ATTACK_PARAM,  0.0, 1.0, 0.5));
+	addParam(createParamGTX<KnobFreeMed>(Vec(fx(1+0.18), fy(-0.28)), module, ADSR::DECAY_PARAM,   0.0, 1.0, 0.5));
+	addParam(createParamGTX<KnobFreeMed>(Vec(fx(0+0.18), fy(+0.28)), module, ADSR::SUSTAIN_PARAM, 0.0, 1.0, 0.5));
+	addParam(createParamGTX<KnobFreeMed>(Vec(fx(1+0.18), fy(+0.28)), module, ADSR::RELEASE_PARAM, 0.0, 1.0, 0.5));
 
 	addInput(createInput<PJ301MPort>(prt(fx(0-0.28), fy(-0.28)), module, ADSR::ATTACK_INPUT));
 	addInput(createInput<PJ301MPort>(prt(fx(1-0.28), fy(-0.28)), module, ADSR::DECAY_INPUT));

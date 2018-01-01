@@ -178,12 +178,12 @@ Widget::Widget()
 	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
 	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
 
-	addParam(createParam<CKSS>(                   tog(fx(1 - 1.27)    , fy(-0.28)), module, Impl::INVERT_A_PARAM,      0.0, 1.0, 1.0));
-	addParam(createParam<CKSS>(                   tog(fx(1 - 1.27)    , fy(+0.28)), module, Impl::INVERT_B_PARAM,      0.0, 1.0, 1.0));
-	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(fx(1 - 0.75) - 3, fy(-0.28)), module, Impl::FUNCTION_AB_1_PARAM, 0.0, 4.0, 2.0));
-	addParam(createParam<RoundSmallBlackSnapKnob>(n_s(fx(1 - 0.75) - 3, fy(+0.28)), module, Impl::FUNCTION_AB_2_PARAM, 0.0, 4.0, 2.0));
-	addParam(createParam<CKSS>(                   tog(fx(    1.27)    , fy(-0.28)), module, Impl::INVERT_1_PARAM,      0.0, 1.0, 1.0));
-	addParam(createParam<CKSS>(                   tog(fx(    1.27)    , fy(+0.28)), module, Impl::INVERT_2_PARAM,      0.0, 1.0, 1.0));
+	addParam(createParam<CKSS>(          tog(fx(1 - 1.27)    , fy(-0.28)), module, Impl::INVERT_A_PARAM,      0.0, 1.0, 1.0));
+	addParam(createParam<CKSS>(          tog(fx(1 - 1.27)    , fy(+0.28)), module, Impl::INVERT_B_PARAM,      0.0, 1.0, 1.0));
+	addParam(createParamGTX<KnobSnapSml>(Vec(fx(1 - 0.75) - 3, fy(-0.28)), module, Impl::FUNCTION_AB_1_PARAM, 0.0, 4.0, 2.0));
+	addParam(createParamGTX<KnobSnapSml>(Vec(fx(1 - 0.75) - 3, fy(+0.28)), module, Impl::FUNCTION_AB_2_PARAM, 0.0, 4.0, 2.0));
+	addParam(createParam<CKSS>(          tog(fx(    1.27)    , fy(-0.28)), module, Impl::INVERT_1_PARAM,      0.0, 1.0, 1.0));
+	addParam(createParam<CKSS>(          tog(fx(    1.27)    , fy(+0.28)), module, Impl::INVERT_2_PARAM,      0.0, 1.0, 1.0));
 
 	for (std::size_t i=0; i<GTX__N; ++i)
 	{
