@@ -9,6 +9,7 @@
 #include <cstring>
 #include <array>
 #include <cmath>
+#include <limits>
 #include "rack.hpp"
 
 
@@ -38,6 +39,37 @@ struct MicroModule
 		inputs.resize(numInputs);
 		outputs.resize(numOutputs);
 		lights.resize(numLights);
+	}
+};
+
+
+//============================================================================================================
+//! \brief Simple cache structure.
+
+template <typename T> struct Cache
+{
+	bool valid;
+	T    value;
+
+	Cache()
+	{
+		reset();
+	}
+
+	void reset()
+	{
+		valid = false;
+	}
+
+	void set(const T &that)
+	{
+		valid = true;
+		value = that;
+	}
+
+	bool test(const T &that)
+	{
+		return valid && value != that;
 	}
 };
 
