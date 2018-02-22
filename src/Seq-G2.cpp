@@ -159,9 +159,19 @@ struct Impl : Module {
 	{
 		bool    active = 0;
 		int8_t  mode   = 0;
-		int8_t  note   = 0;   // C4
-		int8_t  octave = 4;   // C4
+		int8_t  note   = 0;   // C
+		int8_t  octave = 4;   // 4   --> C4 is 0V
 		float   value  = 0;
+
+		float to_voct() const
+		{
+			switch (mode)
+			{
+				case  0 : return (octave - 4.0f) + (note / 12.0f);
+				case  1 : return value;
+				default : return 0.0f;
+			}
+		}
 	};
 
 	#if LCD_ROWS
@@ -169,14 +179,30 @@ struct Impl : Module {
 	LcdData lcd_cache          [LCD_ROWS][LCD_COLS] = {};
 	#endif
 	#if PRG_ROWS
-	int8_t  prg_cache_row    = 0;
-	int8_t  prg_cache_col    = 0;
-	int8_t  prg_cache_note   = 0;
-	int8_t  prg_cache_octave = 0;
-	float   prg_cache_value  = 0;
-	int8_t  prg_cache_gate   = 0;
-	int8_t  prg_cache_rows   = 0;
-	int8_t  prg_cache_cols   = 0;
+	struct Caches
+	{
+		Cache<int8_t> prg_row;
+		Cache<int8_t> prg_col;
+		Cache<int8_t> prg_note;
+		Cache<int8_t> prg_octave;
+		Cache<float > prg_value;
+		Cache<int8_t> prg_gate;
+		Cache<int8_t> prg_rows;
+		Cache<int8_t> prg_cols;
+
+		void reset()
+		{
+			prg_row   .reset();
+			prg_col   .reset();
+			prg_note  .reset();
+			prg_octave.reset();
+			prg_value .reset();
+			prg_gate  .reset();
+			prg_rows  .reset();
+			prg_cols  .reset();
+		}
+	};
+	Caches caches;
 	#endif
 	#if BUT_ROWS
 	uint8_t but_state[PROGRAMS][BUT_ROWS][BUT_COLS] = {};
@@ -421,28 +447,7 @@ struct Impl : Module {
 		float       lcd_val[LCD_ROWS];
 		for (std::size_t row = 0; row < LCD_ROWS; ++row)
 		{
-			auto &current = lcd_state[play_prog][row][lcd_index];
-
-			switch (current.mode)
-			{
-				case 0 :
-				{
-					lcd_val[row] = (current.octave - 4.0f) + (current.note / 12.0f);
-				}
-				break;
-
-				case 1 :
-				{
-					lcd_val[row] = current.value;
-				}
-				break;
-
-				default :
-				{
-					lcd_val[row] = 0;
-				}
-				break;
-			}
+			lcd_val[row] = lcd_state[play_prog][row][lcd_index].to_voct();
 		}
 		#endif
 
@@ -617,6 +622,8 @@ struct Impl : Module {
 				}
 			}
 		}
+
+		caches.reset();
 		#endif
 
 		#if BUT_ROWS
@@ -705,7 +712,9 @@ struct Impl : Module {
 
 					std::size_t col_max = prg_col + prg_span * prg_stride;
 					if (col_max > LCD_COLS)
+					{
 						col_max = LCD_COLS;
+					}
 
 					for (std::size_t col = prg_col; col < col_max; col += prg_stride)
 					{
@@ -713,28 +722,28 @@ struct Impl : Module {
 
 						current.active = true;
 
-						if (prg_cache_note != prg_note)
+						if (caches.prg_note.test(prg_note))
 						{
 							current.note = prg_note;
 							current.mode = 0;
 						}
 
-						if (prg_cache_octave != prg_octave)
+						if (caches.prg_octave.test(prg_octave))
 						{
 							current.octave = prg_octave;
 							current.mode   = 0;
 						}
 
-						if (prg_cache_value != prg_value)
+						if (caches.prg_value.test(prg_value))
 						{
 							current.value = prg_value;
 							current.mode  = 1;
 						}
 					}
 
-					prg_cache_note   = prg_note;
-					prg_cache_octave = prg_octave;
-					prg_cache_value  = prg_value;
+					caches.prg_note  .set(prg_note);
+					caches.prg_octave.set(prg_octave);
+					caches.prg_value .set(prg_value);
 				}
 			}
 		}
@@ -765,6 +774,8 @@ struct Impl : Module {
 			}
 		}
 		#endif
+
+		caches.reset();
 	}
 
 	//--------------------------------------------------------------------------------------------------------
@@ -785,6 +796,8 @@ struct Impl : Module {
 			}
 		}
 		#endif
+
+		caches.reset();
 	}
 
 	//--------------------------------------------------------------------------------------------------------
@@ -837,6 +850,8 @@ struct Impl : Module {
 			}
 		}
 		#endif
+
+		caches.reset();
 	}
 };
 
