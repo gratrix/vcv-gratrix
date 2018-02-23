@@ -57,11 +57,11 @@ struct Impl : Module
 		/*static constexpr*/ float e = static_cast<float>(E);  // Static constexpr gives
 		/*static constexpr*/ float s = 1.0f / e;               // link error on Mac build.
 
-		float in    = 0;
-		float out   = 0;
-		int   note  = 0;
-		int   key   = 0;
-		int   oct   = 0;
+		float in    = 0;  //!< Raw input.
+		float out   = 0;  //!< Input quantized.
+		int   note  = 0;  //!< Integer note (offset midi note).
+		int   key   = 0;  //!< C, C#, D, D#, etc.
+		int   oct   = 0;  //!< Octave (C4 = 0).
 
 		void step(float input)
 		{
