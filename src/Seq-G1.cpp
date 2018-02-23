@@ -141,11 +141,25 @@ struct Impl : Module {
 
 	struct LcdData
 	{
-		bool    active = 0;
-		int8_t  mode   = 0;
-		int8_t  note   = 0;   // C
-		int8_t  octave = 4;   // 4   --> C4 is 0V
-		float   value  = 0;
+		bool    active;
+		int8_t  mode;
+		int8_t  note;     // C
+		int8_t  octave;   // 4   --> C4 is 0V
+		float   value;
+
+		LcdData()
+		{
+			reset();
+		}
+
+		void reset()
+		{
+			active = false;
+			mode   = 0;
+			note   = 0;   // C
+			octave = 4;   // 4   --> C4 is 0V
+			value  = 0;
+		}
 
 		float to_voct() const
 		{
@@ -155,6 +169,13 @@ struct Impl : Module {
 				case  1 : return value;
 				default : return 0.0f;
 			}
+		}
+
+		std::ostream &debug(std::ostream &os) const
+		{
+			os << static_cast<int>(mode) << " " << static_cast<int>(note) << " " << static_cast<int>(octave) << " " << value;
+
+			return os;
 		}
 	};
 
@@ -509,54 +530,51 @@ struct Impl : Module {
 
 	json_t *toJson() override
 	{
-		if (json_t *rootJ = json_object())
+		if (json_t *jo_root = json_object())
 		{
+			// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 			// Running
-			json_object_set_new(rootJ, "running", json_boolean(running));
+
+			json_object_set_new(jo_root, "running", json_boolean(running));
+
+			// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+			// LCD state
 
 			#if LCD_ROWS
-			if (json_t *ja = json_array())
-			{
-				for (std::size_t prog = 0; prog < PROGRAMS; ++prog)
-				{
-					for (std::size_t row = 0; row < LCD_ROWS; ++row)
-					{
-						for (std::size_t col = 0; col < LCD_COLS; ++col)
-						{
-							if (json_t *ji = json_integer(static_cast<int>(lcd_state[prog][row][col].note)))
-							{
-								json_array_append_new(ja, ji);
-							}
-						}
-					}
-				}
+			if (json_t *ja_progs = json_array())  { for (std::size_t prog = 0; prog < PROGRAMS; ++prog) {
+			if (json_t *ja_rows  = json_array())  { for (std::size_t row  = 0; row  < LCD_ROWS; ++row ) {
+			if (json_t *ja_cols  = json_array())  { for (std::size_t col  = 0; col  < LCD_COLS; ++col ) {
+			if (json_t *jo_data  = json_object()) { auto &current = lcd_state[prog][row][col];
 
-				json_object_set_new(rootJ, "lcd", ja);
-			}
+				if (json_t *ji = json_integer(static_cast<int>(current.mode  ))) json_object_set_new(jo_data, "mode",   ji);
+				if (json_t *ji = json_integer(static_cast<int>(current.note  ))) json_object_set_new(jo_data, "note",   ji);
+				if (json_t *ji = json_integer(static_cast<int>(current.octave))) json_object_set_new(jo_data, "octave", ji);
+				if (json_t *ji = json_real(static_cast<double>(current.value ))) json_object_set_new(jo_data, "value",  ji);
+
+			json_array_append_new(ja_cols,        jo_data ); } }
+			json_array_append_new(ja_rows,        ja_cols ); } }
+			json_array_append_new(ja_progs,       ja_rows ); } }
+			json_object_set_new  (jo_root, "lcd", ja_progs); }
 			#endif
+
+			// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+			// Button state
 
 			#if BUT_ROWS
-			if (json_t *ja = json_array())
-			{
-				for (std::size_t prog = 0; prog < PROGRAMS; ++prog)
-				{
-					for (std::size_t row = 0; row < BUT_ROWS; ++row)
-					{
-						for (std::size_t col = 0; col < BUT_COLS; ++col)
-						{
-							if (json_t *ji = json_integer(static_cast<int>(but_state[prog][row][col])))
-							{
-								json_array_append_new(ja, ji);
-							}
-						}
-					}
-				}
+			if (json_t *ja_progs = json_array())  { for (std::size_t prog = 0; prog < PROGRAMS; ++prog) {
+			if (json_t *ja_rows  = json_array())  { for (std::size_t row  = 0; row  < BUT_ROWS; ++row ) {
+			if (json_t *ja_cols  = json_array())  { for (std::size_t col  = 0; col  < BUT_COLS; ++col ) {
+			if (json_t *jo_data  = json_object()) { auto &current = but_state[prog][row][col];
 
-				json_object_set_new(rootJ, "but", ja);
-			}
+				if (json_t *ji = json_integer(static_cast<int>(current))) json_object_set_new(jo_data, "mode", ji);
+
+			json_array_append_new(ja_cols,        jo_data ); } }
+			json_array_append_new(ja_rows,        ja_cols ); } }
+			json_array_append_new(ja_progs,       ja_rows ); } }
+			json_object_set_new  (jo_root, "but", ja_progs); }
 			#endif
 
-			return rootJ;
+			return jo_root;
 		}
 
 		return nullptr;
@@ -565,63 +583,67 @@ struct Impl : Module {
 	//--------------------------------------------------------------------------------------------------------
 	//! \brief Load state.
 
-	void fromJson(json_t *rootJ) override
+	void fromJson(json_t *jo_root) override
 	{
-		// Running
-		if (json_t *jb = json_object_get(rootJ, "running"))
+		if (jo_root)
 		{
-			running = json_is_true(jb);
-		}
+			// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+			// Running
 
-		#if LCD_ROWS
-		if (json_t *ja = json_object_get(rootJ, "lcd"))
-		{
-			for (std::size_t i = 0, prog = 0; prog < PROGRAMS; ++prog)
+			if (json_t *jb = json_object_get(jo_root, "running"))
 			{
-				for (std::size_t row = 0; row < LCD_ROWS; ++row)
-				{
-					for (std::size_t col = 0; col < LCD_COLS; ++col, ++i)
-					{
-						if (json_t *ji = json_array_get(ja, i))
-						{
-							//! \todo Range check
-							lcd_state[prog][row][col].note = json_integer_value(ji);
-						}
-					}
-				}
+				running = json_is_true(jb);
 			}
+
+			// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+			// LCD state
+
+			#if LCD_ROWS
+			for (std::size_t prog = 0; prog < PROGRAMS; ++prog) {
+			for (std::size_t row  = 0; row  < LCD_ROWS; ++row ) {
+			for (std::size_t col  = 0; col  < LCD_COLS; ++col ) {
+
+				lcd_state[prog][row][col].reset();
+
+			} } }
+
+			if (json_t *ja_progs = json_object_get(jo_root, "lcd")) { for (std::size_t prog = 0; prog < PROGRAMS && prog < json_array_size(ja_progs); ++prog) {
+			if (json_t *ja_rows  = json_array_get (ja_progs, prog)) { for (std::size_t row  = 0; row  < LCD_ROWS && row  < json_array_size(ja_rows);  ++row ) {
+			if (json_t *ja_cols  = json_array_get (ja_rows,  row )) { for (std::size_t col  = 0; col  < LCD_COLS && col  < json_array_size(ja_cols);  ++col ) {
+			if (json_t *jo_data  = json_array_get (ja_cols,  col )) { auto &current = lcd_state[prog][row][col];
+
+				if (json_t *jo = json_object_get(jo_data, "mode"  )) current.mode   = static_cast<int8_t>(json_integer_value(jo));
+				if (json_t *jo = json_object_get(jo_data, "note"  )) current.note   = static_cast<int8_t>(json_integer_value(jo));
+				if (json_t *jo = json_object_get(jo_data, "octave")) current.octave = static_cast<int8_t>(json_integer_value(jo));
+				if (json_t *jo = json_object_get(jo_data, "value" )) current.value  = static_cast<float> (json_real_value   (jo));
+
+			} } } } } } }
+
+			caches.reset();
+			#endif
+
+			// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+			// Button state
+
+			#if BUT_ROWS
+			for (std::size_t prog = 0; prog < PROGRAMS; ++prog) {
+			for (std::size_t row  = 0; row  < LCD_ROWS; ++row ) {
+			for (std::size_t col  = 0; col  < LCD_COLS; ++col ) {
+
+				but_state[prog][row][col] = GM_OFF;
+
+			} } }
+
+			if (json_t *ja_progs = json_object_get(jo_root, "but")) { for (std::size_t prog = 0; prog < PROGRAMS && prog < json_array_size(ja_progs); ++prog) {
+			if (json_t *ja_rows  = json_array_get (ja_progs, prog)) { for (std::size_t row  = 0; row  < BUT_ROWS && row  < json_array_size(ja_rows);  ++row ) {
+			if (json_t *ja_cols  = json_array_get (ja_rows,  row )) { for (std::size_t col  = 0; col  < BUT_COLS && col  < json_array_size(ja_cols);  ++col ) {
+			if (json_t *jo_data  = json_array_get (ja_cols,  col )) { auto &current = but_state[prog][row][col];
+
+				if (json_t *jo = json_object_get(jo_data, "mode"  )) current = static_cast<uint8_t>(json_integer_value(jo));
+
+			} } } } } } }
+			#endif
 		}
-
-		caches.reset();
-		#endif
-
-		#if BUT_ROWS
-		if (json_t *ja = json_object_get(rootJ, "but"))
-		{
-			for (std::size_t i = 0, prog = 0; prog < PROGRAMS; ++prog)
-			{
-				for (std::size_t row = 0; row < BUT_ROWS; ++row)
-				{
-					for (std::size_t col = 0; col < BUT_COLS; ++col, ++i)
-					{
-						if (json_t *ji = json_array_get(ja, i))
-						{
-							int value = json_integer_value(ji);
-
-							if (value < 0 || value >= GATE_STATES)
-							{
-								but_state[prog][row][col] = GM_OFF;
-							}
-							else
-							{
-								but_state[prog][row][col] = static_cast<uint8_t>(value);
-							}
-						}
-					}
-				}
-			}
-		}
-		#endif
 	}
 
 	//--------------------------------------------------------------------------------------------------------
