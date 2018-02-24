@@ -1,13 +1,11 @@
+SLUG = Gratrix
+VERSION = 0.6.0dev
+
 FLAGS += -I../../src/core
 
-SOURCES = $(wildcard src/*.cpp)
+SOURCES += $(wildcard src/*.cpp)
 
+DISTRIBUTABLES += $(wildcard LICENSE*) res
 
-include ../../plugin.mk
-
-
-dist: all
-	mkdir -p dist/Gratrix
-	cp LICENSE* dist/Gratrix/
-	cp $(TARGET) dist/Gratrix/
-	cp -R res dist/Gratrix/
+RACK_DIR ?= ../..
+include $(RACK_DIR)/plugin.mk
