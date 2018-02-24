@@ -26,10 +26,10 @@ void init(rack::Plugin *p)
 //	p->addModel(GTX::Keys_G1  ::model);
 //	p->addModel(GTX::VU_G1    ::model);
 //	p->addModel(GTX::Scope_G1 ::model);
-//	p->addModel(GTX::Blank_03 ::model);
-//	p->addModel(GTX::Blank_06 ::model);
-//	p->addModel(GTX::Blank_09 ::model);
-//	p->addModel(GTX::Blank_12 ::model);
+	p->addModel(GTX::Blank_03 ::model);
+	p->addModel(GTX::Blank_06 ::model);
+	p->addModel(GTX::Blank_09 ::model);
+	p->addModel(GTX::Blank_12 ::model);
 }
 
 /*

@@ -15,43 +15,41 @@ namespace Blank_12 {
 
 
 //============================================================================================================
-//! \brief The implementation.
+//! \brief The module implementation.
 
-struct Impl : Module
+struct GtxModule : Module
 {
-	Impl() : Module(0, 0, 0) {}
+	GtxModule() : Module(0, 0, 0) {}
 };
 
 
 //============================================================================================================
 //! \brief The widget.
 
-Widget::Widget()
+struct GtxWidget : ModuleWidget
 {
-	GTX__WIDGET();
-
-	Impl *module = new Impl();
-	setModule(module);
-	box.size = Vec(12*15, 380);
-
-	#if GTX__SAVE_SVG
+	GtxWidget(GtxModule *module) : ModuleWidget(module)
 	{
-		PanelGen pg(assetPlugin(plugin, "build/res/Blank12.svg"), box.size);
-	}
-	#endif
+		GTX__WIDGET();
+		box.size = Vec(12*15, 380);
 
-	{
-		SVGPanel *panel = new SVGPanel();
-		panel->box.size = box.size;
-		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Blank12.svg")));
-		addChild(panel);
-	}
+		#if GTX__SAVE_SVG
+		{
+			PanelGen pg(assetPlugin(plugin, "build/res/Blank12.svg"), box.size);
+		}
+		#endif
 
-	addChild(createScrew<ScrewSilver>(Vec(15, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
-}
+		setPanel(SVG::load(assetPlugin(plugin, "res/Blank12.svg")));
+
+		addChild(Widget::create<ScrewSilver>(Vec(15, 0)));
+		addChild(Widget::create<ScrewSilver>(Vec(box.size.x-30, 0)));
+		addChild(Widget::create<ScrewSilver>(Vec(15, 365)));
+		addChild(Widget::create<ScrewSilver>(Vec(box.size.x-30, 365)));
+	}
+};
+
+
+Model *model = Model::create<GtxModule, GtxWidget>("Gratrix", "Blank12", "Blank 12", BLANK_TAG);
 
 
 } // Blank_12
