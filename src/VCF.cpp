@@ -1,3 +1,4 @@
+#if 0
 /*
 The filter DSP code has been derived from
 Miller Puckette's code hosted at
@@ -257,3 +258,4 @@ Widget::Widget()
 
 } // VCF_F1
 } // GTX
+#endif
