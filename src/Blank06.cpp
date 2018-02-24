@@ -15,7 +15,7 @@ namespace Blank_06 {
 
 
 //============================================================================================================
-//! \brief The module implementation.
+//! \brief The module.
 
 struct GtxModule : Module
 {
