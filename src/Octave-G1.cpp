@@ -30,9 +30,9 @@ enum Spec
 
 
 //============================================================================================================
-//! \brief The implementation.
+//! \brief The module.
 
-struct Impl : Module
+struct GtxModule : Module
 {
 	enum ParamIds {
 		NUM_PARAMS
@@ -82,7 +82,7 @@ struct Impl : Module
 	//--------------------------------------------------------------------------------------------------------
 	//! \brief Constructor.
 
-	Impl()
+	GtxModule()
 	:
 		Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS)
 	{}
@@ -135,88 +135,86 @@ static int y(std::size_t i, double radius) { return static_cast<int>(-20+206  + 
 //============================================================================================================
 //! \brief The widget.
 
-Widget::Widget()
+struct GtxWidget : ModuleWidget
 {
-	GTX__WIDGET();
-
-	Impl *module = new Impl();
-	setModule(module);
-	box.size = Vec(12*15, 380);
-
-//	double r1 = 30;
-	double r2 = 55;
-
-	#if GTX__SAVE_SVG
+	GtxWidget(GtxModule *module) : ModuleWidget(module)
 	{
-		PanelGen pg(assetPlugin(plugin, "build/res/Octave-G1.svg"), box.size, "OCTAVE-G1");
+		GTX__WIDGET();
+		box.size = Vec(12*15, 380);
 
-		pg.circle(Vec(x(0, 0), y(0, 0)), r2+16, "fill:#7092BE;stroke:none");
-		pg.circle(Vec(x(0, 0), y(0, 0)), r2-16, "fill:#CEE1FD;stroke:none");
+	//	double r1 = 30;
+		double r2 = 55;
 
-/*		// Wires
+		#if GTX__SAVE_SVG
+		{
+			PanelGen pg(assetPlugin(plugin, "build/res/Octave-G1.svg"), box.size, "OCTAVE-G1");
+
+			pg.circle(Vec(x(0, 0), y(0, 0)), r2+16, "fill:#7092BE;stroke:none");
+			pg.circle(Vec(x(0, 0), y(0, 0)), r2-16, "fill:#CEE1FD;stroke:none");
+
+	/*		// Wires
+			for (std::size_t i=0; i<N; ++i)
+			{
+						 pg.line(Vec(x(i,   r1), y(i,   r1)), Vec(x(i, r2), y(i, r2)), "stroke:#440022;stroke-width:1");
+				if (i) { pg.line(Vec(x(i-1, r1), y(i-1, r1)), Vec(x(i, r1), y(i, r1)), "stroke:#440022;stroke-width:1"); }
+			}
+	*/
+			// Ports
+			pg.circle(Vec(x(0, 0), y(0, 0)), 10, "stroke:#440022;stroke-width:1");
+			for (std::size_t i=0; i<N; ++i)
+			{
+				 pg.circle(Vec(x(i, r2), y(i,   r2)), 10, "stroke:#440022;stroke-width:1");
+			}
+
+			pg.prt_out(-0.20, 2,          "", "-2");
+			pg.prt_out( 0.15, 2,          "", "-1");
+			pg.prt_out( 0.50, 2, "TRANSPOSE",  "0");
+			pg.prt_out( 0.85, 2,          "", "+1");
+			pg.prt_out( 1.20, 2,          "", "+2");
+		}
+		#endif
+
+		setPanel(SVG::load(assetPlugin(plugin, "res/Octave-G1.svg")));
+
+		addChild(Widget::create<ScrewSilver>(Vec(15, 0)));
+		addChild(Widget::create<ScrewSilver>(Vec(box.size.x-30, 0)));
+		addChild(Widget::create<ScrewSilver>(Vec(15, 365)));
+		addChild(Widget::create<ScrewSilver>(Vec(box.size.x-30, 365)));
+
+		addInput(createInputGTX<PortInMed>(Vec(x(0, 0), y(0, 0)), module, GtxModule::VOCT_INPUT));
 		for (std::size_t i=0; i<N; ++i)
 		{
-					 pg.line(Vec(x(i,   r1), y(i,   r1)), Vec(x(i, r2), y(i, r2)), "stroke:#440022;stroke-width:1");
-			if (i) { pg.line(Vec(x(i-1, r1), y(i-1, r1)), Vec(x(i, r1), y(i, r1)), "stroke:#440022;stroke-width:1"); }
+			addOutput(createOutputGTX<PortOutMed>(Vec(x(i, r2), y(i, r2)), module, i + GtxModule::NOTE_OUTPUT));
 		}
-*/
-		// Ports
-		pg.circle(Vec(x(0, 0), y(0, 0)), 10, "stroke:#440022;stroke-width:1");
-		for (std::size_t i=0; i<N; ++i)
+
+		addOutput(createOutputGTX<PortOutMed>(Vec(gx(-0.20), gy(2)), module, 0 + GtxModule::OCT_OUTPUT));
+		addOutput(createOutputGTX<PortOutMed>(Vec(gx( 0.15), gy(2)), module, 1 + GtxModule::OCT_OUTPUT));
+		addOutput(createOutputGTX<PortOutMed>(Vec(gx( 0.50), gy(2)), module, 2 + GtxModule::OCT_OUTPUT));
+		addOutput(createOutputGTX<PortOutMed>(Vec(gx( 0.85), gy(2)), module, 3 + GtxModule::OCT_OUTPUT));
+		addOutput(createOutputGTX<PortOutMed>(Vec(gx( 1.20), gy(2)), module, 4 + GtxModule::OCT_OUTPUT));
+
+		addChild(ModuleLightWidget::create<SmallLight<RedLight>>(l_s(gx(0.5) - 30, fy(0-0.28) + 5), module, GtxModule::KEY_LIGHT +  0));  // C
+		addChild(ModuleLightWidget::create<SmallLight<RedLight>>(l_s(gx(0.5) - 25, fy(0-0.28) - 5), module, GtxModule::KEY_LIGHT +  1));  // C#
+		addChild(ModuleLightWidget::create<SmallLight<RedLight>>(l_s(gx(0.5) - 20, fy(0-0.28) + 5), module, GtxModule::KEY_LIGHT +  2));  // D
+		addChild(ModuleLightWidget::create<SmallLight<RedLight>>(l_s(gx(0.5) - 15, fy(0-0.28) - 5), module, GtxModule::KEY_LIGHT +  3));  // Eb
+		addChild(ModuleLightWidget::create<SmallLight<RedLight>>(l_s(gx(0.5) - 10, fy(0-0.28) + 5), module, GtxModule::KEY_LIGHT +  4));  // E
+		addChild(ModuleLightWidget::create<SmallLight<RedLight>>(l_s(gx(0.5)     , fy(0-0.28) + 5), module, GtxModule::KEY_LIGHT +  5));  // F
+		addChild(ModuleLightWidget::create<SmallLight<RedLight>>(l_s(gx(0.5) +  5, fy(0-0.28) - 5), module, GtxModule::KEY_LIGHT +  6));  // Fs
+		addChild(ModuleLightWidget::create<SmallLight<RedLight>>(l_s(gx(0.5) + 10, fy(0-0.28) + 5), module, GtxModule::KEY_LIGHT +  7));  // G
+		addChild(ModuleLightWidget::create<SmallLight<RedLight>>(l_s(gx(0.5) + 15, fy(0-0.28) - 5), module, GtxModule::KEY_LIGHT +  8));  // Ab
+		addChild(ModuleLightWidget::create<SmallLight<RedLight>>(l_s(gx(0.5) + 20, fy(0-0.28) + 5), module, GtxModule::KEY_LIGHT +  9));  // A
+		addChild(ModuleLightWidget::create<SmallLight<RedLight>>(l_s(gx(0.5) + 25, fy(0-0.28) - 5), module, GtxModule::KEY_LIGHT + 10));  // Bb
+		addChild(ModuleLightWidget::create<SmallLight<RedLight>>(l_s(gx(0.5) + 30, fy(0-0.28) + 5), module, GtxModule::KEY_LIGHT + 11));  // B
+
+		for (std::size_t i=0; i<LO_SIZE; ++i)
 		{
-			 pg.circle(Vec(x(i, r2), y(i,   r2)), 10, "stroke:#440022;stroke-width:1");
+			addChild(ModuleLightWidget::create<SmallLight<RedLight>>(l_s(gx(0.5) + (i - LO_SIZE/2) * 10, fy(0-0.28) + 20), module, GtxModule::OCT_LIGHT + i));
 		}
-
-		pg.prt_out(-0.20, 2,          "", "-2");
-		pg.prt_out( 0.15, 2,          "", "-1");
-		pg.prt_out( 0.50, 2, "TRANSPOSE",  "0");
-		pg.prt_out( 0.85, 2,          "", "+1");
-		pg.prt_out( 1.20, 2,          "", "+2");
 	}
-	#endif
+};
 
-	{
-		SVGPanel *panel = new SVGPanel();
-		panel->box.size = box.size;
-		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Octave-G1.svg")));
-		addChild(panel);
-	}
 
-	addChild(createScrew<ScrewSilver>(Vec(15, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
-
-	addInput(createInputGTX<PortInMed>(Vec(x(0, 0), y(0, 0)), module, Impl::VOCT_INPUT));
-	for (std::size_t i=0; i<N; ++i)
-	{
-		addOutput(createOutputGTX<PortOutMed>(Vec(x(i, r2), y(i, r2)), module, i + Impl::NOTE_OUTPUT));
-	}
-
-	addOutput(createOutputGTX<PortOutMed>(Vec(gx(-0.20), gy(2)), module, 0 + Impl::OCT_OUTPUT));
-	addOutput(createOutputGTX<PortOutMed>(Vec(gx( 0.15), gy(2)), module, 1 + Impl::OCT_OUTPUT));
-	addOutput(createOutputGTX<PortOutMed>(Vec(gx( 0.50), gy(2)), module, 2 + Impl::OCT_OUTPUT));
-	addOutput(createOutputGTX<PortOutMed>(Vec(gx( 0.85), gy(2)), module, 3 + Impl::OCT_OUTPUT));
-	addOutput(createOutputGTX<PortOutMed>(Vec(gx( 1.20), gy(2)), module, 4 + Impl::OCT_OUTPUT));
-
-	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) - 30, fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  0));  // C
-	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) - 25, fy(0-0.28) - 5), module, Impl::KEY_LIGHT +  1));  // C#
-	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) - 20, fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  2));  // D
-	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) - 15, fy(0-0.28) - 5), module, Impl::KEY_LIGHT +  3));  // Eb
-	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) - 10, fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  4));  // E
-	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5)     , fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  5));  // F
-	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) +  5, fy(0-0.28) - 5), module, Impl::KEY_LIGHT +  6));  // Fs
-	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) + 10, fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  7));  // G
-	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) + 15, fy(0-0.28) - 5), module, Impl::KEY_LIGHT +  8));  // Ab
-	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) + 20, fy(0-0.28) + 5), module, Impl::KEY_LIGHT +  9));  // A
-	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) + 25, fy(0-0.28) - 5), module, Impl::KEY_LIGHT + 10));  // Bb
-	addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) + 30, fy(0-0.28) + 5), module, Impl::KEY_LIGHT + 11));  // B
-
-	for (std::size_t i=0; i<LO_SIZE; ++i)
-	{
-		addChild(createLight<SmallLight<RedLight>>(l_s(gx(0.5) + (i - LO_SIZE/2) * 10, fy(0-0.28) + 20), module, Impl::OCT_LIGHT + i));
-	}
-}
+Model *model = Model::create<GtxModule, GtxWidget>("Gratrix", "Octave-G1", "Octave-G1", SYNTH_VOICE_TAG);  // right tag?
 
 
 } // Octave_G1
