@@ -15,9 +15,9 @@ namespace Keys_G1 {
 
 
 //============================================================================================================
-//! \brief The implementation.
+//! \brief The module.
 
-struct Impl : Module
+struct GtxModule : Module
 {
 	enum ParamIds {
 		NUM_PARAMS
@@ -66,7 +66,7 @@ struct Impl : Module
 		}
 	}
 
-	Impl()
+	GtxModule()
 	:
 		Module(NUM_PARAMS, ((GTX__N+1) * NUM_INPUTS/2) + (GTX__N * NUM_INPUTS/2), NUM_OUTPUTS, NUM_LIGHTS)
 	{}
@@ -104,105 +104,103 @@ struct Impl : Module
 //============================================================================================================
 //! \brief The widget.
 
-Widget::Widget()
+struct GtxWidget : ModuleWidget
 {
-	GTX__WIDGET();
-
-	Impl *module = new Impl();
-	setModule(module);
-	box.size = Vec(36*15, 380);
-
-	#if GTX__SAVE_SVG
+	GtxWidget(GtxModule *module) : ModuleWidget(module)
 	{
-		PanelGen pg(assetPlugin(plugin, "build/res/Keys-G1.svg"), box.size, "KEYS-G1");
+		GTX__WIDGET();
+		box.size = Vec(36*15, 380);
 
-		pg.line(Vec(fx(0-.4), fy(0.36)), Vec(fx(2+.4), fy(0.36)), "fill:none;stroke:#7092BE;stroke-width:1");
-		pg.line(Vec(fx(3-.4), fy(0.36)), Vec(fx(5+.4), fy(0.36)), "fill:none;stroke:#7092BE;stroke-width:1");
+		#if GTX__SAVE_SVG
+		{
+			PanelGen pg(assetPlugin(plugin, "build/res/Keys-G1.svg"), box.size, "KEYS-G1");
 
-		                              pg.nob_med(0, 0.7, "RED"  ); pg.nob_med(0, -0.28, "C1-B1");
-		pg.nob_med(1, 0.55, "UPPER"); pg.nob_med(1, 0.7, "GREEN"); pg.nob_med(1, -0.28, "C2-B2");
-		                              pg.nob_med(2, 0.7, "BLUE" ); pg.nob_med(2, -0.28, "C3-B3");
-		                              pg.nob_med(3, 0.7, "RED"  ); pg.nob_med(3, -0.28, "C4-B4");
-		pg.nob_med(4, 0.55, "LOWER"); pg.nob_med(4, 0.7, "GREEN"); pg.nob_med(4, -0.28, "C5-B5");
-		                              pg.nob_med(5, 0.7, "BLUE" ); pg.nob_med(5, -0.28, "C6-B6");
+			pg.line(Vec(fx(0-.4), fy(0.36)), Vec(fx(2+.4), fy(0.36)), "fill:none;stroke:#7092BE;stroke-width:1");
+			pg.line(Vec(fx(3-.4), fy(0.36)), Vec(fx(5+.4), fy(0.36)), "fill:none;stroke:#7092BE;stroke-width:1");
 
-		pg.bus_in(0, 1, "GATE"); pg.bus_in(0, 2, "V/OCT");
-		pg.bus_in(1, 1, "GATE"); pg.bus_in(1, 2, "V/OCT");
-		pg.bus_in(2, 1, "GATE"); pg.bus_in(2, 2, "V/OCT");
-		pg.bus_in(3, 1, "GATE"); pg.bus_in(3, 2, "V/OCT");
-		pg.bus_in(4, 1, "GATE"); pg.bus_in(4, 2, "V/OCT");
-		pg.bus_in(5, 1, "GATE"); pg.bus_in(5, 2, "V/OCT");
+										  pg.nob_med(0, 0.7, "RED"  ); pg.nob_med(0, -0.28, "C1-B1");
+			pg.nob_med(1, 0.55, "UPPER"); pg.nob_med(1, 0.7, "GREEN"); pg.nob_med(1, -0.28, "C2-B2");
+										  pg.nob_med(2, 0.7, "BLUE" ); pg.nob_med(2, -0.28, "C3-B3");
+										  pg.nob_med(3, 0.7, "RED"  ); pg.nob_med(3, -0.28, "C4-B4");
+			pg.nob_med(4, 0.55, "LOWER"); pg.nob_med(4, 0.7, "GREEN"); pg.nob_med(4, -0.28, "C5-B5");
+										  pg.nob_med(5, 0.7, "BLUE" ); pg.nob_med(5, -0.28, "C6-B6");
+
+			pg.bus_in(0, 1, "GATE"); pg.bus_in(0, 2, "V/OCT");
+			pg.bus_in(1, 1, "GATE"); pg.bus_in(1, 2, "V/OCT");
+			pg.bus_in(2, 1, "GATE"); pg.bus_in(2, 2, "V/OCT");
+			pg.bus_in(3, 1, "GATE"); pg.bus_in(3, 2, "V/OCT");
+			pg.bus_in(4, 1, "GATE"); pg.bus_in(4, 2, "V/OCT");
+			pg.bus_in(5, 1, "GATE"); pg.bus_in(5, 2, "V/OCT");
+		}
+		#endif
+
+		setPanel(SVG::load(assetPlugin(plugin, "res/Keys-G1.svg")));
+
+		addChild(Widget::create<ScrewSilver>(Vec(15, 0)));
+		addChild(Widget::create<ScrewSilver>(Vec(box.size.x-30, 0)));
+		addChild(Widget::create<ScrewSilver>(Vec(15, 365)));
+		addChild(Widget::create<ScrewSilver>(Vec(box.size.x-30, 365)));
+
+		for (std::size_t i=0; i<GTX__N; ++i)
+		{
+			addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, GtxModule::imap(GtxModule::GATE_1R_INPUT, i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(1, i)), module, GtxModule::imap(GtxModule::GATE_1G_INPUT, i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(2, i), py(1, i)), module, GtxModule::imap(GtxModule::GATE_1B_INPUT, i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(3, i), py(1, i)), module, GtxModule::imap(GtxModule::GATE_2R_INPUT, i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(4, i), py(1, i)), module, GtxModule::imap(GtxModule::GATE_2G_INPUT, i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(5, i), py(1, i)), module, GtxModule::imap(GtxModule::GATE_2B_INPUT, i)));
+
+			addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, GtxModule::imap(GtxModule::VOCT_1R_INPUT, i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(2, i)), module, GtxModule::imap(GtxModule::VOCT_1G_INPUT, i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(2, i), py(2, i)), module, GtxModule::imap(GtxModule::VOCT_1B_INPUT, i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(3, i), py(2, i)), module, GtxModule::imap(GtxModule::VOCT_2R_INPUT, i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(4, i), py(2, i)), module, GtxModule::imap(GtxModule::VOCT_2G_INPUT, i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(5, i), py(2, i)), module, GtxModule::imap(GtxModule::VOCT_2B_INPUT, i)));
+		}
+
+		addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, GtxModule::imap(GtxModule::GATE_1R_INPUT, GTX__N)));
+		addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(1)), module, GtxModule::imap(GtxModule::GATE_1G_INPUT, GTX__N)));
+		addInput(createInputGTX<PortInMed>(Vec(gx(2), gy(1)), module, GtxModule::imap(GtxModule::GATE_1B_INPUT, GTX__N)));
+		addInput(createInputGTX<PortInMed>(Vec(gx(3), gy(1)), module, GtxModule::imap(GtxModule::GATE_2R_INPUT, GTX__N)));
+		addInput(createInputGTX<PortInMed>(Vec(gx(4), gy(1)), module, GtxModule::imap(GtxModule::GATE_2G_INPUT, GTX__N)));
+		addInput(createInputGTX<PortInMed>(Vec(gx(5), gy(1)), module, GtxModule::imap(GtxModule::GATE_2B_INPUT, GTX__N)));
+
+		for (std::size_t i=0; i<6; ++i)
+		{
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i) - 30, fy(0+0.08) + 5), module, GtxModule::KEY_LIGHT_2 + 3 * (i * 12 +  0)));  // C
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i) - 25, fy(0+0.08) - 5), module, GtxModule::KEY_LIGHT_2 + 3 * (i * 12 +  1)));  // C#
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i) - 20, fy(0+0.08) + 5), module, GtxModule::KEY_LIGHT_2 + 3 * (i * 12 +  2)));  // D
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i) - 15, fy(0+0.08) - 5), module, GtxModule::KEY_LIGHT_2 + 3 * (i * 12 +  3)));  // Eb
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i) - 10, fy(0+0.08) + 5), module, GtxModule::KEY_LIGHT_2 + 3 * (i * 12 +  4)));  // E
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i)     , fy(0+0.08) + 5), module, GtxModule::KEY_LIGHT_2 + 3 * (i * 12 +  5)));  // F
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i) +  5, fy(0+0.08) - 5), module, GtxModule::KEY_LIGHT_2 + 3 * (i * 12 +  6)));  // Fs
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i) + 10, fy(0+0.08) + 5), module, GtxModule::KEY_LIGHT_2 + 3 * (i * 12 +  7)));  // G
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i) + 15, fy(0+0.08) - 5), module, GtxModule::KEY_LIGHT_2 + 3 * (i * 12 +  8)));  // Ab
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i) + 20, fy(0+0.08) + 5), module, GtxModule::KEY_LIGHT_2 + 3 * (i * 12 +  9)));  // A
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i) + 25, fy(0+0.08) - 5), module, GtxModule::KEY_LIGHT_2 + 3 * (i * 12 + 10)));  // Bb
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i) + 30, fy(0+0.08) + 5), module, GtxModule::KEY_LIGHT_2 + 3 * (i * 12 + 11)));  // B
+		}
+
+		for (std::size_t i=0; i<6; ++i)
+		{
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i) - 30, fy(0-0.28) + 5), module, GtxModule::KEY_LIGHT_1 + 3 * (i * 12 +  0)));  // C
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i) - 25, fy(0-0.28) - 5), module, GtxModule::KEY_LIGHT_1 + 3 * (i * 12 +  1)));  // C#
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i) - 20, fy(0-0.28) + 5), module, GtxModule::KEY_LIGHT_1 + 3 * (i * 12 +  2)));  // D
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i) - 15, fy(0-0.28) - 5), module, GtxModule::KEY_LIGHT_1 + 3 * (i * 12 +  3)));  // Eb
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i) - 10, fy(0-0.28) + 5), module, GtxModule::KEY_LIGHT_1 + 3 * (i * 12 +  4)));  // E
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i)     , fy(0-0.28) + 5), module, GtxModule::KEY_LIGHT_1 + 3 * (i * 12 +  5)));  // F
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i) +  5, fy(0-0.28) - 5), module, GtxModule::KEY_LIGHT_1 + 3 * (i * 12 +  6)));  // Fs
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i) + 10, fy(0-0.28) + 5), module, GtxModule::KEY_LIGHT_1 + 3 * (i * 12 +  7)));  // G
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i) + 15, fy(0-0.28) - 5), module, GtxModule::KEY_LIGHT_1 + 3 * (i * 12 +  8)));  // Ab
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i) + 20, fy(0-0.28) + 5), module, GtxModule::KEY_LIGHT_1 + 3 * (i * 12 +  9)));  // A
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i) + 25, fy(0-0.28) - 5), module, GtxModule::KEY_LIGHT_1 + 3 * (i * 12 + 10)));  // Bb
+			addChild(ModuleLightWidget::create<SmallLight<RedGreenBlueLight>>(l_s(gx(i) + 30, fy(0-0.28) + 5), module, GtxModule::KEY_LIGHT_1 + 3 * (i * 12 + 11)));  // B
+		}
 	}
-	#endif
+};
 
-	{
-		SVGPanel *panel = new SVGPanel();
-		panel->box.size = box.size;
-		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Keys-G1.svg")));
-		addChild(panel);
-	}
 
-	addChild(createScrew<ScrewSilver>(Vec(15, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
-
-	for (std::size_t i=0; i<GTX__N; ++i)
-	{
-		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, Impl::imap(Impl::GATE_1R_INPUT, i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(1, i)), module, Impl::imap(Impl::GATE_1G_INPUT, i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(2, i), py(1, i)), module, Impl::imap(Impl::GATE_1B_INPUT, i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(3, i), py(1, i)), module, Impl::imap(Impl::GATE_2R_INPUT, i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(4, i), py(1, i)), module, Impl::imap(Impl::GATE_2G_INPUT, i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(5, i), py(1, i)), module, Impl::imap(Impl::GATE_2B_INPUT, i)));
-
-		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, Impl::imap(Impl::VOCT_1R_INPUT, i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(2, i)), module, Impl::imap(Impl::VOCT_1G_INPUT, i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(2, i), py(2, i)), module, Impl::imap(Impl::VOCT_1B_INPUT, i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(3, i), py(2, i)), module, Impl::imap(Impl::VOCT_2R_INPUT, i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(4, i), py(2, i)), module, Impl::imap(Impl::VOCT_2G_INPUT, i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(5, i), py(2, i)), module, Impl::imap(Impl::VOCT_2B_INPUT, i)));
-	}
-
-	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, Impl::imap(Impl::GATE_1R_INPUT, GTX__N)));
-	addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(1)), module, Impl::imap(Impl::GATE_1G_INPUT, GTX__N)));
-	addInput(createInputGTX<PortInMed>(Vec(gx(2), gy(1)), module, Impl::imap(Impl::GATE_1B_INPUT, GTX__N)));
-	addInput(createInputGTX<PortInMed>(Vec(gx(3), gy(1)), module, Impl::imap(Impl::GATE_2R_INPUT, GTX__N)));
-	addInput(createInputGTX<PortInMed>(Vec(gx(4), gy(1)), module, Impl::imap(Impl::GATE_2G_INPUT, GTX__N)));
-	addInput(createInputGTX<PortInMed>(Vec(gx(5), gy(1)), module, Impl::imap(Impl::GATE_2B_INPUT, GTX__N)));
-
-	for (std::size_t i=0; i<6; ++i)
-	{
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i) - 30, fy(0+0.08) + 5), module, Impl::KEY_LIGHT_2 + 3 * (i * 12 +  0)));  // C
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i) - 25, fy(0+0.08) - 5), module, Impl::KEY_LIGHT_2 + 3 * (i * 12 +  1)));  // C#
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i) - 20, fy(0+0.08) + 5), module, Impl::KEY_LIGHT_2 + 3 * (i * 12 +  2)));  // D
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i) - 15, fy(0+0.08) - 5), module, Impl::KEY_LIGHT_2 + 3 * (i * 12 +  3)));  // Eb
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i) - 10, fy(0+0.08) + 5), module, Impl::KEY_LIGHT_2 + 3 * (i * 12 +  4)));  // E
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i)     , fy(0+0.08) + 5), module, Impl::KEY_LIGHT_2 + 3 * (i * 12 +  5)));  // F
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i) +  5, fy(0+0.08) - 5), module, Impl::KEY_LIGHT_2 + 3 * (i * 12 +  6)));  // Fs
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i) + 10, fy(0+0.08) + 5), module, Impl::KEY_LIGHT_2 + 3 * (i * 12 +  7)));  // G
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i) + 15, fy(0+0.08) - 5), module, Impl::KEY_LIGHT_2 + 3 * (i * 12 +  8)));  // Ab
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i) + 20, fy(0+0.08) + 5), module, Impl::KEY_LIGHT_2 + 3 * (i * 12 +  9)));  // A
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i) + 25, fy(0+0.08) - 5), module, Impl::KEY_LIGHT_2 + 3 * (i * 12 + 10)));  // Bb
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i) + 30, fy(0+0.08) + 5), module, Impl::KEY_LIGHT_2 + 3 * (i * 12 + 11)));  // B
-	}
-
-	for (std::size_t i=0; i<6; ++i)
-	{
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i) - 30, fy(0-0.28) + 5), module, Impl::KEY_LIGHT_1 + 3 * (i * 12 +  0)));  // C
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i) - 25, fy(0-0.28) - 5), module, Impl::KEY_LIGHT_1 + 3 * (i * 12 +  1)));  // C#
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i) - 20, fy(0-0.28) + 5), module, Impl::KEY_LIGHT_1 + 3 * (i * 12 +  2)));  // D
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i) - 15, fy(0-0.28) - 5), module, Impl::KEY_LIGHT_1 + 3 * (i * 12 +  3)));  // Eb
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i) - 10, fy(0-0.28) + 5), module, Impl::KEY_LIGHT_1 + 3 * (i * 12 +  4)));  // E
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i)     , fy(0-0.28) + 5), module, Impl::KEY_LIGHT_1 + 3 * (i * 12 +  5)));  // F
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i) +  5, fy(0-0.28) - 5), module, Impl::KEY_LIGHT_1 + 3 * (i * 12 +  6)));  // Fs
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i) + 10, fy(0-0.28) + 5), module, Impl::KEY_LIGHT_1 + 3 * (i * 12 +  7)));  // G
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i) + 15, fy(0-0.28) - 5), module, Impl::KEY_LIGHT_1 + 3 * (i * 12 +  8)));  // Ab
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i) + 20, fy(0-0.28) + 5), module, Impl::KEY_LIGHT_1 + 3 * (i * 12 +  9)));  // A
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i) + 25, fy(0-0.28) - 5), module, Impl::KEY_LIGHT_1 + 3 * (i * 12 + 10)));  // Bb
-		addChild(createLight<SmallLight<RedGreenBlueLight>>(l_s(gx(i) + 30, fy(0-0.28) + 5), module, Impl::KEY_LIGHT_1 + 3 * (i * 12 + 11)));  // B
-	}
-}
+Model *model = Model::create<GtxModule, GtxWidget>("Gratrix", "Keys-G1", "Keys-G1", VISUAL_TAG);
 
 
 } // Keys_G1

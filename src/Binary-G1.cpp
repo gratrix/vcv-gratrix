@@ -15,9 +15,9 @@ namespace Binary_G1 {
 
 
 //============================================================================================================
-//! \brief The implementation.
+//! \brief The module.
 
-struct Impl : Module
+struct GtxModule : Module
 {
 	enum ParamIds {
 		INVERT_A_PARAM,
@@ -54,7 +54,7 @@ struct Impl : Module
 		NUM_LIGHTS
 	};
 
-	Impl()
+	GtxModule()
 	:
 		Module(NUM_PARAMS,
 		(GTX__N+1) * (NUM_INPUTS  - OFF_INPUTS ) + OFF_INPUTS,
@@ -131,84 +131,82 @@ struct Impl : Module
 //============================================================================================================
 //! \brief The widget.
 
-Widget::Widget()
+struct GtxWidget : ModuleWidget
 {
-	GTX__WIDGET();
-
-	Impl *module = new Impl();
-	setModule(module);
-	box.size = Vec(12*15, 380);
-
-	#if GTX__SAVE_SVG
+	GtxWidget(GtxModule *module) : ModuleWidget(module)
 	{
-		PanelGen pg(assetPlugin(plugin, "build/res/Binary-G1.svg"), box.size, "BINARY-G1");
+		GTX__WIDGET();
+		box.size = Vec(12*15, 380);
 
-		pg.nob_sml_raw(fx(1 - 0.75) - 3, fy(-0.28), "OP 1");
-		pg.nob_sml_raw(fx(1 - 0.75) - 3, fy(+0.28), "OP 2");
+		#if GTX__SAVE_SVG
+		{
+			PanelGen pg(assetPlugin(plugin, "build/res/Binary-G1.svg"), box.size, "BINARY-G1");
 
-		pg.tog(1 - 1.27, -0.28, "A", "INV A");  pg.tog(1.27, -0.28, "1", "INV 1");
-		pg.tog(1 - 1.27, +0.28, "B", "INV B");  pg.tog(1.27, +0.28, "2", "INV 2");
+			pg.nob_sml_raw(fx(1 - 0.75) - 3, fy(-0.28), "OP 1");
+			pg.nob_sml_raw(fx(1 - 0.75) - 3, fy(+0.28), "OP 2");
 
-		pg.text(Vec(fx(0.72) - 5, fy(-0.28) - 6 * rad_l_s() + 3), "A",   10, "start");
-		pg.text(Vec(fx(0.72) - 5, fy(-0.28) - 3 * rad_l_s() + 3), "B",   10, "start");
-		pg.text(Vec(fx(0.72) - 5, fy(-0.28) - 0 * rad_l_s() + 3), "AND", 10, "start");
-		pg.text(Vec(fx(0.72) - 5, fy(-0.28) + 3 * rad_l_s() + 3), "OR",  10, "start");
-		pg.text(Vec(fx(0.72) - 5, fy(-0.28) + 6 * rad_l_s() + 3), "XOR", 10, "start");
+			pg.tog(1 - 1.27, -0.28, "A", "INV A");  pg.tog(1.27, -0.28, "1", "INV 1");
+			pg.tog(1 - 1.27, +0.28, "B", "INV B");  pg.tog(1.27, +0.28, "2", "INV 2");
 
-		pg.text(Vec(fx(0.72) - 5, fy(+0.28) - 6 * rad_l_s() + 3), "A",   10, "start");
-		pg.text(Vec(fx(0.72) - 5, fy(+0.28) - 3 * rad_l_s() + 3), "B",   10, "start");
-		pg.text(Vec(fx(0.72) - 5, fy(+0.28) - 0 * rad_l_s() + 3), "AND", 10, "start");
-		pg.text(Vec(fx(0.72) - 5, fy(+0.28) + 3 * rad_l_s() + 3), "OR",  10, "start");
-		pg.text(Vec(fx(0.72) - 5, fy(+0.28) + 6 * rad_l_s() + 3), "XOR", 10, "start");
+			pg.text(Vec(fx(0.72) - 5, fy(-0.28) - 6 * rad_l_s() + 3), "A",   10, "start");
+			pg.text(Vec(fx(0.72) - 5, fy(-0.28) - 3 * rad_l_s() + 3), "B",   10, "start");
+			pg.text(Vec(fx(0.72) - 5, fy(-0.28) - 0 * rad_l_s() + 3), "AND", 10, "start");
+			pg.text(Vec(fx(0.72) - 5, fy(-0.28) + 3 * rad_l_s() + 3), "OR",  10, "start");
+			pg.text(Vec(fx(0.72) - 5, fy(-0.28) + 6 * rad_l_s() + 3), "XOR", 10, "start");
 
-		pg.bus_in(0, 1, "IN A"); pg.bus_out(1, 1, "OUT 1");
-		pg.bus_in(0, 2, "IN B"); pg.bus_out(1, 2, "OUT 2");
+			pg.text(Vec(fx(0.72) - 5, fy(+0.28) - 6 * rad_l_s() + 3), "A",   10, "start");
+			pg.text(Vec(fx(0.72) - 5, fy(+0.28) - 3 * rad_l_s() + 3), "B",   10, "start");
+			pg.text(Vec(fx(0.72) - 5, fy(+0.28) - 0 * rad_l_s() + 3), "AND", 10, "start");
+			pg.text(Vec(fx(0.72) - 5, fy(+0.28) + 3 * rad_l_s() + 3), "OR",  10, "start");
+			pg.text(Vec(fx(0.72) - 5, fy(+0.28) + 6 * rad_l_s() + 3), "XOR", 10, "start");
+
+			pg.bus_in(0, 1, "IN A"); pg.bus_out(1, 1, "OUT 1");
+			pg.bus_in(0, 2, "IN B"); pg.bus_out(1, 2, "OUT 2");
+		}
+		#endif
+
+		setPanel(SVG::load(assetPlugin(plugin, "res/Binary-G1.svg")));
+
+		addChild(Widget::create<ScrewSilver>(Vec(15, 0)));
+		addChild(Widget::create<ScrewSilver>(Vec(box.size.x-30, 0)));
+		addChild(Widget::create<ScrewSilver>(Vec(15, 365)));
+		addChild(Widget::create<ScrewSilver>(Vec(box.size.x-30, 365)));
+
+		addParam(ParamWidget::create<CKSS>(  tog(fx(1 - 1.27)    , fy(-0.28)), module, GtxModule::INVERT_A_PARAM,      0.0, 1.0, 1.0));
+		addParam(ParamWidget::create<CKSS>(  tog(fx(1 - 1.27)    , fy(+0.28)), module, GtxModule::INVERT_B_PARAM,      0.0, 1.0, 1.0));
+		addParam(createParamGTX<KnobSnapSml>(Vec(fx(1 - 0.75) - 3, fy(-0.28)), module, GtxModule::FUNCTION_AB_1_PARAM, 0.0, 4.0, 2.0));
+		addParam(createParamGTX<KnobSnapSml>(Vec(fx(1 - 0.75) - 3, fy(+0.28)), module, GtxModule::FUNCTION_AB_2_PARAM, 0.0, 4.0, 2.0));
+		addParam(ParamWidget::create<CKSS>(  tog(fx(    1.27)    , fy(-0.28)), module, GtxModule::INVERT_1_PARAM,      0.0, 1.0, 1.0));
+		addParam(ParamWidget::create<CKSS>(  tog(fx(    1.27)    , fy(+0.28)), module, GtxModule::INVERT_2_PARAM,      0.0, 1.0, 1.0));
+
+		for (std::size_t i=0; i<GTX__N; ++i)
+		{
+			addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, GtxModule::imap(GtxModule::IN_A_INPUT, i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, GtxModule::imap(GtxModule::IN_B_INPUT, i)));
+
+			addOutput(createOutputGTX<PortOutMed>(Vec(px(1, i), py(1, i)), module, GtxModule::omap(GtxModule::OUT_1_OUTPUT, i)));
+			addOutput(createOutputGTX<PortOutMed>(Vec(px(1, i), py(2, i)), module, GtxModule::omap(GtxModule::OUT_2_OUTPUT, i)));
+		}
+
+		addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, GtxModule::imap(GtxModule::IN_A_INPUT, GTX__N)));
+		addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(2)), module, GtxModule::imap(GtxModule::IN_B_INPUT, GTX__N)));
+
+		addChild(ModuleLightWidget::create<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(-0.28) - 6 * rad_l_s()), module, GtxModule::FUNCTION_0_AB_1_LIGHT));
+		addChild(ModuleLightWidget::create<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(-0.28) - 3 * rad_l_s()), module, GtxModule::FUNCTION_1_AB_1_LIGHT));
+		addChild(ModuleLightWidget::create<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(-0.28) - 0 * rad_l_s()), module, GtxModule::FUNCTION_2_AB_1_LIGHT));
+		addChild(ModuleLightWidget::create<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(-0.28) + 3 * rad_l_s()), module, GtxModule::FUNCTION_3_AB_1_LIGHT));
+		addChild(ModuleLightWidget::create<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(-0.28) + 6 * rad_l_s()), module, GtxModule::FUNCTION_4_AB_1_LIGHT));
+
+		addChild(ModuleLightWidget::create<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(+0.28) - 6 * rad_l_s()), module, GtxModule::FUNCTION_0_AB_2_LIGHT));
+		addChild(ModuleLightWidget::create<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(+0.28) - 3 * rad_l_s()), module, GtxModule::FUNCTION_1_AB_2_LIGHT));
+		addChild(ModuleLightWidget::create<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(+0.28) - 0 * rad_l_s()), module, GtxModule::FUNCTION_2_AB_2_LIGHT));
+		addChild(ModuleLightWidget::create<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(+0.28) + 3 * rad_l_s()), module, GtxModule::FUNCTION_3_AB_2_LIGHT));
+		addChild(ModuleLightWidget::create<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(+0.28) + 6 * rad_l_s()), module, GtxModule::FUNCTION_4_AB_2_LIGHT));
 	}
-	#endif
+};
 
-	{
-		SVGPanel *panel = new SVGPanel();
-		panel->box.size = box.size;
-		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Binary-G1.svg")));
-		addChild(panel);
-	}
 
-	addChild(createScrew<ScrewSilver>(Vec(15, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
-
-	addParam(createParam<CKSS>(          tog(fx(1 - 1.27)    , fy(-0.28)), module, Impl::INVERT_A_PARAM,      0.0, 1.0, 1.0));
-	addParam(createParam<CKSS>(          tog(fx(1 - 1.27)    , fy(+0.28)), module, Impl::INVERT_B_PARAM,      0.0, 1.0, 1.0));
-	addParam(createParamGTX<KnobSnapSml>(Vec(fx(1 - 0.75) - 3, fy(-0.28)), module, Impl::FUNCTION_AB_1_PARAM, 0.0, 4.0, 2.0));
-	addParam(createParamGTX<KnobSnapSml>(Vec(fx(1 - 0.75) - 3, fy(+0.28)), module, Impl::FUNCTION_AB_2_PARAM, 0.0, 4.0, 2.0));
-	addParam(createParam<CKSS>(          tog(fx(    1.27)    , fy(-0.28)), module, Impl::INVERT_1_PARAM,      0.0, 1.0, 1.0));
-	addParam(createParam<CKSS>(          tog(fx(    1.27)    , fy(+0.28)), module, Impl::INVERT_2_PARAM,      0.0, 1.0, 1.0));
-
-	for (std::size_t i=0; i<GTX__N; ++i)
-	{
-		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, Impl::imap(Impl::IN_A_INPUT, i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, Impl::imap(Impl::IN_B_INPUT, i)));
-
-		addOutput(createOutputGTX<PortOutMed>(Vec(px(1, i), py(1, i)), module, Impl::omap(Impl::OUT_1_OUTPUT, i)));
-		addOutput(createOutputGTX<PortOutMed>(Vec(px(1, i), py(2, i)), module, Impl::omap(Impl::OUT_2_OUTPUT, i)));
-	}
-
-	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, Impl::imap(Impl::IN_A_INPUT, GTX__N)));
-	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(2)), module, Impl::imap(Impl::IN_B_INPUT, GTX__N)));
-
-	addChild(createLight<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(-0.28) - 6 * rad_l_s()), module, Impl::FUNCTION_0_AB_1_LIGHT));
-	addChild(createLight<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(-0.28) - 3 * rad_l_s()), module, Impl::FUNCTION_1_AB_1_LIGHT));
-	addChild(createLight<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(-0.28) - 0 * rad_l_s()), module, Impl::FUNCTION_2_AB_1_LIGHT));
-	addChild(createLight<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(-0.28) + 3 * rad_l_s()), module, Impl::FUNCTION_3_AB_1_LIGHT));
-	addChild(createLight<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(-0.28) + 6 * rad_l_s()), module, Impl::FUNCTION_4_AB_1_LIGHT));
-
-	addChild(createLight<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(+0.28) - 6 * rad_l_s()), module, Impl::FUNCTION_0_AB_2_LIGHT));
-	addChild(createLight<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(+0.28) - 3 * rad_l_s()), module, Impl::FUNCTION_1_AB_2_LIGHT));
-	addChild(createLight<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(+0.28) - 0 * rad_l_s()), module, Impl::FUNCTION_2_AB_2_LIGHT));
-	addChild(createLight<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(+0.28) + 3 * rad_l_s()), module, Impl::FUNCTION_3_AB_2_LIGHT));
-	addChild(createLight<SmallLight<GreenLight>>(l_s(fx(0.72) - 2.5 * rad_l_s() - 5, fy(+0.28) + 6 * rad_l_s()), module, Impl::FUNCTION_4_AB_2_LIGHT));
-}
+Model *model = Model::create<GtxModule, GtxWidget>("Gratrix", "Binary-G1", "Binary-G1", LOGIC_TAG);
 
 
 } // Binary_G1
