@@ -264,7 +264,7 @@ struct KnobSnapTny : RoundKnob
 
 template <class TPort> Port *createInputGTX(Vec pos, Module *module, int outputId)
 {
-	return createInput<TPort>(pos.minus(TPort::pos()), module, outputId);
+	return Port::create<TPort>(pos.minus(TPort::pos()), Port::INPUT, module, outputId);
 }
 
 
@@ -273,7 +273,7 @@ template <class TPort> Port *createInputGTX(Vec pos, Module *module, int outputI
 
 template <class TPort> Port *createOutputGTX(Vec pos, Module *module, int outputId)
 {
-	return createOutput<TPort>(pos.minus(TPort::pos()), module, outputId);
+	return Port::create<TPort>(pos.minus(TPort::pos()), Port::OUTPUT, module, outputId);
 }
 
 
@@ -282,7 +282,7 @@ template <class TPort> Port *createOutputGTX(Vec pos, Module *module, int output
 
 template <class TParamWidget> ParamWidget *createParamGTX(Vec pos, Module *module, int paramId, float minValue, float maxValue, float defaultValue)
 {
-	return createParam<TParamWidget>(pos.minus(TParamWidget::pos()), module, paramId, minValue, maxValue, defaultValue);
+	return ParamWidget::create<TParamWidget>(pos.minus(TParamWidget::pos()), module, paramId, minValue, maxValue, defaultValue);
 }
 
 
@@ -2403,7 +2403,37 @@ os << "</font>" << std::endl;
 //============================================================================================================
 //! \name Module Widgets
 
+extern Plugin *plugin;
+
 namespace GTX {
+
+namespace MIDI_C1   { extern Model *model; }
+namespace MIDI_G1   { extern Model *model; }
+namespace VCO_F1    { extern Model *model; }
+namespace VCO_F2    { extern Model *model; }
+namespace VCF_F1    { extern Model *model; }
+namespace VCA_F1    { extern Model *model; }
+namespace Env_F1    { extern Model *model; }
+namespace Blank_03  { extern Model *model; }
+namespace Blank_06  { extern Model *model; }
+namespace Blank_09  { extern Model *model; }
+namespace Blank_12  { extern Model *model; }
+namespace Fade_G1   { extern Model *model; }
+namespace Fade_G2   { extern Model *model; }
+namespace Binary_G1 { extern Model *model; }
+namespace Keys_G1   { extern Model *model; }
+namespace VU_G1     { extern Model *model; }
+namespace Scope_G1  { extern Model *model; }
+namespace Chord_G1  { extern Model *model; }
+namespace Octave_G1 { extern Model *model; }
+namespace Seq_G1    { extern Model *model; }
+namespace Seq_G2    { extern Model *model; }
+}
+
+
+#endif
+
+/*
 namespace MIDI_C1   { struct Widget : ModuleWidget { Widget(); void step() override; }; }
 namespace MIDI_G1   { struct Widget : ModuleWidget { Widget(); void step() override; }; }
 namespace VCO_F1    { struct Widget : ModuleWidget { Widget(); }; }
@@ -2425,9 +2455,4 @@ namespace Chord_G1  { struct Widget : ModuleWidget { Widget(); }; }
 namespace Octave_G1 { struct Widget : ModuleWidget { Widget(); }; }
 namespace Seq_G1    { struct Widget : ModuleWidget { Widget(); }; }
 namespace Seq_G2    { struct Widget : ModuleWidget { Widget(); }; }
-}
-
-struct MuxWidget       : ModuleWidget { MuxWidget();       };
-
-
-#endif
+*/
