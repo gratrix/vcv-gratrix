@@ -3,7 +3,7 @@
 
 
 namespace GTX {
-namespace Env_F1 {
+namespace ADSR_F1 {
 
 
 //============================================================================================================
@@ -103,11 +103,11 @@ void ADSR::step() {
 
 //============================================================================================================
 
-struct ADSRBank : Module
+struct GtxModule : Module
 {
 	std::array<ADSR, GTX__N> inst;
 
-	ADSRBank()
+	GtxModule()
 	:
 		Module(ADSR::NUM_PARAMS,
 			(GTX__N+1) * (ADSR::NUM_INPUTS  - ADSR::OFF_INPUTS ) + ADSR::OFF_INPUTS,
@@ -143,16 +143,16 @@ struct ADSRBank : Module
 
 //============================================================================================================
 
-
 struct GtxWidget : ModuleWidget
 {
-	GtxWidget(ADSRBank *module) : ModuleWidget(module)
+	GtxWidget(GtxModule *module) : ModuleWidget(module)
 	{
 		GTX__WIDGET();
+		box.size = Vec(12*15, 380);
 
 		#if GTX__SAVE_SVG
 		{
-			PanelGen pg(assetPlugin(plugin, "build/res/Env-F1.svg"), box.size, "ENV-F1");
+			PanelGen pg(assetPlugin(plugin, "build/res/ADSR-F1.svg"), box.size, "ADSR-F1");
 
 			pg.nob_med(0, -0.28, "ATTACK");  pg.nob_med(1, -0.28, "DECAY");
 			pg.nob_med(0, +0.28, "SUSTAIN"); pg.nob_med(1, +0.28, "RELEASE");
@@ -162,8 +162,7 @@ struct GtxWidget : ModuleWidget
 		}
 		#endif
 
-		box.size = Vec(12*15, 380);
-		setPanel(SVG::load(assetPlugin(plugin, "res/Env-F1.svg")));
+		setPanel(SVG::load(assetPlugin(plugin, "res/ADSR-F1.svg")));
 
 		addChild(Widget::create<ScrewSilver>(Vec(15, 0)));
 		addChild(Widget::create<ScrewSilver>(Vec(box.size.x-30, 0)));
@@ -182,21 +181,21 @@ struct GtxWidget : ModuleWidget
 
 		for (std::size_t i=0; i<GTX__N; ++i)
 		{
-			addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, ADSRBank::imap(ADSR::GATE_INPUT, i)));
-			addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, ADSRBank::imap(ADSR::TRIG_INPUT, i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, GtxModule::imap(ADSR::GATE_INPUT, i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, GtxModule::imap(ADSR::TRIG_INPUT, i)));
 
-			addOutput(createOutputGTX<PortOutMed>(Vec(px(1, i), py(1, i)), module, ADSRBank::omap(ADSR::ENVELOPE_OUTPUT, i)));
-			addOutput(createOutputGTX<PortOutMed>(Vec(px(1, i), py(2, i)), module, ADSRBank::omap(ADSR::INVERTED_OUTPUT, i)));
+			addOutput(createOutputGTX<PortOutMed>(Vec(px(1, i), py(1, i)), module, GtxModule::omap(ADSR::ENVELOPE_OUTPUT, i)));
+			addOutput(createOutputGTX<PortOutMed>(Vec(px(1, i), py(2, i)), module, GtxModule::omap(ADSR::INVERTED_OUTPUT, i)));
 		}
 
-		addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, ADSRBank::imap(ADSR::GATE_INPUT, GTX__N)));
-		addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(2)), module, ADSRBank::imap(ADSR::TRIG_INPUT, GTX__N)));
+		addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, GtxModule::imap(ADSR::GATE_INPUT, GTX__N)));
+		addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(2)), module, GtxModule::imap(ADSR::TRIG_INPUT, GTX__N)));
 	}
 };
 
 
-Model *model = Model::create<ADSRBank, GtxWidget>("Gratrix", "ADSR", "ADSR", ENVELOPE_GENERATOR_TAG);
+Model *model = Model::create<GtxModule, GtxWidget>("Gratrix", "ADSR-F1", "ADSR-F1", ENVELOPE_GENERATOR_TAG);
 
 
-} // Env_F1
+} // ADSR_F1
 } // GTX

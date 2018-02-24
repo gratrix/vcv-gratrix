@@ -2413,7 +2413,7 @@ namespace VCO_F1    { extern Model *model; }
 namespace VCO_F2    { extern Model *model; }
 namespace VCF_F1    { extern Model *model; }
 namespace VCA_F1    { extern Model *model; }
-namespace Env_F1    { extern Model *model; }
+namespace ADSR_F1   { extern Model *model; }
 namespace Blank_03  { extern Model *model; }
 namespace Blank_06  { extern Model *model; }
 namespace Blank_09  { extern Model *model; }
@@ -2440,7 +2440,7 @@ namespace VCO_F1    { struct Widget : ModuleWidget { Widget(); }; }
 namespace VCO_F2    { struct Widget : ModuleWidget { Widget(); }; }
 namespace VCF_F1    { struct Widget : ModuleWidget { Widget(); }; }
 namespace VCA_F1    { struct Widget : ModuleWidget { Widget(); }; }
-namespace Env_F1    { struct Widget : ModuleWidget { Widget(); }; }
+namespace ADSR_F1   { struct Widget : ModuleWidget { Widget(); }; }
 namespace Blank_03  { struct Widget : ModuleWidget { Widget(); }; }
 namespace Blank_06  { struct Widget : ModuleWidget { Widget(); }; }
 namespace Blank_09  { struct Widget : ModuleWidget { Widget(); }; }

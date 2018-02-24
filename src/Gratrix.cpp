@@ -15,7 +15,7 @@ void init(rack::Plugin *p)
 //	p->addModel(GTX::VCO_F2   ::model);
 //	p->addModel(GTX::VCF_F1   ::model);
 //	p->addModel(GTX::VCA_F1   ::model);
-	p->addModel(GTX::Env_F1   ::model);
+	p->addModel(GTX::ADSR_F1  ::model);
 //	p->addModel(GTX::Chord_G1 ::model);
 //	p->addModel(GTX::Octave_G1::model);
 //	p->addModel(GTX::Fade_G1  ::model);
@@ -39,7 +39,7 @@ void init(rack::Plugin *p)
 	p->addModel(createModel<GTX::VCO_F2::Widget>   ("Gratrix", "VCO-F2",    "VCO-F2",    OSCILLATOR_TAG));
 	p->addModel(createModel<GTX::VCF_F1::Widget>   ("Gratrix", "VCF-F1",    "VCF-F1",    FILTER_TAG));
 	p->addModel(createModel<GTX::VCA_F1::Widget>   ("Gratrix", "VCA-F1",    "VCA-F1",    AMPLIFIER_TAG));
-	p->addModel(createModel<GTX::Env_F1::Widget>   ("Gratrix", "Env-F1",    "Env-F1",    ENVELOPE_GENERATOR_TAG));
+	p->addModel(createModel<GTX::ADSR_F1::Widget>  ("Gratrix", "ADSR-F1",   "ADSR-F1",   ENVELOPE_GENERATOR_TAG));
 	p->addModel(createModel<GTX::Chord_G1::Widget> ("Gratrix", "Chord-G1",  "Chord-G1",  SYNTH_VOICE_TAG));  // right tag?
 	p->addModel(createModel<GTX::Octave_G1::Widget>("Gratrix", "Octave-G1", "Octave-G1", SYNTH_VOICE_TAG));  // right tag?
 	p->addModel(createModel<GTX::Fade_G1::Widget>  ("Gratrix", "Fade-G1",   "Fade-G1",   MIXER_TAG));        // right tag?
