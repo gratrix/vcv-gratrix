@@ -15,9 +15,9 @@ namespace Fade_G2 {
 
 
 //============================================================================================================
-//! \brief The implementation.
+//! \brief The module.
 
-struct Impl : Module
+struct GtxModule : Module
 {
 	enum ParamIds {
 		BLEND12_PARAM,
@@ -56,7 +56,7 @@ struct Impl : Module
 		NUM_LIGHTS
 	};
 
-	Impl()
+	GtxModule()
 	:
 		Module(NUM_PARAMS,
 		(GTX__N+1) * (NUM_INPUTS  - OFF_INPUTS ) + OFF_INPUTS,
@@ -88,8 +88,8 @@ struct Impl : Module
 		float blend12 = params[BLEND12_PARAM].value;
 		float blendAB = params[BLENDAB_PARAM].value;
 
-		if (inputs[BLEND12_INPUT].active) blend12 *= clampf(inputs[BLEND12_INPUT].normalize(10.0) / 10.0, 0.0, 1.0);
-		if (inputs[BLENDAB_INPUT].active) blendAB *= clampf(inputs[BLENDAB_INPUT].normalize(10.0) / 10.0, 0.0, 1.0);
+		if (inputs[BLEND12_INPUT].active) blend12 *= clamp(inputs[BLEND12_INPUT].normalize(10.0f) / 10.0f, 0.0f, 1.0f);
+		if (inputs[BLENDAB_INPUT].active) blendAB *= clamp(inputs[BLENDAB_INPUT].normalize(10.0f) / 10.0f, 0.0f, 1.0f);
 
 		for (std::size_t i=0; i<GTX__N; ++i)
 		{
@@ -124,72 +124,70 @@ struct Impl : Module
 //============================================================================================================
 //! \brief The widget.
 
-Widget::Widget()
+struct GtxWidget : ModuleWidget
 {
-	GTX__WIDGET();
-
-	Impl *module = new Impl();
-	setModule(module);
-	box.size = Vec(18*15, 380);
-
-	#if GTX__SAVE_SVG
+	GtxWidget(GtxModule *module) : ModuleWidget(module)
 	{
-		PanelGen pg(assetPlugin(plugin, "build/res/Fade-G2.svg"), box.size, "FADE-G2");
+		GTX__WIDGET();
+		box.size = Vec(18*15, 380);
 
-		// ― is a horizontal bar see https://en.wikipedia.org/wiki/Dash#Horizontal_bar
-		pg.prt_in2(0, -0.28, "CV 1―2");   pg.nob_big(1, 0, "1―2");
-		pg.prt_in2(0, +0.28, "CV A―B");   pg.nob_big(2, 0, "A―B");
-
-		pg.bus_in(0, 1, "IN 1A"); pg.bus_out(2, 1, "OUT");
-		pg.bus_in(1, 1, "IN 1B");
-		pg.bus_in(0, 2, "IN 2A");
-		pg.bus_in(1, 2, "IN 2B"); pg.bus_out(2, 2, "INV OUT");
-	}
-	#endif
-
-	{
-		SVGPanel *panel = new SVGPanel();
-		panel->box.size = box.size;
-		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Fade-G2.svg")));
-		addChild(panel);
-	}
-
-	addChild(createScrew<ScrewSilver>(Vec(15, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
-
-	addParam(createParamGTX<KnobFreeHug>(Vec(fx(1), fy(0)), module, Impl::BLENDAB_PARAM, 0.0, 1.0, 0.0));
-	addParam(createParamGTX<KnobFreeHug>(Vec(fx(2), fy(0)), module, Impl::BLEND12_PARAM, 0.0, 1.0, 0.0));
-
-	addInput(createInputGTX<PortInMed>(Vec(fx(0), fy(-0.28)), module, Impl::BLENDAB_INPUT));
-	addInput(createInputGTX<PortInMed>(Vec(fx(0), fy(+0.28)), module, Impl::BLEND12_INPUT));
-
-	for (std::size_t i=0; i<GTX__N; ++i)
-	{
-		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, Impl::imap(Impl::IN1A_INPUT, i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, Impl::imap(Impl::IN1B_INPUT, i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(1, i)), module, Impl::imap(Impl::IN2A_INPUT, i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(2, i)), module, Impl::imap(Impl::IN2B_INPUT, i)));
-
-		addOutput(createOutputGTX<PortOutMed>(Vec(px(2, i), py(1, i)), module, Impl::omap(Impl::OUT1A_OUTPUT, i)));
-		addOutput(createOutputGTX<PortOutMed>(Vec(px(2, i), py(2, i)), module, Impl::omap(Impl::OUT2B_OUTPUT, i)));
-	}
-
-	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, Impl::imap(Impl::IN1A_INPUT, GTX__N)));
-	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(2)), module, Impl::imap(Impl::IN1B_INPUT, GTX__N)));
-	addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(1)), module, Impl::imap(Impl::IN2A_INPUT, GTX__N)));
-	addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(2)), module, Impl::imap(Impl::IN2B_INPUT, GTX__N)));
-
-	for (std::size_t i=0, x=0; x<3; ++x)
-	{
-		for (std::size_t y=0; y<2; ++y)
+		#if GTX__SAVE_SVG
 		{
-			addChild(createLight<SmallLight<GreenRedLight>>(l_s(gx(x)+rad_l_s()/2+28, gy(y+1)-47.5-(1+rad_l_s())), module, i)); i+=2;
-			addChild(createLight<SmallLight<GreenRedLight>>(l_s(gx(x)+rad_l_s()/2+28, gy(y+1)-47.5+(1+rad_l_s())), module, i)); i+=2;
+			PanelGen pg(assetPlugin(plugin, "build/res/Fade-G2.svg"), box.size, "FADE-G2");
+
+			// ― is a horizontal bar see https://en.wikipedia.org/wiki/Dash#Horizontal_bar
+			pg.prt_in2(0, -0.28, "CV 1―2");   pg.nob_big(1, 0, "1―2");
+			pg.prt_in2(0, +0.28, "CV A―B");   pg.nob_big(2, 0, "A―B");
+
+			pg.bus_in(0, 1, "IN 1A"); pg.bus_out(2, 1, "OUT");
+			pg.bus_in(1, 1, "IN 1B");
+			pg.bus_in(0, 2, "IN 2A");
+			pg.bus_in(1, 2, "IN 2B"); pg.bus_out(2, 2, "INV OUT");
+		}
+		#endif
+
+		setPanel(SVG::load(assetPlugin(plugin, "res/Fade-G2.svg")));
+
+		addChild(Widget::create<ScrewSilver>(Vec(15, 0)));
+		addChild(Widget::create<ScrewSilver>(Vec(box.size.x-30, 0)));
+		addChild(Widget::create<ScrewSilver>(Vec(15, 365)));
+		addChild(Widget::create<ScrewSilver>(Vec(box.size.x-30, 365)));
+
+		addParam(createParamGTX<KnobFreeHug>(Vec(fx(1), fy(0)), module, GtxModule::BLENDAB_PARAM, 0.0f, 1.0f, 0.0f));
+		addParam(createParamGTX<KnobFreeHug>(Vec(fx(2), fy(0)), module, GtxModule::BLEND12_PARAM, 0.0f, 1.0f, 0.0f));
+
+		addInput(createInputGTX<PortInMed>(Vec(fx(0), fy(-0.28)), module, GtxModule::BLENDAB_INPUT));
+		addInput(createInputGTX<PortInMed>(Vec(fx(0), fy(+0.28)), module, GtxModule::BLEND12_INPUT));
+
+		for (std::size_t i=0; i<GTX__N; ++i)
+		{
+			addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, GtxModule::imap(GtxModule::IN1A_INPUT, i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, GtxModule::imap(GtxModule::IN1B_INPUT, i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(1, i)), module, GtxModule::imap(GtxModule::IN2A_INPUT, i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(2, i)), module, GtxModule::imap(GtxModule::IN2B_INPUT, i)));
+
+			addOutput(createOutputGTX<PortOutMed>(Vec(px(2, i), py(1, i)), module, GtxModule::omap(GtxModule::OUT1A_OUTPUT, i)));
+			addOutput(createOutputGTX<PortOutMed>(Vec(px(2, i), py(2, i)), module, GtxModule::omap(GtxModule::OUT2B_OUTPUT, i)));
+		}
+
+		addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, GtxModule::imap(GtxModule::IN1A_INPUT, GTX__N)));
+		addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(2)), module, GtxModule::imap(GtxModule::IN1B_INPUT, GTX__N)));
+		addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(1)), module, GtxModule::imap(GtxModule::IN2A_INPUT, GTX__N)));
+		addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(2)), module, GtxModule::imap(GtxModule::IN2B_INPUT, GTX__N)));
+
+		for (std::size_t i=0, x=0; x<3; ++x)
+		{
+			for (std::size_t y=0; y<2; ++y)
+			{
+				addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(gx(x)+rad_l_s()/2+28, gy(y+1)-47.5-(1+rad_l_s())), module, i)); i+=2;
+				addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(gx(x)+rad_l_s()/2+28, gy(y+1)-47.5+(1+rad_l_s())), module, i)); i+=2;
+			}
 		}
 	}
-}
+};
+
+
+Model *model = Model::create<GtxModule, GtxWidget>("Gratrix", "Fade-G2", "Fade-G2", MIXER_TAG);  // right tag?
 
 
 } // Fade_G2
