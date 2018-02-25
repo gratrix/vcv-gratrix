@@ -1354,7 +1354,7 @@ struct GtxWidget : ModuleWidget
 };
 
 
-Model *model = Model::create<GtxModule, GtxWidget>("Gratrix", "Seq-G2", "Seq-G2", SEQUENCER_TAG);
+Model *model = Model::create<GtxModule, GtxWidget>("Gratrix", "Seq-G2-alpha1", "Seq-G2 (alpha)", SEQUENCER_TAG);
 
 
 } // Seq_G2
