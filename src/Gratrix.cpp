@@ -25,7 +25,7 @@ void init(rack::Plugin *p)
 //	p->addModel(GTX::Seq_G2   ::model);
 	p->addModel(GTX::Keys_G1  ::model);
 	p->addModel(GTX::VU_G1    ::model);
-//	p->addModel(GTX::Scope_G1 ::model);
+	p->addModel(GTX::Scope_G1 ::model);
 	p->addModel(GTX::Blank_03 ::model);
 	p->addModel(GTX::Blank_06 ::model);
 	p->addModel(GTX::Blank_09 ::model);
@@ -41,5 +41,4 @@ void init(rack::Plugin *p)
 	p->addModel(createModel<GTX::VCA_F1::Widget>   ("Gratrix", "VCA-F1",    "VCA-F1",    AMPLIFIER_TAG));
 	p->addModel(createModel<GTX::Seq_G1::Widget>   ("Gratrix", "Seq-G1",    "Seq-G1",    SEQUENCER_TAG));
 	p->addModel(createModel<GTX::Seq_G2::Widget>   ("Gratrix", "Seq-G2",    "Seq-G2",    SEQUENCER_TAG));
-	p->addModel(createModel<GTX::Scope_G1::Widget> ("Gratrix", "Scope-G1",  "Scope-G1",  VISUAL_TAG));
 */

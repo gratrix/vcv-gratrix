@@ -1,4 +1,3 @@
-#if 0
 //============================================================================================================
 //!
 //! \file Scope-G1.cpp
@@ -66,10 +65,10 @@ struct Scope : Module {
 
 void Scope::step() {
 	// Modes
-	external = params[EXTERNAL_PARAM].value <= 0.0;
+	external = params[EXTERNAL_PARAM].value <= 0.0f;
 
 	// Compute time
-	float deltaTime = powf(2.0, params[TIME_PARAM].value);
+	float deltaTime = powf(2.0f, params[TIME_PARAM].value);
 	int frameCount = (int)ceilf(deltaTime * engineGetSampleRate());
 
 	Input x_sum, trig_sum;
@@ -129,13 +128,12 @@ void Scope::Voice::step(bool external, int frameCount, const Param &trig_param, 
 		}
 		frameIndex++;
 
-		// Must go below 0.1V to trigger
-		resetTrigger.setThresholds(trig_param.value - 0.1, trig_param.value);
+		// Must go below 0.1fV to trigger
 		float gate = external ? trig_input.value : x_input.value;
 
 		// Reset if triggered
-		float holdTime = 0.1;
-		if (resetTrigger.process(gate) || (frameIndex >= engineGetSampleRate() * holdTime)) {
+		float holdTime = 0.1f;
+		if (resetTrigger.process(rescale(gate, trig_param.value - 0.1f, trig_param.value, 0.f, 1.f)) || (frameIndex >= engineGetSampleRate() * holdTime)) {
 			bufferIndex = 0; frameIndex = 0; return;
 		}
 
@@ -155,7 +153,7 @@ struct Display : TransparentWidget {
 	struct Stats {
 		float vrms, vpp, vmin, vmax;
 		void calculate(float *values) {
-			vrms = 0.0;
+			vrms = 0.0f;
 			vmax = -INFINITY;
 			vmin = INFINITY;
 			for (int i = 0; i < BUFFER_SIZE; i++) {
@@ -183,10 +181,10 @@ struct Display : TransparentWidget {
 		// Draw maximum display left to right
 		for (int i = 0; i < BUFFER_SIZE; i++) {
 			float x = (float)i / (BUFFER_SIZE - 1);
-			float y = valuesX[i] / 2.0 + 0.5;
+			float y = valuesX[i] / 2.0f + 0.5f;
 			Vec p;
 			p.x = b.pos.x + b.size.x * x;
-			p.y = b.pos.y + b.size.y * (1.0 - y);
+			p.y = b.pos.y + b.size.y * (1.0f - y);
 			if (i == 0)
 				nvgMoveTo(vg, p.x, p.y);
 			else
@@ -203,8 +201,8 @@ struct Display : TransparentWidget {
 
 	void drawTrig(NVGcontext *vg, float value, const Rect &b) {
 		nvgScissor(vg, b.pos.x, b.pos.y, b.size.x, b.size.y);
-		value = value / 2.0 + 0.5;
-		Vec p = Vec(b.pos.x + b.size.x, b.pos.y + b.size.y * (1.0 - value));
+		value = value / 2.0f + 0.5f;
+		Vec p = Vec(b.pos.x + b.size.x, b.pos.y + b.size.y * (1.0f - value));
 
 		// Draw line
 		nvgStrokeColor(vg, nvgRGBA(0xff, 0xff, 0xff, 0x10));
@@ -314,80 +312,77 @@ struct Display : TransparentWidget {
 };
 
 
-Widget::Widget()
+//============================================================================================================
+//! \brief The widget.
+
+struct GtxWidget : ModuleWidget
 {
-	Scope *module = new Scope();
-	setModule(module);
-	box.size = Vec(24*15, 380);
-
-	auto screen_pos  = Vec(0, 35);
-	auto screen_size = Vec(box.size.x, 220);
-
-	#if GTX__SAVE_SVG
+	GtxWidget(Scope *module) : ModuleWidget(module)
 	{
-		PanelGen pg(assetPlugin(plugin, "build/res/Scope-G1.svg"), box.size, "SCOPE-G1");
+		GTX__WIDGET();
+		box.size = Vec(24*15, 380);
 
-		pg.rect(screen_pos, screen_size, "fill:#222222;stroke:none");
+		auto screen_pos  = Vec(0, 35);
+		auto screen_size = Vec(box.size.x, 220);
 
-		pg.bus_in(0, 2, "IN");
-		pg.bus_in(2, 2, "EXT TRIG");
-
-		pg.nob_sml_raw(gx(1-0.22), gy(2-0.24), "SCALE");
-		pg.nob_sml_raw(gx(1-0.22), gy(2+0.22), "POS");
-		pg.nob_sml_raw(gx(1+0.22), gy(2-0.24), "TIME");
-		pg.nob_sml_raw(gx(1+0.22), gy(2+0.22), "TRIG");
-		pg.tog_raw    (gx(3-0.22), gy(2-0.24), "INT", "EXT");
-		pg.nob_sml_raw(gx(3+0.22), gy(2-0.24), "DISP");
-
-		for (std::size_t i=0; i<=12; i++)
+		#if GTX__SAVE_SVG
 		{
-			float x = screen_pos.x + screen_size.x * i / 12.0f;
-			pg.line(Vec(x, screen_pos.y + 15), Vec(x, screen_pos.y + screen_size.y - 15), "fill:none;stroke:#666666;stroke-width:1");
+			PanelGen pg(assetPlugin(plugin, "build/res/Scope-G1.svg"), box.size, "SCOPE-G1");
+
+			pg.rect(screen_pos, screen_size, "fill:#222222;stroke:none");
+
+			pg.bus_in(0, 2, "IN");
+			pg.bus_in(2, 2, "EXT TRIG");
+
+			pg.nob_sml_raw(gx(1-0.22), gy(2-0.24), "SCALE");
+			pg.nob_sml_raw(gx(1-0.22), gy(2+0.22), "POS");
+			pg.nob_sml_raw(gx(1+0.22), gy(2-0.24), "TIME");
+			pg.nob_sml_raw(gx(1+0.22), gy(2+0.22), "TRIG");
+			pg.tog_raw    (gx(3-0.22), gy(2-0.24), "INT", "EXT");
+			pg.nob_sml_raw(gx(3+0.22), gy(2-0.24), "DISP");
+
+			for (std::size_t i=0; i<=12; i++)
+			{
+				float x = screen_pos.x + screen_size.x * i / 12.0f;
+				pg.line(Vec(x, screen_pos.y + 15), Vec(x, screen_pos.y + screen_size.y - 15), "fill:none;stroke:#666666;stroke-width:1");
+			}
+
+			for (std::size_t i=0; i<=8; i++)
+			{
+				float y = screen_pos.y + 15 + (screen_size.y - 30) * i /  8.0f;
+				pg.line(Vec(screen_pos.x, y), Vec(screen_pos.x + screen_size.x, y), "fill:none;stroke:#666666;stroke-width:1");
+			}
+		}
+		#endif
+
+		setPanel(SVG::load(assetPlugin(plugin, "res/Scope-G1.svg")));
+
+		{
+			Display *display  = new Display();
+			display->module   = module;
+			display->box.pos  = screen_pos;
+			display->box.size = screen_size;
+			addChild(display);
 		}
 
-		for (std::size_t i=0; i<=8; i++)
+		addParam(createParamGTX<KnobSnapSml>(Vec(gx(1-0.22), gy(2-0.24)), module, Scope::X_SCALE_PARAM, -2.0f,      8.0f,   0.0f));
+		addParam(createParamGTX<KnobFreeSml>(Vec(gx(1-0.22), gy(2+0.22)), module, Scope::X_POS_PARAM,  -10.0f,     10.0f,   0.0f));
+		addParam(createParamGTX<KnobFreeSml>(Vec(gx(1+0.22), gy(2-0.24)), module, Scope::TIME_PARAM,    -6.0f,    -16.0f, -14.0f));
+		addParam(createParamGTX<KnobFreeSml>(Vec(gx(1+0.22), gy(2+0.22)), module, Scope::TRIG_PARAM,   -10.0f,     10.0f,   0.0f));
+		addParam(ParamWidget::create<CKSS>  (tog(gx(3-0.22), gy(2-0.24)), module, Scope::EXTERNAL_PARAM, 0.0f,      1.0f,   1.0f));
+		addParam(createParamGTX<KnobSnapSml>(Vec(gx(3+0.22), gy(2-0.24)), module, Scope::DISP_PARAM,     0.0f,  GTX__N+1,   0.0f));
+
+		for (std::size_t i=0; i<GTX__N; ++i)
 		{
-			float y = screen_pos.y + 15 + (screen_size.y - 30) * i /  8.0f;
-			pg.line(Vec(screen_pos.x, y), Vec(screen_pos.x + screen_size.x, y), "fill:none;stroke:#666666;stroke-width:1");
+			addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, Scope::imap(Scope::X_INPUT,    i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(2, i), py(2, i)), module, Scope::imap(Scope::TRIG_INPUT, i)));
 		}
 	}
-	#endif
+};
 
-	{
-		SVGPanel *panel = new SVGPanel();
-		panel->box.size = box.size;
-		panel->setBackground(SVG::load(assetPlugin(plugin, "res/Scope-G1.svg")));
-		addChild(panel);
-	}
 
-	addChild(createScrew<ScrewSilver>(Vec(15, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
-
-	{
-		Display *display  = new Display();
-		display->module   = module;
-		display->box.pos  = screen_pos;
-		display->box.size = screen_size;
-		addChild(display);
-	}
-
-	addParam(createParamGTX<KnobSnapSml>(Vec(gx(1-0.22), gy(2-0.24)), module, Scope::X_SCALE_PARAM, -2.0,      8.0,   0.0));
-	addParam(createParamGTX<KnobFreeSml>(Vec(gx(1-0.22), gy(2+0.22)), module, Scope::X_POS_PARAM,  -10.0,     10.0,   0.0));
-	addParam(createParamGTX<KnobFreeSml>(Vec(gx(1+0.22), gy(2-0.24)), module, Scope::TIME_PARAM,    -6.0,    -16.0, -14.0));
-	addParam(createParamGTX<KnobFreeSml>(Vec(gx(1+0.22), gy(2+0.22)), module, Scope::TRIG_PARAM,   -10.0,     10.0,   0.0));
-	addParam(createParam<CKSS>          (tog(gx(3-0.22), gy(2-0.24)), module, Scope::EXTERNAL_PARAM, 0.0,      1.0,   1.0));
-	addParam(createParamGTX<KnobSnapSml>(Vec(gx(3+0.22), gy(2-0.24)), module, Scope::DISP_PARAM,     0.0, GTX__N+1,   0.0));
-
-	for (std::size_t i=0; i<GTX__N; ++i)
-	{
-		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, Scope::imap(Scope::X_INPUT,    i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(2, i), py(2, i)), module, Scope::imap(Scope::TRIG_INPUT, i)));
-	}
-}
+Model *model = Model::create<Scope, GtxWidget>("Gratrix", "Scope-G1", "Scope-G1", VISUAL_TAG);
 
 
 } // Scope_G1
 } // GTX
-#endif
