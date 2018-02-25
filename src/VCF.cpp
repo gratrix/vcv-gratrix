@@ -1,4 +1,3 @@
-#if 0
 /*
 The filter DSP code has been derived from
 Miller Puckette's code hosted at
@@ -44,8 +43,8 @@ inline float clip(float x) {
 }
 
 struct LadderFilter {
-	float cutoff = 1000.0;
-	float resonance = 1.0;
+	float cutoff = 1000.0f;
+	float resonance = 1.0f;
 	float state[4] = {};
 
 	void calculateDerivatives(float input, float *dstate, const float *state) {
@@ -66,11 +65,11 @@ struct LadderFilter {
 
 		calculateDerivatives(input, deriv1, state);
 		for (int i = 0; i < 4; i++)
-			tempState[i] = state[i] + 0.5 * dt * deriv1[i];
+			tempState[i] = state[i] + 0.5f * dt * deriv1[i];
 
 		calculateDerivatives(input, deriv2, tempState);
 		for (int i = 0; i < 4; i++)
-			tempState[i] = state[i] + 0.5 * dt * deriv2[i];
+			tempState[i] = state[i] + 0.5f * dt * deriv2[i];
 
 		calculateDerivatives(input, deriv3, tempState);
 		for (int i = 0; i < 4; i++)
@@ -78,11 +77,11 @@ struct LadderFilter {
 
 		calculateDerivatives(input, deriv4, tempState);
 		for (int i = 0; i < 4; i++)
-			state[i] += (1.0 / 6.0) * dt * (deriv1[i] + 2.0 * deriv2[i] + 2.0 * deriv3[i] + deriv4[i]);
+			state[i] += (1.0f / 6.0f) * dt * (deriv1[i] + 2.0f * deriv2[i] + 2.0f * deriv3[i] + deriv4[i]);
 	}
 	void reset() {
 		for (int i = 0; i < 4; i++) {
-			state[i] = 0.0;
+			state[i] = 0.0f;
 		}
 	}
 };
@@ -116,7 +115,7 @@ struct VCF : MicroModule {
 
 	VCF() : MicroModule(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS) {}
 	void step();
-	void reset() {
+	void onReset() {
 		filter.reset();
 	}
 };
@@ -125,31 +124,31 @@ struct VCF : MicroModule {
 //============================================================================================================
 
 void VCF::step() {
-	float input = inputs[IN_INPUT].value / 5.0;
-	float drive = params[DRIVE_PARAM].value + inputs[DRIVE_INPUT].value / 10.0;
-	float gain = powf(100.0, drive);
+	float input = inputs[IN_INPUT].value / 5.0f;
+	float drive = params[DRIVE_PARAM].value + inputs[DRIVE_INPUT].value / 10.0f;
+	float gain = powf(100.0f, drive);
 	input *= gain;
 	// Add -60dB noise to bootstrap self-oscillation
-	input += 1.0e-6 * (2.0*randomf() - 1.0);
+	input += 1e-6f * (2.0f*randomUniform() - 1.0f);
 
 	// Set resonance
-	float res = params[RES_PARAM].value + inputs[RES_INPUT].value / 5.0;
-	res = 5.5 * clampf(res, 0.0, 1.0);
+	float res = params[RES_PARAM].value + inputs[RES_INPUT].value / 5.0f;
+	res = 5.5f * clamp(res, 0.0f, 1.0f);
 	filter.resonance = res;
 
 	// Set cutoff frequency
-	float cutoffExp = params[FREQ_PARAM].value + params[FREQ_CV_PARAM].value * inputs[FREQ_INPUT].value / 5.0;
-	cutoffExp = clampf(cutoffExp, 0.0, 1.0);
-	const float minCutoff = 15.0;
-	const float maxCutoff = 8400.0;
+	float cutoffExp = params[FREQ_PARAM].value + params[FREQ_CV_PARAM].value * inputs[FREQ_INPUT].value / 5.0f;
+	cutoffExp = clamp(cutoffExp, 0.0f, 1.0f);
+	const float minCutoff = 15.0f;
+	const float maxCutoff = 8400.0f;
 	filter.cutoff = minCutoff * powf(maxCutoff / minCutoff, cutoffExp);
 
 	// Push a sample to the state filter
-	filter.process(input, 1.0/engineGetSampleRate());
+	filter.process(input, 1.0f/engineGetSampleRate());
 
 	// Set outputs
-	outputs[LPF_OUTPUT].value = 5.0 * filter.state[3];
-	outputs[HPF_OUTPUT].value = 5.0 * (input - filter.state[3]);
+	outputs[LPF_OUTPUT].value = 5.0f * filter.state[3];
+	outputs[HPF_OUTPUT].value = 5.0f * (input - filter.state[3]);
 }
 
 
@@ -185,77 +184,74 @@ struct VCFBank : Module
 		}
 	}
 
-	void reset() override
+	void onReset() override
 	{
 		for (std::size_t i=0; i<GTX__N; ++i)
 		{
-			inst[i].reset();
+			inst[i].onReset();
 		}
 	}
 };
 
 
 //============================================================================================================
+//! \brief The widget.
 
-Widget::Widget()
+struct GtxWidget : ModuleWidget
 {
-	GTX__WIDGET();
-
-	VCFBank *module = new VCFBank();
-	setModule(module);
-	box.size = Vec(18*15, 380);
-
-	#if GTX__SAVE_SVG
+	GtxWidget(VCFBank *module) : ModuleWidget(module)
 	{
-		PanelGen pg(assetPlugin(plugin, "build/res/VCF-F1.svg"), box.size, "VCF-F1");
+		GTX__WIDGET();
+		box.size = Vec(18*15, 380);
 
-		pg.nob_big(0, 0, "FREQ");
+		#if GTX__SAVE_SVG
+		{
+			PanelGen pg(assetPlugin(plugin, "build/res/VCF-F1.svg"), box.size, "VCF-F1");
 
-		pg.nob_med(1.1, -0.28, "FINE");     pg.nob_med(1.9, -0.28, "RES");
-		pg.nob_med(1.1, +0.28, "FREQ  CV"); pg.nob_med(1.9, +0.28, "DRIVE");
+			pg.nob_big(0, 0, "FREQ");
 
-		pg.bus_in(0, 1, "FREQ"); pg.bus_in(1, 1, "RES");   pg.bus_out(2, 1, "HPF");
-		pg.bus_in(0, 2, "IN");   pg.bus_in(1, 2, "DRIVE"); pg.bus_out(2, 2, "LPF");
+			pg.nob_med(1.1, -0.28, "FINE");     pg.nob_med(1.9, -0.28, "RES");
+			pg.nob_med(1.1, +0.28, "FREQ  CV"); pg.nob_med(1.9, +0.28, "DRIVE");
+
+			pg.bus_in(0, 1, "FREQ"); pg.bus_in(1, 1, "RES");   pg.bus_out(2, 1, "HPF");
+			pg.bus_in(0, 2, "IN");   pg.bus_in(1, 2, "DRIVE"); pg.bus_out(2, 2, "LPF");
+		}
+		#endif
+
+		setPanel(SVG::load(assetPlugin(plugin, "res/VCF-F1.svg")));
+
+		addChild(Widget::create<ScrewSilver>(Vec(15, 0)));
+		addChild(Widget::create<ScrewSilver>(Vec(box.size.x-30, 0)));
+		addChild(Widget::create<ScrewSilver>(Vec(15, 365)));
+		addChild(Widget::create<ScrewSilver>(Vec(box.size.x-30, 365)));
+
+		addParam(createParamGTX<KnobFreeHug>(Vec(fx(0.0), fy(+0.00)), module, VCF::FREQ_PARAM, 0.0f, 1.0f, 0.5f));
+		addParam(createParamGTX<KnobFreeMed>(Vec(fx(1.1), fy(-0.28)), module, VCF::FINE_PARAM, 0.0f, 1.0f, 0.5f));
+		addParam(createParamGTX<KnobFreeMed>(Vec(fx(1.9), fy(-0.28)), module, VCF::RES_PARAM, 0.0f, 1.0f, 0.0f));
+		addParam(createParamGTX<KnobFreeMed>(Vec(fx(1.1), fy(+0.28)), module, VCF::FREQ_CV_PARAM, -1.0f, 1.0f, 0.0f));
+		addParam(createParamGTX<KnobFreeMed>(Vec(fx(1.9), fy(+0.28)), module, VCF::DRIVE_PARAM, 0.0f, 1.0f, 0.0f));
+
+		for (std::size_t i=0; i<GTX__N; ++i)
+		{
+			addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, VCFBank::imap(VCF::FREQ_INPUT,  i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(1, i)), module, VCFBank::imap(VCF::RES_INPUT,   i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(2, i)), module, VCFBank::imap(VCF::DRIVE_INPUT, i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, VCFBank::imap(VCF::IN_INPUT,    i)));
+
+			addOutput(createOutputGTX<PortOutMed>(Vec(px(2, i), py(2, i)), module, VCFBank::omap(VCF::LPF_OUTPUT,  i)));
+			addOutput(createOutputGTX<PortOutMed>(Vec(px(2, i), py(1, i)), module, VCFBank::omap(VCF::HPF_OUTPUT,  i)));
+		}
+
+		addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, VCFBank::imap(VCF::FREQ_INPUT,  GTX__N)));
+		addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(1)), module, VCFBank::imap(VCF::RES_INPUT,   GTX__N)));
+		addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(2)), module, VCFBank::imap(VCF::DRIVE_INPUT, GTX__N)));
+		addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(2)), module, VCFBank::imap(VCF::IN_INPUT,    GTX__N)));
 	}
-	#endif
+};
 
-	{
-		SVGPanel *panel = new SVGPanel();
-		panel->box.size = box.size;
-		panel->setBackground(SVG::load(assetPlugin(plugin, "res/VCF-F1.svg")));
-		addChild(panel);
-	}
 
-	addChild(createScrew<ScrewSilver>(Vec(15, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
-
-	addParam(createParamGTX<KnobFreeHug>(Vec(fx(0), fy(0)), module, VCF::FREQ_PARAM, 0.0, 1.0, 0.5));
-
-	addParam(createParamGTX<KnobFreeMed>(Vec(fx(1.1), fy(-0.28)), module, VCF::FINE_PARAM,     0.0, 1.0, 0.5));
-	addParam(createParamGTX<KnobFreeMed>(Vec(fx(1.9), fy(-0.28)), module, VCF::RES_PARAM,      0.0, 1.0, 0.0));
-	addParam(createParamGTX<KnobFreeMed>(Vec(fx(1.1), fy(+0.28)), module, VCF::FREQ_CV_PARAM, -1.0, 1.0, 0.0));
-	addParam(createParamGTX<KnobFreeMed>(Vec(fx(1.9), fy(+0.28)), module, VCF::DRIVE_PARAM,    0.0, 1.0, 0.0));
-
-	for (std::size_t i=0; i<GTX__N; ++i)
-	{
-		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, VCFBank::imap(VCF::FREQ_INPUT,  i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(1, i)), module, VCFBank::imap(VCF::RES_INPUT,   i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(2, i)), module, VCFBank::imap(VCF::DRIVE_INPUT, i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, VCFBank::imap(VCF::IN_INPUT,    i)));
-
-		addOutput(createOutputGTX<PortOutMed>(Vec(px(2, i), py(2, i)), module, VCFBank::omap(VCF::LPF_OUTPUT,  i)));
-		addOutput(createOutputGTX<PortOutMed>(Vec(px(2, i), py(1, i)), module, VCFBank::omap(VCF::HPF_OUTPUT,  i)));
-	}
-
-	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, VCFBank::imap(VCF::FREQ_INPUT,  GTX__N)));
-	addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(1)), module, VCFBank::imap(VCF::RES_INPUT,   GTX__N)));
-	addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(2)), module, VCFBank::imap(VCF::DRIVE_INPUT, GTX__N)));
-	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(2)), module, VCFBank::imap(VCF::IN_INPUT,    GTX__N)));
-}
+Model *model = Model::create<VCFBank, GtxWidget>("Gratrix", "VCF-F1", "VCF-F1", FILTER_TAG);
 
 
 } // VCF_F1
 } // GTX
-#endif

@@ -1,4 +1,3 @@
-#if 0
 #include "Gratrix.hpp"
 
 
@@ -40,10 +39,10 @@ struct VCA : MicroModule {
 void VCA::step() {
 	float v = inputs[IN_INPUT].value * params[LEVEL_PARAM].value;
 	if (inputs[LIN_INPUT].active)
-		v *= clampf(inputs[LIN_INPUT].value / 10.0, 0.0, 1.0);
-	const float expBase = 50.0;
+		v *= clamp(inputs[LIN_INPUT].value / 10.0f, 0.0f, 1.0f);
+	const float expBase = 50.0f;
 	if (inputs[EXP_INPUT].active)
-		v *= rescalef(powf(expBase, clampf(inputs[EXP_INPUT].value / 10.0, 0.0, 1.0)), 1.0, expBase, 0.0, 1.0);
+		v *= rescale(powf(expBase, clamp(inputs[EXP_INPUT].value / 10.0f, 0.0f, 1.0f)), 1.0f, expBase, 0.0f, 1.0f);
 	outputs[OUT_OUTPUT].value = v;
 }
 
@@ -98,63 +97,61 @@ struct VCABank : Module
 
 
 //============================================================================================================
+//! \brief The widget.
 
-Widget::Widget()
+struct GtxWidget : ModuleWidget
 {
-	GTX__WIDGET();
-
-	VCABank *module = new VCABank();
-	setModule(module);
-	box.size = Vec(12*15, 380);
-
-	#if GTX__SAVE_SVG
+	GtxWidget(VCABank *module) : ModuleWidget(module)
 	{
-		PanelGen pg(assetPlugin(plugin, "build/res/VCA-F1.svg"), box.size, "VCA-F1");
+		GTX__WIDGET();
+		box.size = Vec(12*15, 380);
 
-		pg.nob_big(0, 0, "LEVEL");
+		#if GTX__SAVE_SVG
+		{
+			PanelGen pg(assetPlugin(plugin, "build/res/VCA-F1.svg"), box.size, "VCA-F1");
 
-		pg.nob_med(1, -0.28, "MIX OUT 1");
-		pg.nob_med(1, +0.28, "MIX OUT 2");
+			pg.nob_big(0, 0, "LEVEL");
 
-		pg.bus_in (0, 1, "EXP"); pg.bus_in (1, 1, "LIN");
-		pg.bus_in (0, 2, "IN");  pg.bus_out(1, 2, "OUT");
+			pg.nob_med(1, -0.28, "MIX OUT 1");
+			pg.nob_med(1, +0.28, "MIX OUT 2");
+
+			pg.bus_in (0, 1, "EXP"); pg.bus_in (1, 1, "LIN");
+			pg.bus_in (0, 2, "IN");  pg.bus_out(1, 2, "OUT");
+		}
+		#endif
+
+		setPanel(SVG::load(assetPlugin(plugin, "res/VCA-F1.svg")));
+
+		addChild(Widget::create<ScrewSilver>(Vec(15, 0)));
+		addChild(Widget::create<ScrewSilver>(Vec(box.size.x-30, 0)));
+		addChild(Widget::create<ScrewSilver>(Vec(15, 365)));
+		addChild(Widget::create<ScrewSilver>(Vec(box.size.x-30, 365)));
+
+		addParam(createParamGTX<KnobFreeHug>(Vec(fx(0),      fy(0)),     module, VCA::LEVEL_PARAM, 0.0f, 1.0f, 0.5f));
+		addParam(createParamGTX<KnobFreeMed>(Vec(fx(1-0.18), fy(-0.28)), module, VCA::MIX_1_PARAM, 0.0f, 1.0f, 0.5f));
+		addParam(createParamGTX<KnobFreeMed>(Vec(fx(1-0.18), fy(+0.28)), module, VCA::MIX_2_PARAM, 0.0f, 1.0f, 0.5f));
+
+		addOutput(createOutputGTX<PortOutMed>(Vec(fx(1+0.28), fy(-0.28)), module, VCA::MIX_1_OUTPUT));
+		addOutput(createOutputGTX<PortOutMed>(Vec(fx(1+0.28), fy(+0.28)), module, VCA::MIX_2_OUTPUT));
+
+		for (std::size_t i=0; i<GTX__N; ++i)
+		{
+			addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(1, i)), module, VCABank::imap(VCA::LIN_INPUT, i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, VCABank::imap(VCA::EXP_INPUT, i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, VCABank::imap(VCA::IN_INPUT,  i)));
+
+			addOutput(createOutputGTX<PortOutMed>(Vec(px(1, i), py(2, i)), module, VCABank::omap(VCA::OUT_OUTPUT, i)));
+		}
+
+		addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(1)), module, VCABank::imap(VCA::LIN_INPUT, GTX__N)));
+		addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, VCABank::imap(VCA::EXP_INPUT, GTX__N)));
+		addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(2)), module, VCABank::imap(VCA::IN_INPUT,  GTX__N)));
 	}
-	#endif
+};
 
-	{
-		SVGPanel *panel = new SVGPanel();
-		panel->box.size = box.size;
-		panel->setBackground(SVG::load(assetPlugin(plugin, "res/VCA-F1.svg")));
-		addChild(panel);
-	}
 
-	addChild(createScrew<ScrewSilver>(Vec(15, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
-
-	addParam(createParamGTX<KnobFreeHug>(Vec(fx(0),      fy(0)),     module, VCA::LEVEL_PARAM, 0.0, 1.0, 0.5));
-	addParam(createParamGTX<KnobFreeMed>(Vec(fx(1-0.18), fy(-0.28)), module, VCA::MIX_1_PARAM, 0.0, 1.0, 0.5));
-	addParam(createParamGTX<KnobFreeMed>(Vec(fx(1-0.18), fy(+0.28)), module, VCA::MIX_2_PARAM, 0.0, 1.0, 0.5));
-
-	addOutput(createOutputGTX<PortOutMed>(Vec(fx(1+0.28), fy(-0.28)), module, VCA::MIX_1_OUTPUT));
-	addOutput(createOutputGTX<PortOutMed>(Vec(fx(1+0.28), fy(+0.28)), module, VCA::MIX_2_OUTPUT));
-
-	for (std::size_t i=0; i<GTX__N; ++i)
-	{
-		addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(1, i)), module, VCABank::imap(VCA::LIN_INPUT, i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, VCABank::imap(VCA::EXP_INPUT, i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, VCABank::imap(VCA::IN_INPUT,  i)));
-
-		addOutput(createOutputGTX<PortOutMed>(Vec(px(1, i), py(2, i)), module, VCABank::omap(VCA::OUT_OUTPUT, i)));
-	}
-
-	addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(1)), module, VCABank::imap(VCA::LIN_INPUT, GTX__N)));
-	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, VCABank::imap(VCA::EXP_INPUT, GTX__N)));
-	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(2)), module, VCABank::imap(VCA::IN_INPUT,  GTX__N)));
-}
+Model *model = Model::create<VCABank, GtxWidget>("Gratrix", "VCA-F1", "VCA-F1", AMPLIFIER_TAG);
 
 
 } // VCA_F1
 } // GTX
-#endif

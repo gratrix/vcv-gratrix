@@ -1,4 +1,3 @@
-#if 0
 #include "Gratrix.hpp"
 #include "dsp/decimator.hpp"
 #include "dsp/filter.hpp"
@@ -17,10 +16,10 @@ template <int OVERSAMPLE, int QUALITY>
 struct VoltageControlledOscillator {
 	bool analog = false;
 	bool soft = false;
-	float lastSyncValue = 0.0;
-	float phase = 0.0;
+	float lastSyncValue = 0.0f;
+	float phase = 0.0f;
 	float freq;
-	float pw = 0.5;
+	float pw = 0.5f;
 	float pitch;
 	bool syncEnabled = false;
 	bool syncDirection = false;
@@ -32,7 +31,7 @@ struct VoltageControlledOscillator {
 	RCFilter sqrFilter;
 
 	// For analog detuning effect
-	float pitchSlew = 0.0;
+	float pitchSlew = 0.0f;
 	int pitchSlewIndex = 0;
 
 	float sinBuffer[OVERSAMPLE] = {};
@@ -45,7 +44,7 @@ struct VoltageControlledOscillator {
 		pitch = pitchKnob;
 		if (analog) {
 			// Apply pitch slew
-			const float pitchSlewAmount = 3.0;
+			const float pitchSlewAmount = 3.0f;
 			pitch += pitchSlew * pitchSlewAmount;
 		}
 		else {
@@ -53,35 +52,35 @@ struct VoltageControlledOscillator {
 			pitch = roundf(pitch);
 		}
 		pitch += pitchCv;
-		// Note C3
-		freq = 261.626 * powf(2.0, pitch / 12.0);
+		// Note C4
+		freq = 261.626f * powf(2.0f, pitch / 12.0f);
 	}
 	void setPulseWidth(float pulseWidth) {
-		const float pwMin = 0.01;
-		pw = clampf(pulseWidth, pwMin, 1.0 - pwMin);
+		const float pwMin = 0.01f;
+		pw = clamp(pulseWidth, pwMin, 1.0f - pwMin);
 	}
 
 	void process(float deltaTime, float syncValue) {
 		if (analog) {
 			// Adjust pitch slew
 			if (++pitchSlewIndex > 32) {
-				const float pitchSlewTau = 100.0; // Time constant for leaky integrator in seconds
-				pitchSlew += (randomNormal() - pitchSlew / pitchSlewTau) / engineGetSampleRate();
+				const float pitchSlewTau = 100.0f; // Time constant for leaky integrator in seconds
+				pitchSlew += (randomNormal() - pitchSlew / pitchSlewTau) * engineGetSampleTime();
 				pitchSlewIndex = 0;
 			}
 		}
 
 		// Advance phase
-		float deltaPhase = clampf(freq * deltaTime, 1e-6, 0.5);
+		float deltaPhase = clamp(freq * deltaTime, 1e-6, 0.5f);
 
 		// Detect sync
 		int syncIndex = -1; // Index in the oversample loop where sync occurs [0, OVERSAMPLE)
-		float syncCrossing = 0.0; // Offset that sync occurs [0.0, 1.0)
+		float syncCrossing = 0.0f; // Offset that sync occurs [0.0f, 1.0f)
 		if (syncEnabled) {
-			syncValue -= 0.01;
-			if (syncValue > 0.0 && lastSyncValue <= 0.0) {
+			syncValue -= 0.01f;
+			if (syncValue > 0.0f && lastSyncValue <= 0.0f) {
 				float deltaSync = syncValue - lastSyncValue;
-				syncCrossing = 1.0 - syncValue / deltaSync;
+				syncCrossing = 1.0f - syncValue / deltaSync;
 				syncCrossing *= OVERSAMPLE;
 				syncIndex = (int)syncCrossing;
 				syncCrossing -= syncIndex;
@@ -90,19 +89,19 @@ struct VoltageControlledOscillator {
 		}
 
 		if (syncDirection)
-			deltaPhase *= -1.0;
+			deltaPhase *= -1.0f;
 
-		sqrFilter.setCutoff(40.0 * deltaTime);
+		sqrFilter.setCutoff(40.0f * deltaTime);
 
 		for (int i = 0; i < OVERSAMPLE; i++) {
 			if (syncIndex == i) {
 				if (soft) {
 					syncDirection = !syncDirection;
-					deltaPhase *= -1.0;
+					deltaPhase *= -1.0f;
 				}
 				else {
 					// phase = syncCrossing * deltaPhase / OVERSAMPLE;
-					phase = 0.0;
+					phase = 0.0f;
 				}
 			}
 
@@ -118,7 +117,7 @@ struct VoltageControlledOscillator {
 				sinBuffer[i] = sinf(2.f*M_PI * phase);
 			}
 			if (analog) {
-				triBuffer[i] = 1.25f * interpf(triTable, phase * 2047.f);
+				triBuffer[i] = 1.25f * interpolateLinear(triTable, phase * 2047.f);
 			}
 			else {
 				if (phase < 0.25f)
@@ -129,7 +128,7 @@ struct VoltageControlledOscillator {
 					triBuffer[i] = -4.f + 4.f * phase;
 			}
 			if (analog) {
-				sawBuffer[i] = 1.66f * interpf(sawTable, phase * 2047.f);
+				sawBuffer[i] = 1.66f * interpolateLinear(sawTable, phase * 2047.f);
 			}
 			else {
 				if (phase < 0.5f)
@@ -146,7 +145,7 @@ struct VoltageControlledOscillator {
 
 			// Advance phase
 			phase += deltaPhase / OVERSAMPLE;
-			phase = eucmodf(phase, 1.0);
+			phase = eucmod(phase, 1.0f);
 		}
 	}
 
@@ -206,29 +205,29 @@ struct VCO : MicroModule {
 //============================================================================================================
 
 void VCO::step() {
-	oscillator.analog = params[MODE_PARAM].value > 0.0;
-	oscillator.soft = params[SYNC_PARAM].value <= 0.0;
+	oscillator.analog = params[MODE_PARAM].value > 0.0f;
+	oscillator.soft = params[SYNC_PARAM].value <= 0.0f;
 
-	float pitchFine = 3.0 * quadraticBipolar(params[FINE_PARAM].value);
-	float pitchCv = 12.0 * inputs[PITCH_INPUT].value;
+	float pitchFine = 3.0f * quadraticBipolar(params[FINE_PARAM].value);
+	float pitchCv = 12.0f * inputs[PITCH_INPUT].value;
 	if (inputs[FM_INPUT].active) {
-		pitchCv += quadraticBipolar(params[FM_PARAM].value) * 12.0 * inputs[FM_INPUT].value;
+		pitchCv += quadraticBipolar(params[FM_PARAM].value) * 12.0f * inputs[FM_INPUT].value;
 	}
 	oscillator.setPitch(params[FREQ_PARAM].value, pitchFine + pitchCv);
-	oscillator.setPulseWidth(params[PW_PARAM].value + params[PWM_PARAM].value * inputs[PW_INPUT].value / 10.0);
+	oscillator.setPulseWidth(params[PW_PARAM].value + params[PWM_PARAM].value * inputs[PW_INPUT].value / 10.0f);
 	oscillator.syncEnabled = inputs[SYNC_INPUT].active;
 
-	oscillator.process(1.0 / engineGetSampleRate(), inputs[SYNC_INPUT].value);
+	oscillator.process(engineGetSampleTime(), inputs[SYNC_INPUT].value);
 
 	// Set output
 	if (outputs[SIN_OUTPUT].active)
-		outputs[SIN_OUTPUT].value = 5.0 * oscillator.sin();
+		outputs[SIN_OUTPUT].value = 5.0f * oscillator.sin();
 	if (outputs[TRI_OUTPUT].active)
-		outputs[TRI_OUTPUT].value = 5.0 * oscillator.tri();
+		outputs[TRI_OUTPUT].value = 5.0f * oscillator.tri();
 	if (outputs[SAW_OUTPUT].active)
-		outputs[SAW_OUTPUT].value = 5.0 * oscillator.saw();
+		outputs[SAW_OUTPUT].value = 5.0f * oscillator.saw();
 	if (outputs[SQR_OUTPUT].active)
-		outputs[SQR_OUTPUT].value = 5.0 * oscillator.sqr();
+		outputs[SQR_OUTPUT].value = 5.0f * oscillator.sqr();
 }
 
 
@@ -267,72 +266,70 @@ struct VCOBank : Module
 
 
 //============================================================================================================
+//! \brief The widget.
 
-Widget::Widget()
+struct GtxWidget : ModuleWidget
 {
-	GTX__WIDGET();
-
-	VCOBank *module = new VCOBank();
-	setModule(module);
-	box.size = Vec(24*15, 380);
-
-	#if GTX__SAVE_SVG
+	GtxWidget(VCOBank *module) : ModuleWidget(module)
 	{
-		PanelGen pg(assetPlugin(plugin, "build/res/VCO-F1.svg"), box.size, "VCO-F1");
+		GTX__WIDGET();
+		box.size = Vec(24*15, 380);
 
-		pg.tog(-0.2, -0.1, "ANA", "DIGI");
-		pg.tog(+0.2, -0.1, "HRD", "SFT");
+		#if GTX__SAVE_SVG
+		{
+			PanelGen pg(assetPlugin(plugin, "build/res/VCO-F1.svg"), box.size, "VCO-F1");
 
-		pg.nob_big(1, 0, "FREQ");
+			pg.tog(-0.2, -0.1, "ANA", "DIGI");
+			pg.tog(+0.2, -0.1, "HRD", "SFT");
 
-		pg.nob_med(2.1, -0.28, "FINE"); pg.nob_med(2.9, -0.28, "PW");
-		pg.nob_med(2.1, +0.28, "FM");   pg.nob_med(2.9, +0.28, "PW CV");
+			pg.nob_big(1, 0, "FREQ");
 
-		pg.bus_in(0, 1, "FM");    pg.bus_in(1, 1, "PWM");  pg.bus_out(2, 1, "SINE"); pg.bus_out(3, 1, "SAW");
-		pg.bus_in(0, 2, "V/OCT"); pg.bus_in(1, 2, "SYNC"); pg.bus_out(2, 2, "TRI");  pg.bus_out(3, 2, "SQR");
+			pg.nob_med(2.1, -0.28, "FINE"); pg.nob_med(2.9, -0.28, "PW");
+			pg.nob_med(2.1, +0.28, "FM");   pg.nob_med(2.9, +0.28, "PW CV");
+
+			pg.bus_in(0, 1, "FM");    pg.bus_in(1, 1, "PWM");  pg.bus_out(2, 1, "SINE"); pg.bus_out(3, 1, "SAW");
+			pg.bus_in(0, 2, "V/OCT"); pg.bus_in(1, 2, "SYNC"); pg.bus_out(2, 2, "TRI");  pg.bus_out(3, 2, "SQR");
+		}
+		#endif
+
+		setPanel(SVG::load(assetPlugin(plugin, "res/VCO-F1.svg")));
+
+		addChild(Widget::create<ScrewSilver>(Vec(15, 0)));
+		addChild(Widget::create<ScrewSilver>(Vec(box.size.x-30, 0)));
+		addChild(Widget::create<ScrewSilver>(Vec(15, 365)));
+		addChild(Widget::create<ScrewSilver>(Vec(box.size.x-30, 365)));
+
+		addParam(ParamWidget::create<CKSS>(tog(fx(-0.2), fy(-0.1)), module, VCO::MODE_PARAM, 0.0f, 1.0f, 1.0f));
+		addParam(ParamWidget::create<CKSS>(tog(fx(+0.2), fy(-0.1)), module, VCO::SYNC_PARAM, 0.0f, 1.0f, 1.0f));
+
+		addParam(createParamGTX<KnobFreeHug>(Vec(fx(1.0), fy(+0.00)), module, VCO::FREQ_PARAM, -54.0f, 54.0f, 0.0f));
+		addParam(createParamGTX<KnobFreeMed>(Vec(fx(2.1), fy(-0.28)), module, VCO::FINE_PARAM, -1.0f, 1.0f, 0.0f));
+		addParam(createParamGTX<KnobFreeMed>(Vec(fx(2.9), fy(-0.28)), module, VCO::PW_PARAM, 0.0f, 1.0f, 0.5f));
+		addParam(createParamGTX<KnobFreeMed>(Vec(fx(2.1), fy(+0.28)), module, VCO::FM_PARAM, 0.0f, 1.0f, 0.0f));
+		addParam(createParamGTX<KnobFreeMed>(Vec(fx(2.9), fy(+0.28)), module, VCO::PWM_PARAM, 0.0f, 1.0f, 0.0f));
+
+		for (std::size_t i=0; i<GTX__N; ++i)
+		{
+			addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, VCOBank::imap(VCO::PITCH_INPUT, i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, VCOBank::imap(VCO::FM_INPUT,    i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(2, i)), module, VCOBank::imap(VCO::SYNC_INPUT,  i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(1, i)), module, VCOBank::imap(VCO::PW_INPUT,    i)));
+
+			addOutput(createOutputGTX<PortOutMed>(Vec(px(2, i), py(1, i)), module, VCOBank::omap(VCO::SIN_OUTPUT, i)));
+			addOutput(createOutputGTX<PortOutMed>(Vec(px(2, i), py(2, i)), module, VCOBank::omap(VCO::TRI_OUTPUT, i)));
+			addOutput(createOutputGTX<PortOutMed>(Vec(px(3, i), py(1, i)), module, VCOBank::omap(VCO::SAW_OUTPUT, i)));
+			addOutput(createOutputGTX<PortOutMed>(Vec(px(3, i), py(2, i)), module, VCOBank::omap(VCO::SQR_OUTPUT, i)));
+		}
+
+		addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(2)), module, VCOBank::imap(VCO::PITCH_INPUT, GTX__N)));
+		addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, VCOBank::imap(VCO::FM_INPUT,    GTX__N)));
+		addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(2)), module, VCOBank::imap(VCO::SYNC_INPUT,  GTX__N)));
+		addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(1)), module, VCOBank::imap(VCO::PW_INPUT,    GTX__N)));
 	}
-	#endif
+};
 
-	{
-		SVGPanel *panel = new SVGPanel();
-		panel->box.size = box.size;
-		panel->setBackground(SVG::load(assetPlugin(plugin, "res/VCO-F1.svg")));
-		addChild(panel);
-	}
 
-	addChild(createScrew<ScrewSilver>(Vec(15, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
-
-	addParam(createParam<CKSS>(tog(fx(-0.2), fy(-0.1)), module, VCO::MODE_PARAM, 0.0, 1.0, 1.0));
-	addParam(createParam<CKSS>(tog(fx(+0.2), fy(-0.1)), module, VCO::SYNC_PARAM, 0.0, 1.0, 1.0));
-
-	addParam(createParamGTX<KnobFreeHug>(Vec(fx(1), fy(0)), module, VCO::FREQ_PARAM, -54.0, 54.0, 0.0));
-
-	addParam(createParamGTX<KnobFreeMed>(Vec(fx(2.1), fy(-0.28)), module, VCO::FINE_PARAM, -1.0, 1.0, 0.0));
-	addParam(createParamGTX<KnobFreeMed>(Vec(fx(2.9), fy(-0.28)), module, VCO::PW_PARAM,    0.0, 1.0, 0.5));
-	addParam(createParamGTX<KnobFreeMed>(Vec(fx(2.1), fy(+0.28)), module, VCO::FM_PARAM,    0.0, 1.0, 0.0));
-	addParam(createParamGTX<KnobFreeMed>(Vec(fx(2.9), fy(+0.28)), module, VCO::PWM_PARAM,   0.0, 1.0, 0.0));
-
-	for (std::size_t i=0; i<GTX__N; ++i)
-	{
-		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, VCOBank::imap(VCO::PITCH_INPUT, i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, VCOBank::imap(VCO::FM_INPUT,    i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(2, i)), module, VCOBank::imap(VCO::SYNC_INPUT,  i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(1, i)), module, VCOBank::imap(VCO::PW_INPUT,    i)));
-
-		addOutput(createOutputGTX<PortOutMed>(Vec(px(2, i), py(1, i)), module, VCOBank::omap(VCO::SIN_OUTPUT, i)));
-		addOutput(createOutputGTX<PortOutMed>(Vec(px(2, i), py(2, i)), module, VCOBank::omap(VCO::TRI_OUTPUT, i)));
-		addOutput(createOutputGTX<PortOutMed>(Vec(px(3, i), py(1, i)), module, VCOBank::omap(VCO::SAW_OUTPUT, i)));
-		addOutput(createOutputGTX<PortOutMed>(Vec(px(3, i), py(2, i)), module, VCOBank::omap(VCO::SQR_OUTPUT, i)));
-	}
-
-	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(2)), module, VCOBank::imap(VCO::PITCH_INPUT, GTX__N)));
-	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, VCOBank::imap(VCO::FM_INPUT,    GTX__N)));
-	addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(2)), module, VCOBank::imap(VCO::SYNC_INPUT,  GTX__N)));
-	addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(1)), module, VCOBank::imap(VCO::PW_INPUT,    GTX__N)));
-}
+Model *model = Model::create<VCOBank, GtxWidget>("Gratrix", "VCO-F1", "VCO-F1", OSCILLATOR_TAG);
 
 
 } // VCO_F1
@@ -373,25 +370,25 @@ struct VCO2 : MicroModule {
 //============================================================================================================
 
 void VCO2::step() {
-	oscillator.analog = params[MODE_PARAM].value > 0.0;
-	oscillator.soft = params[SYNC_PARAM].value <= 0.0;
+	oscillator.analog = params[MODE_PARAM].value > 0.0f;
+	oscillator.soft = params[SYNC_PARAM].value <= 0.0f;
 
-	float pitchCv = params[FREQ_PARAM].value + quadraticBipolar(params[FM_PARAM].value) * 12.0 * inputs[FM_INPUT].value;
-	oscillator.setPitch(0.0, pitchCv);
+	float pitchCv = params[FREQ_PARAM].value + quadraticBipolar(params[FM_PARAM].value) * 12.0f * inputs[FM_INPUT].value;
+	oscillator.setPitch(0.0f, pitchCv);
 	oscillator.syncEnabled = inputs[SYNC_INPUT].active;
 
-	oscillator.process(1.0 / engineGetSampleRate(), inputs[SYNC_INPUT].value);
+	oscillator.process(engineGetSampleTime(), inputs[SYNC_INPUT].value);
 
 	// Set output
-	float wave = clampf(params[WAVE_PARAM].value + inputs[WAVE_INPUT].value, 0.0, 3.0);
+	float wave = clamp(params[WAVE_PARAM].value + inputs[WAVE_INPUT].value, 0.0f, 3.0f);
 	float out;
-	if (wave < 1.0)
-		out = crossf(oscillator.sin(), oscillator.tri(), wave);
-	else if (wave < 2.0)
-		out = crossf(oscillator.tri(), oscillator.saw(), wave - 1.0);
+	if (wave < 1.0f)
+		out = crossfade(oscillator.sin(), oscillator.tri(), wave);
+	else if (wave < 2.0f)
+		out = crossfade(oscillator.tri(), oscillator.saw(), wave - 1.0f);
 	else
-		out = crossf(oscillator.saw(), oscillator.sqr(), wave - 2.0);
-	outputs[OUT_OUTPUT].value = 5.0 * out;
+		out = crossfade(oscillator.saw(), oscillator.sqr(), wave - 2.0f);
+	outputs[OUT_OUTPUT].value = 5.0f * out;
 }
 
 
@@ -430,59 +427,60 @@ struct VCO2Bank : Module
 
 
 //============================================================================================================
+//! \brief The widget.
 
-Widget::Widget() {
-	VCO2Bank *module = new VCO2Bank();
-	setModule(module);
-	box.size = Vec(12*15, 380);
-
-	#if GTX__SAVE_SVG
+struct GtxWidget : ModuleWidget
+{
+	GtxWidget(VCO2Bank *module) : ModuleWidget(module)
 	{
-		PanelGen pg(assetPlugin(plugin, "build/res/VCO-F2.svg"), box.size, "VCO-F2");
+		GTX__WIDGET();
+		box.size = Vec(12*15, 380);
 
-		pg.nob_big(0, 0, "FREQ");
+		#if GTX__SAVE_SVG
+		{
+			PanelGen pg(assetPlugin(plugin, "build/res/VCO-F2.svg"), box.size, "VCO-F2");
 
-		pg.nob_med(0.75, -0.28, "WAVE");   pg.tog(1.27, -0.28, "ANA", "DIGI");
-		pg.nob_med(0.75, +0.28, "FM CV");  pg.tog(1.27, +0.28, "HRD", "SFT");
+			pg.nob_big(0, 0, "FREQ");
 
-		pg.bus_in(0, 1, "FM");   pg.bus_in (1, 1, "SYNC");
-		pg.bus_in(0, 2, "WAVE"); pg.bus_out(1, 2, "OUT");
+			pg.nob_med(0.75, -0.28, "WAVE");   pg.tog(1.27, -0.28, "ANA", "DIGI");
+			pg.nob_med(0.75, +0.28, "FM CV");  pg.tog(1.27, +0.28, "HRD", "SFT");
+
+			pg.bus_in(0, 1, "FM");   pg.bus_in (1, 1, "SYNC");
+			pg.bus_in(0, 2, "WAVE"); pg.bus_out(1, 2, "OUT");
+		}
+		#endif
+
+		setPanel(SVG::load(assetPlugin(plugin, "res/VCO-F2.svg")));
+
+		addChild(Widget::create<ScrewSilver>(Vec(15, 0)));
+		addChild(Widget::create<ScrewSilver>(Vec(box.size.x-30, 0)));
+		addChild(Widget::create<ScrewSilver>(Vec(15, 365)));
+		addChild(Widget::create<ScrewSilver>(Vec(box.size.x-30, 365)));
+
+		addParam(ParamWidget::create<CKSS>(tog(fx(1.27), fy(-0.28)), module, VCO2::MODE_PARAM, 0.0f, 1.0f, 1.0f));
+		addParam(ParamWidget::create<CKSS>(tog(fx(1.27), fy(+0.28)), module, VCO2::SYNC_PARAM, 0.0f, 1.0f, 1.0f));
+
+		addParam(createParamGTX<KnobFreeHug>(Vec(fx(0), fy(0)), module, VCO2::FREQ_PARAM, -54.0f, 54.0f, 0.0f));
+		addParam(createParamGTX<KnobFreeMed>(Vec(fx(0.75), fy(-0.28)), module, VCO2::WAVE_PARAM, 0.0f, 3.0f, 1.5f));
+		addParam(createParamGTX<KnobFreeMed>(Vec(fx(0.75), fy(+0.28)), module, VCO2::FM_PARAM, 0.0f, 1.0f, 0.0f));
+
+		for (std::size_t i=0; i<GTX__N; ++i)
+		{
+			addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, VCO2Bank::imap(VCO2::FM_INPUT,   i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(1, i)), module, VCO2Bank::imap(VCO2::SYNC_INPUT, i)));
+			addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, VCO2Bank::imap(VCO2::WAVE_INPUT, i)));
+
+			addOutput(createOutputGTX<PortOutMed>(Vec(px(1, i), py(2, i)), module, VCO2Bank::omap(VCO2::OUT_OUTPUT, i)));
+		}
+
+		addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, VCO2Bank::imap(VCO2::FM_INPUT,   GTX__N)));
+		addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(1)), module, VCO2Bank::imap(VCO2::SYNC_INPUT, GTX__N)));
+		addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(2)), module, VCO2Bank::imap(VCO2::WAVE_INPUT, GTX__N)));
 	}
-	#endif
+};
 
-	{
-		SVGPanel *panel = new SVGPanel();
-		panel->box.size = box.size;
-		panel->setBackground(SVG::load(assetPlugin(plugin, "res/VCO-F2.svg")));
-		addChild(panel);
-	}
 
-	addChild(createScrew<ScrewSilver>(Vec(15, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(15, 365)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x-30, 365)));
-
-	addParam(createParam<CKSS>(tog(fx(1.27), fy(-0.28)), module, VCO2::MODE_PARAM, 0.0, 1.0, 1.0));
-	addParam(createParam<CKSS>(tog(fx(1.27), fy(+0.28)), module, VCO2::SYNC_PARAM, 0.0, 1.0, 1.0));
-
-	addParam(createParamGTX<KnobFreeHug>(Vec(fx(0), fy(0)), module, VCO2::FREQ_PARAM, -54.0, 54.0, 0.0));
-
-	addParam(createParamGTX<KnobFreeMed>(Vec(fx(0.75), fy(-0.28)), module, VCO2::WAVE_PARAM, 0.0, 3.0, 1.5));
-	addParam(createParamGTX<KnobFreeMed>(Vec(fx(0.75), fy(+0.28)), module, VCO2::FM_PARAM,   0.0, 1.0, 0.0));
-
-	for (std::size_t i=0; i<GTX__N; ++i)
-	{
-		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(1, i)), module, VCO2Bank::imap(VCO2::FM_INPUT,   i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(1, i), py(1, i)), module, VCO2Bank::imap(VCO2::SYNC_INPUT, i)));
-		addInput(createInputGTX<PortInMed>(Vec(px(0, i), py(2, i)), module, VCO2Bank::imap(VCO2::WAVE_INPUT, i)));
-
-		addOutput(createOutputGTX<PortOutMed>(Vec(px(1, i), py(2, i)), module, VCO2Bank::omap(VCO2::OUT_OUTPUT, i)));
-	}
-
-	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(1)), module, VCO2Bank::imap(VCO2::FM_INPUT,   GTX__N)));
-	addInput(createInputGTX<PortInMed>(Vec(gx(1), gy(1)), module, VCO2Bank::imap(VCO2::SYNC_INPUT, GTX__N)));
-	addInput(createInputGTX<PortInMed>(Vec(gx(0), gy(2)), module, VCO2Bank::imap(VCO2::WAVE_INPUT, GTX__N)));
-}
+Model *model = Model::create<VCO2Bank, GtxWidget>("Gratrix", "VCO-F2", "VCO-F2", OSCILLATOR_TAG);
 
 
 } // VCO_F2
@@ -500,4 +498,3 @@ float triTable[2048] = {
 
 
 } // GTX
-#endif

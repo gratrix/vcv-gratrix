@@ -11,10 +11,10 @@ void init(rack::Plugin *p)
 
 //	p->addModel(GTX::MIDI_C1  ::model);
 //	p->addModel(GTX::MIDI_G1  ::model);
-//	p->addModel(GTX::VCO_F1   ::model);
-//	p->addModel(GTX::VCO_F2   ::model);
-//	p->addModel(GTX::VCF_F1   ::model);
-//	p->addModel(GTX::VCA_F1   ::model);
+	p->addModel(GTX::VCO_F1   ::model);
+	p->addModel(GTX::VCO_F2   ::model);
+	p->addModel(GTX::VCF_F1   ::model);
+	p->addModel(GTX::VCA_F1   ::model);
 	p->addModel(GTX::ADSR_F1  ::model);
 	p->addModel(GTX::Chord_G1 ::model);
 	p->addModel(GTX::Octave_G1::model);
@@ -35,10 +35,6 @@ void init(rack::Plugin *p)
 /*
 	p->addModel(createModel<GTX::MIDI_C1::Widget>  ("Gratrix", "MIDI-C1",   "MIDI-C1",   MIDI_TAG, EXTERNAL_TAG));
 	p->addModel(createModel<GTX::MIDI_G1::Widget>  ("Gratrix", "MIDI-G1",   "MIDI-G1",   MIDI_TAG, EXTERNAL_TAG));
-	p->addModel(createModel<GTX::VCO_F1::Widget>   ("Gratrix", "VCO-F1",    "VCO-F1",    OSCILLATOR_TAG));
-	p->addModel(createModel<GTX::VCO_F2::Widget>   ("Gratrix", "VCO-F2",    "VCO-F2",    OSCILLATOR_TAG));
-	p->addModel(createModel<GTX::VCF_F1::Widget>   ("Gratrix", "VCF-F1",    "VCF-F1",    FILTER_TAG));
-	p->addModel(createModel<GTX::VCA_F1::Widget>   ("Gratrix", "VCA-F1",    "VCA-F1",    AMPLIFIER_TAG));
 	p->addModel(createModel<GTX::Seq_G1::Widget>   ("Gratrix", "Seq-G1",    "Seq-G1",    SEQUENCER_TAG));
 	p->addModel(createModel<GTX::Seq_G2::Widget>   ("Gratrix", "Seq-G2",    "Seq-G2",    SEQUENCER_TAG));
 */
