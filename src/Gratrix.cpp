@@ -21,8 +21,8 @@ void init(rack::Plugin *p)
 	p->addModel(GTX::Fade_G1  ::model);
 	p->addModel(GTX::Fade_G2  ::model);
 	p->addModel(GTX::Binary_G1::model);
-//	p->addModel(GTX::Seq_G1   ::model);
-//	p->addModel(GTX::Seq_G2   ::model);
+	p->addModel(GTX::Seq_G1   ::model);
+	p->addModel(GTX::Seq_G2   ::model);
 	p->addModel(GTX::Keys_G1  ::model);
 	p->addModel(GTX::VU_G1    ::model);
 	p->addModel(GTX::Scope_G1 ::model);
@@ -33,8 +33,6 @@ void init(rack::Plugin *p)
 }
 
 /*
-	p->addModel(createModel<GTX::MIDI_C1::Widget>  ("Gratrix", "MIDI-C1",   "MIDI-C1",   MIDI_TAG, EXTERNAL_TAG));
-	p->addModel(createModel<GTX::MIDI_G1::Widget>  ("Gratrix", "MIDI-G1",   "MIDI-G1",   MIDI_TAG, EXTERNAL_TAG));
-	p->addModel(createModel<GTX::Seq_G1::Widget>   ("Gratrix", "Seq-G1",    "Seq-G1",    SEQUENCER_TAG));
-	p->addModel(createModel<GTX::Seq_G2::Widget>   ("Gratrix", "Seq-G2",    "Seq-G2",    SEQUENCER_TAG));
+	p->addModel(createModel<GTX::MIDI_C1::Widget>("Gratrix", "MIDI-C1", "MIDI-C1", MIDI_TAG, EXTERNAL_TAG));
+	p->addModel(createModel<GTX::MIDI_G1::Widget>("Gratrix", "MIDI-G1", "MIDI-G1", MIDI_TAG, EXTERNAL_TAG));
 */
