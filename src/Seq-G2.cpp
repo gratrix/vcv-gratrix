@@ -37,16 +37,16 @@ struct GtxModule : Module {
 		CLOCK_PARAM,
 		RUN_PARAM,
 		RESET_PARAM,
-		STEPS_PARAM,
 		PROG_PARAM,
 		PLAY_PARAM,
 		EDIT_PARAM,
-		SPAN_R_PARAM,
-		SPAN_C_PARAM,
-		CLEAR_PARAM,
-		RANDOM_PARAM,
 		COPY_PARAM,
 		PASTE_PARAM,
+		STEPS_PARAM,
+		CLEAR_PARAM,
+		RANDOM_PARAM,
+		SPAN_R_PARAM,
+		SPAN_C_PARAM,
 		PRG_ROW_PARAM,
 		PRG_COL_PARAM,
 		PRG_SPAN_PARAM,
@@ -1155,20 +1155,19 @@ struct GtxWidget : ModuleWidget
 				}
 			}
 
+			pg.line(Vec(portX[0]-dX, portY[0]-29), Vec(portX[0]-dX, portY[1]+16), "fill:none;stroke:#7092BE;stroke-width:2");
+			pg.line(Vec(portX[2]+dX, portY[0]-29), Vec(portX[2]+dX, portY[1]+16), "fill:none;stroke:#7092BE;stroke-width:2");
+			pg.line(Vec(portX[6]+dX, portY[0]-29), Vec(portX[6]+dX, portY[1]+16), "fill:none;stroke:#7092BE;stroke-width:2");
+			pg.line(Vec(portX[9]+dX, portY[0]-29), Vec(portX[9]+dX, portY[1]+16), "fill:none;stroke:#7092BE;stroke-width:2");
+
 			pg.line(Vec(portX[0],    portY[0]), Vec(portX[0],    portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
 			pg.line(Vec(portX[2],    portY[0]), Vec(portX[2],    portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
 			pg.line(Vec(portX[3],    portY[0]), Vec(portX[3],    portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
-			pg.line(Vec(portX[4],    portY[0]), Vec(portX[4],    portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
-			pg.line(Vec(portX[8],    portY[0]), Vec(portX[9],    portY[0]), "fill:none;stroke:#7092BE;stroke-width:1");
-			pg.line(Vec(portX[8],    portY[1]), Vec(portX[9],    portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
-			pg.line(Vec(portX[4]+dX, portY[2]), Vec(portX[6],    portY[2]), "fill:none;stroke:#7092BE;stroke-width:1");
-			pg.line(Vec(portX[4]+dX, portY[3]), Vec(portX[4]+dX, portY[2]), "fill:none;stroke:#7092BE;stroke-width:1");
-			pg.line(Vec(portX[4],    portY[3]), Vec(portX[4]+dX, portY[3]), "fill:none;stroke:#7092BE;stroke-width:1");
+			pg.line(Vec(portX[7],    portY[0]), Vec(portX[7],    portY[1]), "fill:none;stroke:#7092BE;stroke-width:1");
 
-			pg.line(Vec(portX[0]-dX, portY[0]-29), Vec(portX[0]-dX, portY[1]+16), "fill:none;stroke:#7092BE;stroke-width:2");
-			pg.line(Vec(portX[3]+dX, portY[0]-29), Vec(portX[3]+dX, portY[1]+16), "fill:none;stroke:#7092BE;stroke-width:2");
-			pg.line(Vec(portX[6]+dX, portY[0]-29), Vec(portX[6]+dX, portY[1]+16), "fill:none;stroke:#7092BE;stroke-width:2");
-			pg.line(Vec(portX[9]+dX, portY[0]-29), Vec(portX[9]+dX, portY[1]+16), "fill:none;stroke:#7092BE;stroke-width:2");
+			pg.line(Vec(portX[3]+dX, portY[2]), Vec(portX[5],    portY[2]), "fill:none;stroke:#7092BE;stroke-width:1");
+			pg.line(Vec(portX[3]+dX, portY[3]), Vec(portX[3]+dX, portY[2]), "fill:none;stroke:#7092BE;stroke-width:1");
+			pg.line(Vec(portX[3],    portY[3]), Vec(portX[3]+dX, portY[3]), "fill:none;stroke:#7092BE;stroke-width:1");
 
 			pg.nob_sml_raw(g_lcdX[ 4], gridY[LCD_ROWS], "ROW");
 			pg.nob_sml_raw(g_lcdX[ 5], gridY[LCD_ROWS], "COL");
@@ -1180,23 +1179,17 @@ struct GtxWidget : ModuleWidget
 			pg.nob_sml_raw(g_lcdX[11], gridY[LCD_ROWS], "---");
 
 			pg.nob_sml_raw(portX[0], portY[0], "CLOCK");
-			pg.nob_sml_raw(portX[1], portY[0], "RUN");
+			pg.nob_sml_raw(portX[1], portY[0], "RUN");        pg.nob_sml_raw(portX[1], portY[1], "EXT CLK");
 			pg.nob_sml_raw(portX[2], portY[0], "RESET");
-			pg.nob_sml_raw(portX[3], portY[0], "STEPS");
-			pg.nob_sml_raw(portX[4], portY[0], "PROG");
-			pg.nob_sml_raw(portX[5], portY[0], "PLAY");
-			pg.nob_sml_raw(portX[6], portY[0], "EDIT");
-			pg.nob_sml_raw(portX[7], portY[0], "ROWS");
-			pg.nob_sml_raw(portX[8], portY[0], "CLEAR");
-			pg.nob_sml_raw(portX[9], portY[0], "RAND");
 
-			pg.nob_sml_raw(portX[1], portY[1], "EXT CLK");
-			pg.nob_sml_raw(portX[7], portY[1], "COLS");
-			pg.nob_sml_raw(portX[8], portY[1], "COPY");
-			pg.nob_sml_raw(portX[9], portY[1], "PASTE");
+			pg.nob_sml_raw(portX[3], portY[0], "PROG");
+			pg.nob_sml_raw(portX[4], portY[0], "PLAY");       pg.tog_raw2   (portX[4], portY[2], "KNOB", "CV");
+			pg.nob_sml_raw(portX[5], portY[0], "EDIT");       pg.tog_raw2   (portX[5], portY[2], "KNOB", "CV");
+			pg.nob_sml_raw(portX[6], portY[0], "COPY");       pg.nob_sml_raw(portX[6], portY[1], "PASTE");
 
-			pg.tog_raw2   (portX[5], portY[2], "KNOB", "CV");
-			pg.tog_raw2   (portX[6], portY[2], "KNOB", "CV");
+			pg.nob_sml_raw(portX[7], portY[0], "STEPS");
+			pg.nob_sml_raw(portX[8], portY[0], "CLEAR");      pg.nob_sml_raw(portX[8], portY[1], "RAND");
+			pg.nob_sml_raw(portX[9], portY[0], "ROWS");       pg.nob_sml_raw(portX[9], portY[1], "COLS");
 
 			pg.bus_in (0, 2, "GATE");
 			pg.bus_in (1, 2, "V/OCT");
@@ -1219,40 +1212,44 @@ struct GtxWidget : ModuleWidget
 		addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(l_m(portX[1], portY[0]), module, GtxModule::RUNNING_LIGHT));
 		addParam(ParamWidget::create<LEDButton>                    (but(portX[2], portY[0]), module, GtxModule::RESET_PARAM, 0.0f, 1.0f, 0.0f));
 		addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(l_m(portX[2], portY[0]), module, GtxModule::RESET_LIGHT));
-		addParam(createParamGTX<KnobSnapSml>                       (Vec(portX[3], portY[0]), module, GtxModule::STEPS_PARAM, 1.0f, NOB_COLS, NOB_COLS));
-		addParam(createParamGTX<KnobSnapSml>                       (Vec(portX[4], portY[0]), module, GtxModule::PROG_PARAM, 0.0f, 11.0f, 0.0f));
-		addParam(ParamWidget::create<CKSS>                         (tog(portX[5], portY[2]), module, GtxModule::PLAY_PARAM, 0.0f, 1.0f, 1.0f));
-		addParam(ParamWidget::create<CKSS>                         (tog(portX[6], portY[2]), module, GtxModule::EDIT_PARAM, 0.0f, 1.0f, 1.0f));
 
-		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[5] + dX - 30, portY[1] + 5 + 1), module, GtxModule::PROG_LIGHT +  0*2));  // C
-		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[5] + dX - 25, portY[1] - 5 + 1), module, GtxModule::PROG_LIGHT +  1*2));  // C#
-		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[5] + dX - 20, portY[1] + 5 + 1), module, GtxModule::PROG_LIGHT +  2*2));  // D
-		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[5] + dX - 15, portY[1] - 5 + 1), module, GtxModule::PROG_LIGHT +  3*2));  // Eb
-		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[5] + dX - 10, portY[1] + 5 + 1), module, GtxModule::PROG_LIGHT +  4*2));  // E
-		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[5] + dX     , portY[1] + 5 + 1), module, GtxModule::PROG_LIGHT +  5*2));  // F
-		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[5] + dX +  5, portY[1] - 5 + 1), module, GtxModule::PROG_LIGHT +  6*2));  // Fs
-		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[5] + dX + 10, portY[1] + 5 + 1), module, GtxModule::PROG_LIGHT +  7*2));  // G
-		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[5] + dX + 15, portY[1] - 5 + 1), module, GtxModule::PROG_LIGHT +  8*2));  // Ab
-		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[5] + dX + 20, portY[1] + 5 + 1), module, GtxModule::PROG_LIGHT +  9*2));  // A
-		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[5] + dX + 25, portY[1] - 5 + 1), module, GtxModule::PROG_LIGHT + 10*2));  // Bb
-		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[5] + dX + 30, portY[1] + 5 + 1), module, GtxModule::PROG_LIGHT + 11*2));  // B
+		addParam(createParamGTX<KnobSnapSml>                       (Vec(portX[3], portY[0]), module, GtxModule::PROG_PARAM, 0.0f, 11.0f, 0.0f));
+		addParam(ParamWidget::create<CKSS>                         (tog(portX[4], portY[2]), module, GtxModule::PLAY_PARAM, 0.0f, 1.0f, 1.0f));
+		addParam(ParamWidget::create<CKSS>                         (tog(portX[5], portY[2]), module, GtxModule::EDIT_PARAM, 0.0f, 1.0f, 1.0f));
 
-		addParam(createParamGTX<KnobSnapSml>                       (Vec(portX[7], portY[0]), module, GtxModule::SPAN_R_PARAM, 1.0f, 8.0f, 1.0f));
-		addParam(createParamGTX<KnobSnapSml>                       (Vec(portX[7], portY[1]), module, GtxModule::SPAN_C_PARAM, 1.0f, 8.0f, 1.0f));
+		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[4] + dX - 30, portY[1] + 5 + 1), module, GtxModule::PROG_LIGHT +  0*2));  // C
+		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[4] + dX - 25, portY[1] - 5 + 1), module, GtxModule::PROG_LIGHT +  1*2));  // C#
+		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[4] + dX - 20, portY[1] + 5 + 1), module, GtxModule::PROG_LIGHT +  2*2));  // D
+		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[4] + dX - 15, portY[1] - 5 + 1), module, GtxModule::PROG_LIGHT +  3*2));  // Eb
+		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[4] + dX - 10, portY[1] + 5 + 1), module, GtxModule::PROG_LIGHT +  4*2));  // E
+		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[4] + dX     , portY[1] + 5 + 1), module, GtxModule::PROG_LIGHT +  5*2));  // F
+		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[4] + dX +  5, portY[1] - 5 + 1), module, GtxModule::PROG_LIGHT +  6*2));  // Fs
+		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[4] + dX + 10, portY[1] + 5 + 1), module, GtxModule::PROG_LIGHT +  7*2));  // G
+		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[4] + dX + 15, portY[1] - 5 + 1), module, GtxModule::PROG_LIGHT +  8*2));  // Ab
+		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[4] + dX + 20, portY[1] + 5 + 1), module, GtxModule::PROG_LIGHT +  9*2));  // A
+		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[4] + dX + 25, portY[1] - 5 + 1), module, GtxModule::PROG_LIGHT + 10*2));  // Bb
+		addChild(ModuleLightWidget::create<SmallLight<GreenRedLight>>(l_s(portX[4] + dX + 30, portY[1] + 5 + 1), module, GtxModule::PROG_LIGHT + 11*2));  // B
+
+		addParam(ParamWidget::create<LEDButton>                    (but(portX[6], portY[0]), module, GtxModule::COPY_PARAM, 0.0f, 1.0f, 0.0f));
+		addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(l_m(portX[6], portY[0]), module, GtxModule::COPY_LIGHT));
+		addParam(ParamWidget::create<LEDButton>                    (but(portX[6], portY[1]), module, GtxModule::PASTE_PARAM, 0.0f, 1.0f, 0.0f));
+		addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(l_m(portX[6], portY[1]), module, GtxModule::PASTE_LIGHT));
+
+		addParam(createParamGTX<KnobSnapSml>                       (Vec(portX[7], portY[0]), module, GtxModule::STEPS_PARAM, 1.0f, NOB_COLS, NOB_COLS));
+
 		addParam(ParamWidget::create<LEDButton>                    (but(portX[8], portY[0]), module, GtxModule::CLEAR_PARAM, 0.0f, 1.0f, 0.0f));
 		addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(l_m(portX[8], portY[0]), module, GtxModule::CLEAR_LIGHT));
-		addParam(ParamWidget::create<LEDButton>                    (but(portX[9], portY[0]), module, GtxModule::RANDOM_PARAM, 0.0f, 1.0f, 0.0f));
-		addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(l_m(portX[9], portY[0]), module, GtxModule::RANDOM_LIGHT));
-		addParam(ParamWidget::create<LEDButton>                    (but(portX[8], portY[1]), module, GtxModule::COPY_PARAM, 0.0f, 1.0f, 0.0f));
-		addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(l_m(portX[8], portY[1]), module, GtxModule::COPY_LIGHT));
-		addParam(ParamWidget::create<LEDButton>                    (but(portX[9], portY[1]), module, GtxModule::PASTE_PARAM, 0.0f, 1.0f, 0.0f));
-		addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(l_m(portX[9], portY[1]), module, GtxModule::PASTE_LIGHT));
+		addParam(ParamWidget::create<LEDButton>                    (but(portX[8], portY[1]), module, GtxModule::RANDOM_PARAM, 0.0f, 1.0f, 0.0f));
+		addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(l_m(portX[8], portY[1]), module, GtxModule::RANDOM_LIGHT));
+
+		addParam(createParamGTX<KnobSnapSml>                       (Vec(portX[9], portY[0]), module, GtxModule::SPAN_R_PARAM, 1.0f, 8.0f, 1.0f));
+		addParam(createParamGTX<KnobSnapSml>                       (Vec(portX[9], portY[1]), module, GtxModule::SPAN_C_PARAM, 1.0f, 8.0f, 1.0f));
 
 		addInput(createInputGTX<PortInMed>(Vec(portX[0], portY[1]), module, GtxModule::CLOCK_INPUT));
 		addInput(createInputGTX<PortInMed>(Vec(portX[1], portY[1]), module, GtxModule::EXT_CLOCK_INPUT));
 		addInput(createInputGTX<PortInMed>(Vec(portX[2], portY[1]), module, GtxModule::RESET_INPUT));
-		addInput(createInputGTX<PortInMed>(Vec(portX[3], portY[1]), module, GtxModule::STEPS_INPUT));
-		addInput(createInputGTX<PortInMed>(Vec(portX[4], portY[1]), module, GtxModule::PROG_INPUT));
+		addInput(createInputGTX<PortInMed>(Vec(portX[3], portY[1]), module, GtxModule::PROG_INPUT));
+		addInput(createInputGTX<PortInMed>(Vec(portX[7], portY[1]), module, GtxModule::STEPS_INPUT));
 
 		{
 			std::size_t j = 0;
