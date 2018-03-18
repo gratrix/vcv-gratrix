@@ -1,5 +1,5 @@
 SLUG = Gratrix
-VERSION = 0.6.0dev
+VERSION = 0.6.0
 
 FLAGS += -I../../src/core
 
