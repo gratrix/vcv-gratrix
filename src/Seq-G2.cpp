@@ -187,7 +187,7 @@ struct GtxModule : Module {
 			}
 		}
 
-		std::ostream &debug(std::ostream &os) const
+		std::ostream &logDebug(std::ostream &os) const
 		{
 			os << static_cast<int>(mode) << " " << static_cast<int>(note) << " " << static_cast<int>(octave) << " " << value;
 
